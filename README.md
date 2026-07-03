@@ -196,3 +196,9 @@ WEBAPI_E2E=1 WEBAPI_CLIENT_ID=... WEBAPI_CLIENT_SECRET=... WEBAPI_TRADE_PLATFORM
 ## License
 
 [MIT](LICENSE). Publishing to NuGet.org is a separate, explicit release step — see [PUBLISHING.md](PUBLISHING.md).
+
+## Trademarks
+
+MetaTrader, MT4, MT5, and MetaQuotes are trademarks or registered trademarks of MetaQuotes Ltd.
+This project is an independent SDK for the WebAPI service.
+It is **not affiliated with, endorsed by, or sponsored by MetaQuotes Ltd.**
