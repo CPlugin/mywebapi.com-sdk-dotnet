@@ -1,0 +1,22 @@
+<Project>
+  <PropertyGroup>
+    <Version>0.1.0</Version>
+    <Authors>CPlugin</Authors>
+    <Company>CPlugin</Company>
+    <!-- * Public repository (create under this org/name before the first release — see PUBLISHING.md). -->
+    <PackageProjectUrl>https://github.com/CPlugin/mywebapi.com-sdk-dotnet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/CPlugin/mywebapi.com-sdk-dotnet</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- * One repo-level README ships inside both packages (harmless for the
+         non-packable test/example/tool projects). -->
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

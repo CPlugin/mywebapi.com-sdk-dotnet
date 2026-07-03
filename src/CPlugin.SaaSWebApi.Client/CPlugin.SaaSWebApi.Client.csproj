@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <PackageId>CPlugin.SaaSWebApi.Client</PackageId>
+    <Description>HttpClient-based async .NET client for the CPlugin SaaS WebAPI v2 (MT4/MT5). Envelope-aware, supports idempotency keys, field selection, and paged iteration via IAsyncEnumerable.</Description>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.Net.Http.Json" Version="8.0.1" />
+    <!-- * IAsyncEnumerable + [EnumeratorCancellation] on netstandard2.0. -->
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="IdentityModel" Version="6.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <!-- * SignalR client. Pulled in unconditionally — the package is ~150KB and most
+         consumers want either the REST or SignalR surface, often both. -->
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.10" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="8.10.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CPlugin.SaaSWebApi.Models\CPlugin.SaaSWebApi.Models.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- * Contract tests exercise the internal ApiConnection transport directly. -->
+    <InternalsVisibleTo Include="CPlugin.SaaSWebApi.Client.Tests" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <PackageId>CPlugin.SaaSWebApi.Models</PackageId>
+    <Description>Pure POCO DTOs + envelope for the CPlugin SaaS WebAPI v2 (MT4/MT5). Zero deps beyond System.Text.Json. Use this when you build your own HTTP layer.</Description>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+  </ItemGroup>
+</Project>

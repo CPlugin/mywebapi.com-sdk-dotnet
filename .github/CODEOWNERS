@@ -1,0 +1,29 @@
+# This file governs who is automatically requested for review
+# when a pull request touches specific paths.
+# Each line maps a file pattern to one or more owners.
+# More info: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo
+* @BobBoba
+
+# SDK core source code
+/src/ @BobBoba
+
+# CI/CD pipelines (security-critical)
+/.github/ @BobBoba
+
+# Package configuration (controls dependency supply chain)
+/Directory.Build.props @BobBoba
+/src/**/*.csproj @BobBoba
+
+# Build and code generation configuration
+/scripts/ @BobBoba
+
+# OpenAPI specification (defines the SDK surface)
+/spec/ @BobBoba
+
+# E2E tests
+/tests/CPlugin.SaaSWebApi.Client.Tests/E2E/ @BobBoba
+
+# Environment configuration
+/.env.example @BobBoba

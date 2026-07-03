@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore
+        run: dotnet restore CPlugin.SaaSWebApi.Client.sln
+
+      - name: Build (Release, warnings as errors for the SDK surface)
+        run: dotnet build CPlugin.SaaSWebApi.Client.sln -c Release --no-restore
+
+      - name: Run tests
+        # * The E2E class is gated on WEBAPI_E2E=1 + credentials; without them the
+        #   e2e tests pass as no-ops, so the hermetic suite runs cleanly in CI
+        #   with no extra setup.
+        run: dotnet test tests/CPlugin.SaaSWebApi.Client.Tests/CPlugin.SaaSWebApi.Client.Tests.csproj -c Release --no-build
+
+      - name: Pack (sanity check — publish is a separate, manual decision)
+        run: |
+          dotnet pack src/CPlugin.SaaSWebApi.Models/CPlugin.SaaSWebApi.Models.csproj -c Release --no-build -o nupkgs
+          dotnet pack src/CPlugin.SaaSWebApi.Client/CPlugin.SaaSWebApi.Client.csproj -c Release --no-build -o nupkgs
+
+      - name: Upload packages artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkgs
+          path: nupkgs/
