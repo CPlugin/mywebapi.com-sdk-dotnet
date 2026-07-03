@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
-    <PackageId>CPlugin.SaaSWebApi.Client</PackageId>
+    <!-- * Public NuGet id (brand parity with @mywebapi.com/sdk and mywebapi-sdk).
+         Root namespace stays CPlugin.SaaSWebApi.Client. -->
+    <PackageId>MyWebApi.Sdk</PackageId>
     <Description>HttpClient-based async .NET client for the CPlugin SaaS WebAPI v2 (MT4/MT5). Envelope-aware, supports idempotency keys, field selection, and paged iteration via IAsyncEnumerable.</Description>
   </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">

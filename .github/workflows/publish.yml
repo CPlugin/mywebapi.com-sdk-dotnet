@@ -1,0 +1,82 @@
+name: Publish to NuGet.org
+
+# * Triggered by pushing a version tag (e.g. v0.1.0, v1.2.3).
+# * Authenticates via NuGet Trusted Publishing (OIDC): NuGet/login exchanges the
+#   GitHub OIDC token for a short-lived (~1h) API key — no long-lived secret to
+#   store or rotate. Requires:
+#     1. a Trusted Publishing policy on nuget.org (Repository Owner/Repository/
+#        Workflow File = publish.yml / Environment = nuget) — see PUBLISHING.md;
+#     2. a GitHub Environment named `nuget` with the secret NUGET_USER set to the
+#        nuget.org profile name (NOT the email).
+# * The package version comes from the tag (v1.2.3 -> 1.2.3), overriding the
+#   <Version> in Directory.Build.props — the tag is the single source of truth
+#   for what gets published.
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish:
+    name: Build, test & publish
+    runs-on: ubuntu-latest
+    environment: nuget
+    permissions:
+      id-token: write   # required for GitHub OIDC token issuance (NuGet/login)
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Derive version from tag
+        # * GITHUB_REF_NAME is trusted here: the workflow only runs on tags the
+        #   repo owners push, and the value is validated against semver below.
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$' \
+            || { echo "Tag '$GITHUB_REF_NAME' is not a semver version tag" >&2; exit 1; }
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Build (Release)
+        run: dotnet build CPlugin.SaaSWebApi.Client.sln -c Release -p:Version="$VERSION" -p:ContinuousIntegrationBuild=true
+
+      - name: Test
+        # * Hermetic suite only — the E2E class self-skips without WEBAPI_E2E.
+        run: dotnet test tests/CPlugin.SaaSWebApi.Client.Tests/CPlugin.SaaSWebApi.Client.Tests.csproj -c Release --no-build
+
+      - name: Pack
+        run: |
+          dotnet pack src/CPlugin.SaaSWebApi.Models/CPlugin.SaaSWebApi.Models.csproj -c Release --no-build -p:Version="$VERSION" -o nupkgs
+          dotnet pack src/CPlugin.SaaSWebApi.Client/CPlugin.SaaSWebApi.Client.csproj -c Release --no-build -p:Version="$VERSION" -o nupkgs
+
+      - name: NuGet login (OIDC → temp API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          # * nuget.org profile name (NOT email); kept in an environment secret.
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Push packages
+        # ! Request the key right before pushing — it expires in ~1 hour.
+        # * --skip-duplicate makes tag re-runs idempotent (already-published
+        #   versions are skipped instead of failing the job).
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: |
+          for pkg in nupkgs/*.nupkg; do
+            dotnet nuget push "$pkg" \
+              --api-key "$NUGET_API_KEY" \
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate
+          done
+
+      - name: Upload packages artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkgs
+          path: nupkgs/

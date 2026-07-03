@@ -1,27 +1,20 @@
-# CPlugin SaaS WebAPI — .NET SDK
+# MyWebApi.Sdk — .NET SDK for the CPlugin WebAPI
 
 .NET client for the SaaS WebAPI v2 (MT4/MT5 trading platform management). Usable from any .NET language (C#/F#/VB); targets `netstandard2.0` + `net8.0`.
 
-> **Develop-only.** These packages are not published to any registry (public or internal) yet. They will be released once the v2 API reaches production maturity.
+Two NuGet packages, one version and release cycle (root namespaces in code are `CPlugin.SaaSWebApi.*`):
 
-Two NuGet packages, one version and release cycle:
-
-- **`CPlugin.SaaSWebApi.Models`** — generated POCO DTOs + v2 response envelopes. Zero dependencies beyond `System.Text.Json`. Use this when you build your own HTTP layer.
-- **`CPlugin.SaaSWebApi.Client`** — the full SDK on top of `Models`: `CPluginWebApiClient` with a generated method for **every** v2 endpoint (MT4 + MT5), OAuth2 client_credentials with transparent refresh and 401 retry, typed `ApiError`, cursor pagination, SignalR real-time clients with auto-reconnect, optional DI integration.
+- **`MyWebApi.Sdk`** — the full SDK: `CPluginWebApiClient` with a generated method for **every** v2 endpoint (MT4 + MT5), OAuth2 client_credentials with transparent refresh and 401 retry, typed `ApiError`, cursor pagination, SignalR real-time clients with auto-reconnect, optional DI integration.
+- **`MyWebApi.Sdk.Models`** — generated POCO DTOs + v2 response envelopes only. Zero dependencies beyond `System.Text.Json`. Use this when you build your own HTTP layer.
 
 ## Install
 
-Not on NuGet.org yet (see the note above). Until the first release, reference the projects directly from a checkout:
-
-```xml
-<ProjectReference Include="path/to/cplugin-webapi-sdk-dotnet/src/CPlugin.SaaSWebApi.Client/CPlugin.SaaSWebApi.Client.csproj" />
-```
-
-or pack locally:
-
 ```bash
-dotnet pack src/CPlugin.SaaSWebApi.Client/CPlugin.SaaSWebApi.Client.csproj -c Release -o nupkgs
+dotnet add package MyWebApi.Sdk
 ```
+
+> Until the first release lands on NuGet.org (see [PUBLISHING.md](PUBLISHING.md)), reference the project directly from a checkout instead:
+> `<ProjectReference Include="path/to/cplugin-webapi-sdk-dotnet/src/CPlugin.SaaSWebApi.Client/CPlugin.SaaSWebApi.Client.csproj" />`
 
 ## Environment presets
 

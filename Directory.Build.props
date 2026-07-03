@@ -8,6 +8,11 @@
     <RepositoryUrl>https://github.com/CPlugin/mywebapi.com-sdk-dotnet</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>mt4;mt5;metatrader;forex;trading;broker;cplugin;webapi;sdk;signalr;real-time;rest-api;openapi</PackageTags>
+    <!-- * SourceLink (built into the .NET 8+ SDK) + debug symbols for nuget.org. -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
