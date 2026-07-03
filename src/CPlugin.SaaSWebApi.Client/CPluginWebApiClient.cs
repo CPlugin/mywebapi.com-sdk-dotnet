@@ -9,7 +9,7 @@ using CPlugin.SaaSWebApi.Client.Auth;
 
 namespace CPlugin.SaaSWebApi.Client;
 
-/// <summary>Unified entry point for the CPlugin SaaS WebAPI v2 — MT4 and MT5 trading
+/// <summary>Unified entry point for the CPlugin SaaS WebAPI v2 — trading
 /// platform management for .NET.</summary>
 /// <remarks>
 /// <para>Pick an environment, supply client credentials once — token acquisition
@@ -127,7 +127,7 @@ public sealed class CPluginWebApiClient : IDisposable
     {
     }
 
-    /// <summary>All MT4 v2 endpoints bound to <paramref name="tradePlatform"/>.
+    /// <summary>All v2 endpoints of the first platform family, bound to <paramref name="tradePlatform"/>.
     /// Cheap to call — bind once per platform and reuse, or call inline.</summary>
     public MT4Endpoints MT4(Guid tradePlatform)
     {
@@ -136,7 +136,7 @@ public sealed class CPluginWebApiClient : IDisposable
         return new MT4Endpoints(_connection, tradePlatform);
     }
 
-    /// <summary>All MT5 v2 endpoints bound to <paramref name="tradePlatform"/>.</summary>
+    /// <summary>All v2 endpoints of the second platform family, bound to <paramref name="tradePlatform"/>.</summary>
     public MT5Endpoints MT5(Guid tradePlatform)
     {
         if (tradePlatform == Guid.Empty)
@@ -144,7 +144,7 @@ public sealed class CPluginWebApiClient : IDisposable
         return new MT5Endpoints(_connection, tradePlatform);
     }
 
-    /// <summary>Real-time SignalR clients (MT4 + MT5 v2 hubs) sharing this client's
+    /// <summary>Real-time SignalR clients (both v2 hubs) sharing this client's
     /// credentials and cached token.</summary>
     public RealtimeAccessor Realtime { get; }
 

@@ -19,7 +19,7 @@ public sealed class ApiError : Exception
     /// <summary>W3C trace id — quote it when contacting support; it locates the request in server logs.</summary>
     public string? ActivityId { get; }
 
-    /// <summary>Raw MT4/MT5 manager result code when the error came from the trading platform; otherwise null.</summary>
+    /// <summary>Raw platform manager result code when the error came from the trading platform; otherwise null.</summary>
     public string? ManagerCode { get; }
 
     /// <summary>HTTP status of the response that carried the envelope.</summary>

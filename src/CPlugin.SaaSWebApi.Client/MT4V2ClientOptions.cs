@@ -22,7 +22,7 @@ public sealed record MT4V2ClientOptions
     /// <summary>WebAPI base URL (trailing slashes are stripped). E.g. <c>https://api.example.com</c>.</summary>
     public required string BaseUrl { get; init; }
 
-    /// <summary>Trade-platform GUID — bound to the client at construction. Every v2 MT4 endpoint is scoped by it.</summary>
+    /// <summary>Trade-platform GUID — bound to the client at construction. Every v2 endpoint is scoped by it.</summary>
     public required Guid TradePlatform { get; init; }
 
     /// <summary>Pre-issued JWT bearer (legacy / test path). Mutually exclusive with <see cref="ClientId"/>+<see cref="ClientSecret"/>+<see cref="IdentityUrl"/>.</summary>

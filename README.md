@@ -1,10 +1,10 @@
 # MyWebApi.Sdk — .NET SDK for the CPlugin WebAPI
 
-.NET client for the SaaS WebAPI v2 (MT4/MT5 trading platform management). Usable from any .NET language (C#/F#/VB); targets `netstandard2.0` + `net8.0`.
+.NET client for the MyWebAPI.com trading platform management API (v2). Usable from any .NET language (C#/F#/VB); targets `netstandard2.0` + `net8.0`.
 
 Two NuGet packages, one version and release cycle (root namespaces in code are `CPlugin.SaaSWebApi.*`):
 
-- **`MyWebApi.Sdk`** — the full SDK: `CPluginWebApiClient` with a generated method for **every** v2 endpoint (MT4 + MT5), OAuth2 client_credentials with transparent refresh and 401 retry, typed `ApiError`, cursor pagination, SignalR real-time clients with auto-reconnect, optional DI integration.
+- **`MyWebApi.Sdk`** — the full SDK: `CPluginWebApiClient` with a generated method for **every** v2 endpoint across both supported platform families, OAuth2 client_credentials with transparent refresh and 401 retry, typed `ApiError`, cursor pagination, SignalR real-time clients with auto-reconnect, optional DI integration.
 - **`MyWebApi.Sdk.Models`** — generated POCO DTOs + v2 response envelopes only. Zero dependencies beyond `System.Text.Json`. Use this when you build your own HTTP layer.
 
 ## Install
@@ -136,7 +136,7 @@ await foreach (var tick in hub.StreamTicksAsync("EURUSD", ct))
     Console.WriteLine($"{tick.Symbol} {tick.Bid}/{tick.Ask}");
 ```
 
-MT4 hub streams ticks, trades, margin-call events, user updates, and symbol config changes. MT5 hub streams connection status and margin-call updates (further MT5 streams are deferred server-side).
+The `client.Realtime.MT4(...)` hub streams ticks, trades, margin-call events, user updates, and symbol config changes; the `client.Realtime.MT5(...)` hub streams connection status and margin-call updates (additional streams are deferred server-side).
 
 ## Examples
 
@@ -144,7 +144,7 @@ Runnable projects under `examples/` (staging, credentials via `WEBAPI_CLIENT_ID`
 
 ```bash
 dotnet run --project examples/QuickStart   # auth, platform discovery, server time, paging
-dotnet run --project examples/Streaming    # MT4 tick stream over SignalR, Ctrl+C to stop
+dotnet run --project examples/Streaming    # live tick stream over SignalR, Ctrl+C to stop
 ```
 
 ## Regenerate

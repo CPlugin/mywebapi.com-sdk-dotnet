@@ -1,4 +1,4 @@
-// Real-time streaming: MT4 ticks over SignalR with auto-reconnect.
+// Real-time streaming: live ticks over SignalR with auto-reconnect.
 //
 // Targets STAGING. Set credentials first:
 //

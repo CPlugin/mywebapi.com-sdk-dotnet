@@ -5,7 +5,7 @@
          Root namespace stays CPlugin.SaaSWebApi.Models — same split as the Python
          SDK (dist mywebapi-sdk / import cplugin_webapi_sdk). -->
     <PackageId>MyWebApi.Sdk.Models</PackageId>
-    <Description>Pure POCO DTOs + envelope for the CPlugin SaaS WebAPI v2 (MT4/MT5). Zero deps beyond System.Text.Json. Use this when you build your own HTTP layer.</Description>
+    <Description>Pure POCO DTOs + envelope for the MyWebAPI.com trading platform management API (v2). Zero deps beyond System.Text.Json. Use this when you build your own HTTP layer.</Description>
   </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Text.Json" Version="8.0.5" />

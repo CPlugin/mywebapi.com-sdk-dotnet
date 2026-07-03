@@ -20,7 +20,7 @@ namespace CPlugin.SaaSWebApi.Client;
 /// <see cref="DisposeAsync"/>.</para>
 /// <para>Server contract (<c>WebAPI/Hubs/MT5/v2/MT5V2Hub.cs</c>): callbacks
 /// <c>OnConnectionStatus</c> and <c>OnMarginCall</c>; stream <c>StreamMarginCallUpdates</c>.
-/// Further MT5 streams (ticks, trades, user/symbol updates) are deferred server-side.</para>
+/// Further streams (ticks, trades, user/symbol updates) are deferred server-side.</para>
 /// </remarks>
 public sealed class MT5V2SignalRClient : IAsyncDisposable
 {
@@ -45,7 +45,7 @@ public sealed class MT5V2SignalRClient : IAsyncDisposable
     internal string HubUrl => _hubUrl;
 
     /// <summary>Construct from <see cref="MT4V2ClientOptions"/> (same credential shapes as
-    /// the MT4 hub client — static token or client_credentials).</summary>
+    /// the sibling hub client — static token or client_credentials).</summary>
     /// <param name="opts">Options.</param>
     /// <param name="configureConnection">Optional callback to mutate the
     /// <see cref="IHubConnectionBuilder"/> before <c>Build()</c>.</param>

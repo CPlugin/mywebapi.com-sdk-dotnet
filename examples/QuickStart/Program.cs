@@ -1,4 +1,4 @@
-// Quickstart: authenticate, discover platforms, read MT4 server time, page users.
+// Quickstart: authenticate, discover platforms, read the server time, page users.
 //
 // This example targets the STAGING environment so no production data is touched.
 // Set your credentials before running:
@@ -36,11 +36,11 @@ var tradePlatform = Guid.Parse(platforms[0]!["id"]!.GetValue<string>());
 var mt4 = client.MT4(tradePlatform);
 Console.WriteLine();
 
-// -- MT4 server time ----------------------------------------------------------
+// -- server time --------------------------------------------------------------
 try
 {
     var time = await mt4.ServerTimeAsync();
-    Console.WriteLine($"MT4 server time: {time:O}");
+    Console.WriteLine($"Server time: {time:O}");
 }
 catch (ApiError err)
 {
@@ -53,7 +53,7 @@ catch (ApiError err)
 // * Page<T> carries the cursor; PageIterator walks pages without loading the
 //   full dataset. Here we show just the first page.
 Console.WriteLine();
-Console.WriteLine("First page of MT4 users (limit=5):");
+Console.WriteLine("First page of users (limit=5):");
 var page = await mt4.UsersRequestAsync(limit: 5);
 foreach (var user in page.Items)
     Console.WriteLine($"  login={user.Login}  group={user.Group}");
