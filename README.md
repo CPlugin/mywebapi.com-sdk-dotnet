@@ -13,9 +13,6 @@ Two NuGet packages, one version and release cycle (root namespaces in code are `
 dotnet add package MyWebApi.Sdk
 ```
 
-> Until the first release lands on NuGet.org (see [PUBLISHING.md](PUBLISHING.md)), reference the project directly from a checkout instead:
-> `<ProjectReference Include="path/to/cplugin-webapi-sdk-dotnet/src/CPlugin.SaaSWebApi.Client/CPlugin.SaaSWebApi.Client.csproj" />`
-
 ## Environment presets
 
 Pick an environment at construction time — no URL configuration needed:
