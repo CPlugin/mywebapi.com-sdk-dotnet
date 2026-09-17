@@ -15,7 +15,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.0.x
+          global-json-file: global.json
 
       - name: Restore
         run: dotnet restore CPlugin.SaaSWebApi.Client.sln
@@ -291,12 +291,25 @@ jobs:
           consumer_keys = {key.lower() for key in consumer.get("libraries", {})}
           if any(f"{package_id}/{version}" not in consumer_keys for package_id in expected_sdk):
               raise SystemExit(f"consumer graph does not resolve SDK packages at {version}")
-          snapshot_targets = {name.lower(): {key.lower() for key in target} for name, target in snapshot.get("targets", {}).items()}
+          def normalize_target_name(name):
+              framework = name.split("/", 1)[0].strip().lower()
+              return {
+                  "net8.0": "net8.0",
+                  ".netcoreapp,version=v8.0": "net8.0",
+                  "netstandard2.0": "netstandard2.0",
+                  ".netstandard,version=v2.0": "netstandard2.0",
+              }.get(framework)
+
+          snapshot_targets = {}
+          for name, target in snapshot.get("targets", {}).items():
+              tfm = normalize_target_name(name)
+              if tfm is not None:
+                  snapshot_targets.setdefault(tfm, set()).update(key.lower() for key in target)
           for tfm in ("net8.0", "netstandard2.0"):
-              target = next((libraries for name, libraries in snapshot_targets.items() if name.endswith("/" + tfm)), None)
+              target = snapshot_targets.get(tfm)
               if target is None or not any(key.startswith(f"mywebapi.sdk/{version}") for key in target):
                   raise SystemExit(f"snapshot graph missing MyWebApi.Sdk/{version} for {tfm}")
-          ns2 = next((libraries for name, libraries in snapshot_targets.items() if name == "netstandard2.0" or name.endswith("/netstandard2.0")), None)
+          ns2 = snapshot_targets.get("netstandard2.0")
           required_ns2 = {"system.net.http.json/8.0.1", "microsoft.bcl.asyncinterfaces/8.0.0"}
           if ns2 is None or not required_ns2 <= ns2:
               raise SystemExit("netstandard2.0 snapshot omitted required package dependencies")

@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <SdkVersion Condition="'$(SdkVersion)' == ''">0.2.0</SdkVersion>
+    <SdkVersion Condition="'$(SdkVersion)' == ''">0.2.1</SdkVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MyWebApi.Sdk" Version="$(SdkVersion)" />

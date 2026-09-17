@@ -146,6 +146,8 @@ dotnet run --project examples/Streaming    # live tick stream over SignalR, Ctrl
 
 ## Regenerate
 
+The repository pins the exact .NET SDK used by regeneration and tests in `global.json`; run these commands from the repository root.
+
 The whole endpoint surface is generated from the committed spec snapshot `spec/v2.json`:
 
 ```bash

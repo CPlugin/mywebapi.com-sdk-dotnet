@@ -10,6 +10,7 @@
 
 using System.Text;
 using System.Text.Json;
+using System.Diagnostics.CodeAnalysis;
 
 if (args.Length != 2)
 {
@@ -402,7 +403,7 @@ internal sealed class Operation
         };
     }
 
-    private static bool TryRef(JsonElement schema, out string? name)
+    private static bool TryRef(JsonElement schema, [NotNullWhen(true)] out string? name)
     {
         name = null;
         if (schema.TryGetProperty("$ref", out var r))
