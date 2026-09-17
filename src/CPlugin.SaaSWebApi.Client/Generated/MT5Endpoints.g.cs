@@ -41,8 +41,9 @@ public sealed partial class MT5Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT5DealListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT5DealListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get a group by name</summary>
@@ -52,8 +53,9 @@ public sealed partial class MT5Endpoints
     public async Task<MT5ConGroup?> GroupGetAsync(string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/GroupGet/{Uri.EscapeDataString(group)}";
-        var env = await _connection.SendAsync<MT5ConGroupApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT5ConGroupApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Partially update a group</summary>
@@ -67,8 +69,9 @@ public sealed partial class MT5Endpoints
     public async Task<MT5ConGroup?> GroupRecordAsync(string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/GroupRecord/{Uri.EscapeDataString(group)}";
-        var env = await _connection.SendAsync<MT5ConGroupApiResponse>(new HttpMethod("PATCH"), url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT5ConGroupApiResponse>(new HttpMethod("PATCH"), url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get the current session manager</summary>
@@ -77,8 +80,9 @@ public sealed partial class MT5Endpoints
     public async Task<MT5ConManager?> ManagerCurrentAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/ManagerCurrent";
-        var env = await _connection.SendAsync<MT5ConManagerApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT5ConManagerApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>List orders by group</summary>
@@ -98,8 +102,9 @@ public sealed partial class MT5Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>List positions by group</summary>
@@ -119,8 +124,9 @@ public sealed partial class MT5Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT5PositionListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT5PositionListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get server time</summary>
@@ -129,8 +135,9 @@ public sealed partial class MT5Endpoints
     public async Task<DateTimeOffset> ServerTimeAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/ServerTime";
-        var env = await _connection.SendAsync<DateTimeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<DateTimeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Get a symbol by name</summary>
@@ -140,8 +147,9 @@ public sealed partial class MT5Endpoints
     public async Task<MT5Symbol?> SymbolGetAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/SymbolGet/{Uri.EscapeDataString(symbol)}";
-        var env = await _connection.SendAsync<MT5SymbolApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT5SymbolApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Partially update a symbol</summary>
@@ -155,8 +163,9 @@ public sealed partial class MT5Endpoints
     public async Task<MT5Symbol?> SymbolRecordAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/SymbolRecord/{Uri.EscapeDataString(symbol)}";
-        var env = await _connection.SendAsync<MT5SymbolApiResponse>(new HttpMethod("PATCH"), url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT5SymbolApiResponse>(new HttpMethod("PATCH"), url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get server time configuration</summary>
@@ -165,8 +174,9 @@ public sealed partial class MT5Endpoints
     public async Task<MT5Time?> TimeGetAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/TimeGet";
-        var env = await _connection.SendAsync<MT5TimeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT5TimeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get a user by login</summary>
@@ -176,8 +186,9 @@ public sealed partial class MT5Endpoints
     public async Task<MT5User?> UserGetAsync(long login, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/UserGet/{login.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT5UserApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT5UserApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Partially update a user</summary>
@@ -191,8 +202,9 @@ public sealed partial class MT5Endpoints
     public async Task<MT5User?> UserRecordAsync(long login, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/UserRecord/{login.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT5UserApiResponse>(new HttpMethod("PATCH"), url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT5UserApiResponse>(new HttpMethod("PATCH"), url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
 }

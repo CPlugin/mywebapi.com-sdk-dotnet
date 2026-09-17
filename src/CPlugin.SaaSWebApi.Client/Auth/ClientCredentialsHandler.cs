@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -10,8 +11,10 @@ namespace CPlugin.SaaSWebApi.Client.Auth;
 
 /// <summary>DelegatingHandler that acquires an OAuth2 client_credentials token
 /// from a discovery-derived token endpoint, attaches it to outgoing requests
-/// as <c>Authorization: Bearer</c>, and on a 401 invalidates the cache and
-/// retries the request exactly once with a fresh token.</summary>
+/// as <c>Authorization: Bearer</c>; a 401 invalidates the cached token, but only
+/// safe GET/HEAD/OPTIONS requests are replayed once with a fresh token. Unsafe
+/// requests are returned to the caller without replay because the server may have
+/// applied their side effect before returning the 401.</summary>
 public sealed class ClientCredentialsHandler : DelegatingHandler
 {
     private readonly TokenCache _tokenCache;
@@ -49,14 +52,16 @@ public sealed class ClientCredentialsHandler : DelegatingHandler
         var response = await base.SendAsync(request, ct).ConfigureAwait(false);
         if (response.StatusCode != HttpStatusCode.Unauthorized) return response;
 
-        response.Dispose();
+        // Invalidate a stale token for the next request, but never replay a write after
+        // a 401: the server may have applied the mutation before returning the response.
         _tokenCache.Invalidate();
+        if (!IsSafeMethod(request.Method)) return response;
+
+        response.Dispose();
         var fresh = await _tokenCache.GetAsync(AcquireTokenAsync, forceRefresh: true, ct)
                                      .ConfigureAwait(false);
 
-        // ! HttpRequestMessage cannot be sent twice — must clone before retry.
-        // *   We buffer the body bytes once; for streaming bodies that's the
-        // *   only safe way (the original stream may be at EOF after the first send).
+        // HttpRequestMessage cannot be sent twice — clone before the safe-method retry.
         var clone = await CloneRequestAsync(request, ct).ConfigureAwait(false);
         clone.Headers.Authorization = new AuthenticationHeaderValue("Bearer", fresh);
         return await base.SendAsync(clone, ct).ConfigureAwait(false);
@@ -64,27 +69,54 @@ public sealed class ClientCredentialsHandler : DelegatingHandler
 
     private async Task<TokenCache.CachedToken> AcquireTokenAsync(CancellationToken ct)
     {
-        var disco = await _discovery.GetAsync(ct).ConfigureAwait(false);
-        var request = new ClientCredentialsTokenRequest
+        try
         {
-            Address = disco.TokenEndpoint,
-            ClientId = _clientId,
-            ClientSecret = _clientSecret,
-            Scope = _scopes is { Length: > 0 } s ? string.Join(" ", s) : null,
-        };
-        var response = await _tokenHttp.RequestClientCredentialsTokenAsync(request, ct)
-                                       .ConfigureAwait(false);
-        if (response.IsError)
-        {
-            throw new OAuth2TokenException(
-                error: response.Error,
-                errorDescription: response.ErrorDescription,
-                statusCode: response.HttpStatusCode);
+            var disco = await _discovery.GetAsync(ct).ConfigureAwait(false);
+            var request = new ClientCredentialsTokenRequest
+            {
+                Address = disco.TokenEndpoint,
+                ClientId = _clientId,
+                ClientSecret = _clientSecret,
+                Scope = _scopes is { Length: > 0 } s ? string.Join(" ", s) : null,
+            };
+            var response = await _tokenHttp.RequestClientCredentialsTokenAsync(request, ct)
+                                           .ConfigureAwait(false);
+            if (response.IsError)
+            {
+                throw new OAuth2TokenException(
+                    error: response.Error,
+                    errorDescription: response.ErrorDescription,
+                    statusCode: response.HttpStatusCode);
+            }
+            return new TokenCache.CachedToken(
+                response.AccessToken!,
+                DateTimeOffset.UtcNow.AddSeconds(response.ExpiresIn));
         }
-        return new TokenCache.CachedToken(
-            response.AccessToken!,
-            DateTimeOffset.UtcNow.AddSeconds(response.ExpiresIn));
+        catch
+        {
+            _discovery.Invalidate();
+            throw;
+        }
     }
+
+    private static bool IsSafeMethod(HttpMethod method) =>
+        string.Equals(method.Method, "GET", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(method.Method, "HEAD", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(method.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase);
+
+#if NETSTANDARD2_0
+    private static async Task DisposeWhenReadyAsync(Task<Stream> readTask)
+    {
+        try
+        {
+            using var stream = await readTask.ConfigureAwait(false);
+        }
+        catch
+        {
+            // The caller already observed cancellation; consume late acquisition faults.
+        }
+    }
+#endif
 
     private static async Task<HttpRequestMessage> CloneRequestAsync(HttpRequestMessage request, CancellationToken ct)
     {
@@ -94,13 +126,28 @@ public sealed class ClientCredentialsHandler : DelegatingHandler
 
         if (request.Content is not null)
         {
-            // * ReadAsByteArrayAsync(CancellationToken) overload exists only on .NET 5+.
-            // *   netstandard2.1 falls back to the parameterless overload — callers can
-            // *   still cancel via the outer task chain.
-#if NET8_0_OR_GREATER
-            var bytes = await request.Content.ReadAsByteArrayAsync(ct).ConfigureAwait(false);
+#if NETSTANDARD2_0
+            // netstandard2.0 has no cancellable ReadAsStreamAsync overload. Race the
+            // non-cancellable stream acquisition against caller cancellation. The
+            // registration is disposed when this method exits; a late stream is
+            // disposed by DisposeWhenReadyAsync instead of being leaked.
+            ct.ThrowIfCancellationRequested();
+            var readTask = request.Content.ReadAsStreamAsync();
+            var cancellation = new TaskCompletionSource<bool>(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            using var registration = ct.Register(
+                static state => ((TaskCompletionSource<bool>)state!).TrySetResult(true), cancellation);
+            if (await Task.WhenAny(readTask, cancellation.Task).ConfigureAwait(false) != readTask)
+            {
+                _ = DisposeWhenReadyAsync(readTask);
+                ct.ThrowIfCancellationRequested();
+            }
+            using var source = await readTask.ConfigureAwait(false);
+            using var destination = new MemoryStream();
+            await source.CopyToAsync(destination, 81920, ct).ConfigureAwait(false);
+            var bytes = destination.ToArray();
 #else
-            var bytes = await request.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+            var bytes = await request.Content.ReadAsByteArrayAsync(ct).ConfigureAwait(false);
 #endif
             var copy = new ByteArrayContent(bytes);
             foreach (var h in request.Content.Headers)

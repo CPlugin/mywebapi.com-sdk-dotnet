@@ -1,6 +1,6 @@
 name: Publish to NuGet.org
 
-# * Triggered by pushing a version tag (e.g. v0.1.0, v1.2.3).
+# * Triggered by pushing the release version tag (for example v0.2.0).
 # * Authenticates via NuGet Trusted Publishing (OIDC): NuGet/login exchanges the
 #   GitHub OIDC token for a short-lived (~1h) API key — no long-lived secret to
 #   store or rotate. Requires:
@@ -8,9 +8,8 @@ name: Publish to NuGet.org
 #        Workflow File = publish.yml / Environment = nuget) — see PUBLISHING.md;
 #     2. a GitHub Environment named `nuget` with the secret NUGET_USER set to the
 #        nuget.org profile name (NOT the email).
-# * The package version comes from the tag (v1.2.3 -> 1.2.3), overriding the
-#   <Version> in Directory.Build.props — the tag is the single source of truth
-#   for what gets published.
+# * The semver tag must match Directory.Build.props; the tag and package metadata
+#   are checked before any NuGet login or push.
 
 on:
   push:
@@ -33,26 +32,331 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
-      - name: Derive version from tag
-        # * GITHUB_REF_NAME is trusted here: the workflow only runs on tags the
-        #   repo owners push, and the value is validated against semver below.
+      - name: Derive and verify version from tag
         run: |
+          set -euo pipefail
           VERSION="${GITHUB_REF_NAME#v}"
           echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$' \
             || { echo "Tag '$GITHUB_REF_NAME' is not a semver version tag" >&2; exit 1; }
+          SOURCE_VERSION="$(python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          root = ET.parse("Directory.Build.props").getroot()
+          version = root.findtext("./PropertyGroup/Version")
+          if not version:
+              raise SystemExit("Directory.Build.props does not declare Version")
+          print(version)
+          PY
+          )"
+          if [[ "$VERSION" != "$SOURCE_VERSION" ]]; then
+            echo "tag version $VERSION does not match Directory.Build.props version $SOURCE_VERSION" >&2
+            exit 1
+          fi
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+      - name: Restore
+        run: dotnet restore CPlugin.SaaSWebApi.Client.sln
 
       - name: Build (Release)
-        run: dotnet build CPlugin.SaaSWebApi.Client.sln -c Release -p:Version="$VERSION" -p:ContinuousIntegrationBuild=true
+        run: dotnet build CPlugin.SaaSWebApi.Client.sln -c Release --no-restore -p:Version="$VERSION" -p:ContinuousIntegrationBuild=true
 
       - name: Test
         # * Hermetic suite only — the E2E class self-skips without WEBAPI_E2E.
         run: dotnet test tests/CPlugin.SaaSWebApi.Client.Tests/CPlugin.SaaSWebApi.Client.Tests.csproj -c Release --no-build
 
+      - name: Netstandard cancellation probe
+        run: |
+          dotnet restore ci/NetstandardCancellationProbe/NetstandardCancellationProbe.csproj -p:Version="$VERSION" -p:SdkRoot="$GITHUB_WORKSPACE/src/CPlugin.SaaSWebApi.Client/bin/Release/netstandard2.0" --source https://api.nuget.org/v3/index.json
+          dotnet run --project ci/NetstandardCancellationProbe/NetstandardCancellationProbe.csproj -c Release --no-restore -p:Version="$VERSION" -p:SdkRoot="$GITHUB_WORKSPACE/src/CPlugin.SaaSWebApi.Client/bin/Release/netstandard2.0"
+
       - name: Pack
         run: |
           dotnet pack src/CPlugin.SaaSWebApi.Models/CPlugin.SaaSWebApi.Models.csproj -c Release --no-build -p:Version="$VERSION" -o nupkgs
           dotnet pack src/CPlugin.SaaSWebApi.Client/CPlugin.SaaSWebApi.Client.csproj -c Release --no-build -p:Version="$VERSION" -o nupkgs
+
+      - name: Consumer smoke (packed NuGet artifacts)
+        env:
+          NUGET_PACKAGES: ${{ runner.temp }}/dotnet-consumer-nuget
+        run: |
+          set -euo pipefail
+          rm -rf "$NUGET_PACKAGES" ci/PackageConsumer/obj ci/PackageConsumer/bin
+          mkdir -p "$NUGET_PACKAGES"
+          dotnet restore ci/PackageConsumer/FixedArtifactConsumer.csproj -p:SdkVersion="$VERSION" --packages "$NUGET_PACKAGES" --no-cache --force-evaluate --source "$GITHUB_WORKSPACE/nupkgs" --source https://api.nuget.org/v3/index.json
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+          import zipfile
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          from urllib.parse import unquote, urlparse
+
+          def fail(message):
+              print(message, file=sys.stderr)
+              raise SystemExit(1)
+
+          version = os.environ["VERSION"]
+          artifact_dir = Path("nupkgs").resolve()
+          packages = sorted(artifact_dir.glob("*.nupkg"))
+          expected_ids = {"MyWebApi.Sdk", "MyWebApi.Sdk.Models"}
+          if not packages:
+              fail("no packed .nupkg artifacts found")
+          seen_ids = set()
+          for package in packages:
+              if package.stat().st_size <= 0:
+                  fail(f"empty package artifact: {package}")
+              with zipfile.ZipFile(package) as archive:
+                  nuspecs = [name for name in archive.namelist() if name.endswith(".nuspec")]
+                  if len(nuspecs) != 1:
+                      fail(f"expected one nuspec in {package}, found {nuspecs}")
+                  root = ET.fromstring(archive.read(nuspecs[0]))
+                  metadata = next((element for element in root.iter() if element.tag.rsplit("}", 1)[-1] == "metadata"), None)
+                  package_id = next((element.text for element in metadata if element.tag.rsplit("}", 1)[-1] == "id"), None) if metadata is not None else None
+                  package_version = next((element.text for element in metadata if element.tag.rsplit("}", 1)[-1] == "version"), None) if metadata is not None else None
+                  if package_id not in expected_ids or package_version != version:
+                      fail(f"unexpected package metadata in {package}: {package_id} {package_version}")
+                  seen_ids.add(package_id)
+          if seen_ids != expected_ids:
+              fail(f"packed package set mismatch: {seen_ids}")
+
+          assets = json.loads(Path("ci/PackageConsumer/obj/project.assets.json").read_text())
+          libraries = assets.get("libraries", {})
+          for package_id in sorted(expected_ids):
+              key = f"{package_id}/{version}"
+              library = libraries.get(key)
+              if not library or library.get("path") != f"{package_id.lower()}/{version}":
+                  fail(f"consumer assets missing or mismatched {key}")
+              package_dir = Path(os.environ["NUGET_PACKAGES"]) / package_id.lower() / version
+              metadata_file = package_dir / ".nupkg.metadata"
+              if not metadata_file.is_file():
+                  fail(f"missing NuGet package metadata: {metadata_file}")
+              source = json.loads(metadata_file.read_text()).get("source", "")
+              source_path = Path(unquote(urlparse(source).path)) if source.startswith("file:") else Path(source)
+              if source_path.resolve() != artifact_dir:
+                  fail(f"{key} resolved from {source!r}, expected {artifact_dir}")
+          print(f"verified {len(packages)} packed artifacts at tag version {version} and local-source consumer resolution")
+          PY
+          export SDK_VERSION="$VERSION"
+          dotnet run --project ci/PackageConsumer/FixedArtifactConsumer.csproj -p:SdkVersion="$VERSION" --no-restore
+      - name: Build packed SDK dependency snapshots (net8.0 and netstandard2.0)
+        env:
+          NUGET_PACKAGES: ${{ runner.temp }}/dotnet-consumer-nuget
+        run: |
+          set -euo pipefail
+          rm -rf ci/PackageDependencySnapshot/obj ci/PackageDependencySnapshot/bin
+          dotnet restore ci/PackageDependencySnapshot/PackageDependencySnapshot.csproj -p:SdkVersion="$VERSION" --packages "$NUGET_PACKAGES" --no-cache --force-evaluate --source "$GITHUB_WORKSPACE/nupkgs" --source https://api.nuget.org/v3/index.json
+          dotnet build ci/PackageDependencySnapshot/PackageDependencySnapshot.csproj -c Release --no-restore -p:SdkVersion="$VERSION"
+
+      - name: Dependency vulnerability audit
+        run: |
+          set -euo pipefail
+          dotnet list CPlugin.SaaSWebApi.Client.sln package --vulnerable --include-transitive --format json --source https://api.nuget.org/v3/index.json > vulnerability-report.json
+          python3 - <<'PY'
+          import json
+          import sys
+
+          with open("vulnerability-report.json", encoding="utf-8") as report_file:
+              report = json.load(report_file)
+          findings = []
+          def walk(value, path="root"):
+              if isinstance(value, dict):
+                  vulnerabilities = value.get("vulnerabilities")
+                  if vulnerabilities:
+                      findings.append((path, vulnerabilities))
+                  for key, child in value.items():
+                      walk(child, f"{path}.{key}")
+              elif isinstance(value, list):
+                  for index, child in enumerate(value):
+                      walk(child, f"{path}[{index}]")
+          walk(report)
+          if findings:
+              print(json.dumps({"vulnerabilities": findings}, indent=2), file=sys.stderr)
+              raise SystemExit(1)
+          print("dependency vulnerability report is clean")
+          PY
+
+      - name: Upload dependency audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-vulnerability-report
+          path: vulnerability-report.json
+          if-no-files-found: warn
+
+      - name: Install pinned gitleaks CLI
+        run: |
+          set -euo pipefail
+          version=8.28.0
+          archive="$RUNNER_TEMP/gitleaks_${version}_linux_x64.tar.gz"
+          work="$RUNNER_TEMP/gitleaks"
+          url="https://github.com/gitleaks/gitleaks/releases/download/v${version}/gitleaks_${version}_linux_x64.tar.gz"
+          expected="a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb"
+          rm -rf "$work"
+          mkdir -p "$work/unpacked" "$work/bin"
+          curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 "$url" -o "$archive"
+          printf '%s  %s\n' "$expected" "$archive" | sha256sum --check --status
+          tar -xzf "$archive" -C "$work/unpacked"
+          test -f "$work/unpacked/gitleaks"
+          install -m 0755 "$work/unpacked/gitleaks" "$work/bin/gitleaks"
+          echo "$work/bin" >> "$GITHUB_PATH"
+          "$work/bin/gitleaks" version
+
+      - name: Prepare packed artifacts for secret scan
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import shutil
+          import sys
+          import zipfile
+          from pathlib import Path
+
+          source = Path("nupkgs").resolve()
+          target = Path("packed-artifact-scan").resolve()
+          shutil.rmtree(target, ignore_errors=True)
+          target.mkdir()
+          archives = sorted(source.glob("*.nupkg")) + sorted(source.glob("*.snupkg"))
+          if not archives:
+              raise SystemExit("no packed NuGet archives to scan")
+          packed_bytes = 0
+          extracted_bytes = 0
+          for archive in archives:
+              size = archive.stat().st_size
+              if size <= 0:
+                  raise SystemExit(f"empty package archive: {archive}")
+              packed_bytes += size
+              destination = target / archive.name.replace(".", "_")
+              destination.mkdir()
+              with zipfile.ZipFile(archive) as package:
+                  root = destination.resolve()
+                  for member in package.infolist():
+                      member_path = (destination / member.filename).resolve()
+                      if member_path != root and root not in member_path.parents:
+                          raise SystemExit(f"archive path escapes extraction root: {archive}!{member.filename}")
+                  package.extractall(destination)
+              extracted = sum(path.stat().st_size for path in destination.rglob("*") if path.is_file())
+              if extracted <= 0:
+                  raise SystemExit(f"empty extracted package: {archive}")
+              extracted_bytes += extracted
+          if packed_bytes <= 0 or extracted_bytes <= 0:
+              raise SystemExit("zero package bytes selected for secret scan")
+          print(f"packed artifact bytes selected: {packed_bytes}; extracted bytes selected: {extracted_bytes}; archives: {len(archives)}")
+          PY
+
+      - name: Secret scan (packed artifact contents)
+        run: |
+          set -euo pipefail
+          log="$RUNNER_TEMP/gitleaks-packed.log"
+          gitleaks detect --source packed-artifact-scan --no-git --redact --verbose 2>&1 | tee "$log"
+          python3 - "$log" <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+          text = Path(sys.argv[1]).read_text(encoding="utf-8")
+          match = re.search(r"scanned\s+~?\s*([0-9]+(?:[.,][0-9]+)?)\s*(B|KB|MB|GB|bytes)", text, re.IGNORECASE)
+          if not match or float(match.group(1).replace(",", ".")) <= 0:
+              raise SystemExit("gitleaks output did not prove nonzero bytes scanned for packed artifacts")
+          print(f"gitleaks packed scan bytes: {match.group(1)} {match.group(2)}")
+          PY
+
+      - name: Secret scan (repository)
+        run: |
+          set -euo pipefail
+          log="$RUNNER_TEMP/gitleaks-repository.log"
+          gitleaks detect --source . --no-git --redact --verbose 2>&1 | tee "$log"
+          python3 - "$log" <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+          text = Path(sys.argv[1]).read_text(encoding="utf-8")
+          match = re.search(r"scanned\s+~?\s*([0-9]+(?:[.,][0-9]+)?)\s*(B|KB|MB|GB|bytes)", text, re.IGNORECASE)
+          if not match or float(match.group(1).replace(",", ".")) <= 0:
+              raise SystemExit("gitleaks output did not prove nonzero bytes scanned for repository")
+          print(f"gitleaks repository scan bytes: {match.group(1)} {match.group(2)}")
+          PY
+
+      - name: Prepare packed consumer closure for SBOM
+        env:
+          NUGET_PACKAGES: ${{ runner.temp }}/dotnet-consumer-nuget
+          SBOM_INPUT: ${{ runner.temp }}/dotnet-consumer-sbom-input
+        run: |
+          set -euo pipefail
+          rm -rf "$SBOM_INPUT"
+          mkdir -p "$SBOM_INPUT/nuget-packages"
+          test -s ci/PackageConsumer/obj/project.assets.json
+          test -s ci/PackageDependencySnapshot/obj/project.assets.json
+          test -d ci/PackageConsumer/bin
+          test -d ci/PackageDependencySnapshot/bin
+          test -d "$NUGET_PACKAGES"
+          cp ci/PackageConsumer/obj/project.assets.json "$SBOM_INPUT/consumer-project.assets.json"
+          cp ci/PackageDependencySnapshot/obj/project.assets.json "$SBOM_INPUT/snapshot-project.assets.json"
+          cp -a ci/PackageConsumer/bin "$SBOM_INPUT/consumer-bin"
+          cp -a ci/PackageDependencySnapshot/bin "$SBOM_INPUT/snapshot-bin"
+          cp -a nupkgs "$SBOM_INPUT/packed-sdk"
+          python3 - <<'PY'
+          import json
+          import os
+          import shutil
+          from pathlib import Path
+          version = os.environ["VERSION"]
+          packages_root = Path(os.environ["NUGET_PACKAGES"])
+          input_root = Path(os.environ["SBOM_INPUT"])
+          asset_files = [Path("ci/PackageConsumer/obj/project.assets.json"), Path("ci/PackageDependencySnapshot/obj/project.assets.json")]
+          all_libraries = {}
+          for asset_file in asset_files:
+              assets = json.loads(asset_file.read_text())
+              all_libraries.update(assets.get("libraries", {}))
+          for key, metadata in all_libraries.items():
+              if metadata.get("type") != "package" or "/" not in key:
+                  continue
+              package_id, package_version = key.split("/", 1)
+              source = packages_root / package_id.lower() / package_version
+              destination = input_root / "nuget-packages" / package_id.lower() / package_version
+              if not source.is_dir():
+                  raise SystemExit(f"resolved package missing from isolated cache: {key}")
+              destination.parent.mkdir(parents=True, exist_ok=True)
+              if not destination.exists():
+                  shutil.copytree(source, destination)
+          consumer = json.loads(Path("ci/PackageConsumer/obj/project.assets.json").read_text())
+          snapshot = json.loads(Path("ci/PackageDependencySnapshot/obj/project.assets.json").read_text())
+          expected_sdk = {"mywebapi.sdk", "mywebapi.sdk.models"}
+          consumer_keys = {key.lower() for key in consumer.get("libraries", {})}
+          if any(f"{package_id}/{version}" not in consumer_keys for package_id in expected_sdk):
+              raise SystemExit(f"consumer graph does not resolve SDK packages at {version}")
+          snapshot_targets = {name.lower(): {key.lower() for key in target} for name, target in snapshot.get("targets", {}).items()}
+          for tfm in ("net8.0", "netstandard2.0"):
+              target = next((libraries for name, libraries in snapshot_targets.items() if name == tfm or name.endswith("/" + tfm)), None)
+              if target is None or not any(key.startswith(f"mywebapi.sdk/{version}") for key in target):
+                  raise SystemExit(f"snapshot graph missing MyWebApi.Sdk/{version} for {tfm}")
+          ns2 = next((libraries for name, libraries in snapshot_targets.items() if name.endswith("/netstandard2.0")), None)
+          required_ns2 = {"system.net.http.json/8.0.1", "microsoft.bcl.asyncinterfaces/8.0.0"}
+          if ns2 is None or not required_ns2 <= {key.split("/")[0] + "/" + key.split("/")[1] for key in ns2}:
+              raise SystemExit("netstandard2.0 snapshot omitted required package dependencies")
+          print(f"SBOM input contains isolated net8.0/netstandard2.0 package closure at {version}")
+          PY
+
+      - name: Generate SBOM (packed consumer closure)
+        uses: anchore/sbom-action@v0
+        with:
+          path: ${{ runner.temp }}/dotnet-consumer-sbom-input
+          artifact-name: dotnet-sdk-sbom.spdx.json
+          output-file: dotnet-sdk-sbom.spdx.json
+
+      - name: Verify SBOM covers packed consumer closure
+        env:
+          SBOM_FILE: dotnet-sdk-sbom.spdx.json
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          report = json.loads(open(os.environ["SBOM_FILE"], encoding="utf-8").read())
+          packages = report.get("packages", [])
+          version = os.environ["VERSION"]
+          expected = {("mywebapi.sdk", version), ("mywebapi.sdk.models", version), ("system.net.http.json", "8.0.1"), ("microsoft.bcl.asyncinterfaces", "8.0.0")}
+          found = {(str(item.get("name", "")).lower(), str(item.get("versionInfo", ""))) for item in packages}
+          missing = sorted(expected - found)
+          if missing:
+              raise SystemExit(f"SBOM does not contain isolated packed consumer dependency closure: {missing}")
+          print(f"SBOM covers packed consumer net8.0/netstandard2.0 closure at {version}")
+          PY
 
       - name: NuGet login (OIDC → temp API key)
         uses: NuGet/login@v1
@@ -63,16 +367,16 @@ jobs:
 
       - name: Push packages
         # ! Request the key right before pushing — it expires in ~1 hour.
-        # * --skip-duplicate makes tag re-runs idempotent (already-published
-        #   versions are skipped instead of failing the job).
+        # * A duplicate immutable version must fail closed; tag reruns must not hide a collision.
         env:
           NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
         run: |
-          for pkg in nupkgs/*.nupkg; do
+          for pkg in \
+            "nupkgs/MyWebApi.Sdk.Models.$VERSION.nupkg" \
+            "nupkgs/MyWebApi.Sdk.$VERSION.nupkg"; do
             dotnet nuget push "$pkg" \
               --api-key "$NUGET_API_KEY" \
-              --source https://api.nuget.org/v3/index.json \
-              --skip-duplicate
+              --source https://api.nuget.org/v3/index.json
           done
 
       - name: Upload packages artifact

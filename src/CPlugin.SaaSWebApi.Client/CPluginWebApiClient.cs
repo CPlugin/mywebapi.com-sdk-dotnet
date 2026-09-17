@@ -13,8 +13,8 @@ namespace CPlugin.SaaSWebApi.Client;
 /// platform management for .NET.</summary>
 /// <remarks>
 /// <para>Pick an environment, supply client credentials once — token acquisition
-/// (OAuth2 client_credentials), caching, refresh-before-expiry and retry-on-401 are
-/// handled transparently. Discover platforms via <see cref="ListTradePlatformsAsync"/>,
+/// (OAuth2 client_credentials), caching, refresh-before-expiry and safe-method-only 401
+/// replay are handled transparently. Discover platforms via <see cref="ListTradePlatformsAsync"/>,
 /// then access every v2 endpoint through <see cref="MT4"/> / <see cref="MT5"/>.</para>
 /// <code>
 /// using var client = new CPluginWebApiClient(CPluginEnvironment.Prod, clientId, clientSecret);

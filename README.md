@@ -4,7 +4,7 @@
 
 Two NuGet packages, one version and release cycle (root namespaces in code are `CPlugin.SaaSWebApi.*`):
 
-- **`MyWebApi.Sdk`** — the full SDK: `CPluginWebApiClient` with a generated method for **every** v2 endpoint across both supported platform families, OAuth2 client_credentials with transparent refresh and 401 retry, typed `ApiError`, cursor pagination, SignalR real-time clients with auto-reconnect, optional DI integration.
+- **`MyWebApi.Sdk`** — the full SDK: `CPluginWebApiClient` with a generated method for **every** v2 endpoint across both supported platform families, OAuth2 client_credentials with transparent refresh, safe-method-only 401 replay, typed `ApiError`, cursor pagination, SignalR real-time clients with auto-reconnect, optional DI integration.
 - **`MyWebApi.Sdk.Models`** — generated POCO DTOs + v2 response envelopes only. Zero dependencies beyond `System.Text.Json`. Use this when you build your own HTTP layer.
 
 ## Install
@@ -45,7 +45,7 @@ var time = await mt4.ServerTimeAsync();          // token acquisition + refresh 
 var user = await mt4.UserRecordGetAsync(1001);   // typed DTOs with XML-doc from the API spec
 ```
 
-Token management (OAuth2 client_credentials flow) is fully automatic: lazy acquisition on first call, caching with expiry skew, single-flight refresh, and one retry on `401`.
+Token management (OAuth2 client_credentials flow) is fully automatic: lazy acquisition on first call, bounded discovery caching with invalidation after failures, expiry skew, single-flight refresh, and one 401 retry only for GET/HEAD/OPTIONS. Unsafe requests are never replayed after a 401.
 
 ### DI (recommended for ASP.NET Core hosts)
 
@@ -67,7 +67,7 @@ public sealed class MyService(CPluginWebApiClient client)
 }
 ```
 
-The DI extension wires `IHttpClientFactory`-backed HttpClients, the OAuth2 handler chain, and `AddStandardResilienceHandler` (retries with jitter + circuit breaker). Options are validated on first resolution and surface as `OptionsValidationException`.
+The DI extension wires `IHttpClientFactory`-backed HttpClients, the OAuth2 handler chain, and a bounded resilience pipeline that retries only GET/HEAD/OPTIONS on transient HTTP status responses; unsafe methods are never repeated automatically. Options are validated on first resolution and surface as `OptionsValidationException`.
 
 ### Static token (advanced / testing)
 

@@ -44,8 +44,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4BalanceDiffListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4BalanceDiff>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4BalanceDiff>();
+        var result = await _connection.SendAsync<MT4BalanceDiffListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4BalanceDiff>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4BalanceDiff>();
     }
 
     /// <summary>Check account balance</summary>
@@ -68,8 +69,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4BalanceDiff?> AdmBalanceCheckByLoginAsync(int login, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/AdmBalanceCheck/{login.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4BalanceDiffApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4BalanceDiffApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Fix account balances</summary>
@@ -97,8 +99,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Modify trade record (admin)</summary>
@@ -130,8 +133,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4Trade?> AdmTradeRecordModifyAsync(int ticket, MT4TradeUpdate body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/AdmTradeRecordModify/{ticket.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4TradeApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4TradeApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Delete trades (admin)</summary>
@@ -158,8 +162,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (orders is not null) foreach (var v in orders) qs.Add("orders=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>List group trades (admin)</summary>
@@ -181,8 +186,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (openOnly is not null) qs.Add("openOnly=" + (openOnly.Value ? "true" : "false"));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4Trade>();
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>List group accounts (admin)</summary>
@@ -206,8 +212,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4User>> AdmUsersRequestSafeAsync(string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/AdmUsersRequestSafe/{Uri.EscapeDataString(group)}";
-        var env = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4User>();
+        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4User>();
     }
 
     /// <summary>List order backup files</summary>
@@ -225,8 +232,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4BackupInfo>> BackupInfoOrdersAsync(int mode, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/BackupInfoOrders/{mode.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4BackupInfoListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4BackupInfo>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4BackupInfo>();
+        var result = await _connection.SendAsync<MT4BackupInfoListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4BackupInfo>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4BackupInfo>();
     }
 
     /// <summary>List user backup files</summary>
@@ -248,8 +256,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4BackupInfo>> BackupInfoUsersAsync(int mode, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/BackupInfoUsers/{mode.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4BackupInfoListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4BackupInfo>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4BackupInfo>();
+        var result = await _connection.SendAsync<MT4BackupInfoListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4BackupInfo>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4BackupInfo>();
     }
 
     /// <summary>Read orders from backup</summary>
@@ -274,8 +283,9 @@ public sealed partial class MT4Endpoints
         if (request is not null) qs.Add("request=" + Uri.EscapeDataString(request));
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4Trade>();
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>Read users from backup</summary>
@@ -310,8 +320,9 @@ public sealed partial class MT4Endpoints
         if (request is not null) qs.Add("request=" + Uri.EscapeDataString(request));
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4User>();
+        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4User>();
     }
 
     /// <summary>Restore orders from backup</summary>
@@ -338,8 +349,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (confirm is not null) qs.Add("confirm=" + (confirm.Value ? "true" : "false"));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4TradeRestoreResultListApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4TradeRestoreResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4TradeRestoreResult>();
+        var result = await _connection.SendAsync<MT4TradeRestoreResultListApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4TradeRestoreResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4TradeRestoreResult>();
     }
 
     /// <summary>Restore users from backup</summary>
@@ -369,8 +381,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (confirm is not null) qs.Add("confirm=" + (confirm.Value ? "true" : "false"));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Delete IP firewall rule</summary>
@@ -388,8 +401,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> CfgDeleteAccessAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteAccess/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Delete data-server entry</summary>
@@ -402,8 +416,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> CfgDeleteDataServerAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteDataServer/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Delete feeder config</summary>
@@ -416,8 +431,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> CfgDeleteFeederAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteFeeder/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Delete gateway account</summary>
@@ -430,8 +446,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> CfgDeleteGatewayAccountAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteGatewayAccount/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Delete gateway markup</summary>
@@ -444,8 +461,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> CfgDeleteGatewayMarkupAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteGatewayMarkup/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Delete gateway rule</summary>
@@ -458,8 +476,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> CfgDeleteGatewayRuleAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteGatewayRule/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Delete holiday entry</summary>
@@ -472,8 +491,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> CfgDeleteHolidayAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteHoliday/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Delete LiveUpdate config</summary>
@@ -486,8 +506,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> CfgDeleteLiveUpdateAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteLiveUpdate/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Delete manager config</summary>
@@ -500,8 +521,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> CfgDeleteManagerAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteManager/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Delete symbol config</summary>
@@ -514,8 +536,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> CfgDeleteSymbolAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteSymbol/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Delete sync rule</summary>
@@ -528,8 +551,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> CfgDeleteSyncAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteSync/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>List IP firewall rules</summary>
@@ -555,8 +579,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4AccessListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4AccessListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get backup config</summary>
@@ -575,8 +600,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4Backup?> CfgRequestBackupAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgRequestBackup";
-        var env = await _connection.SendAsync<MT4BackupApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4BackupApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get common config (live)</summary>
@@ -594,8 +620,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4Common?> CfgRequestCommonAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgRequestCommon";
-        var env = await _connection.SendAsync<MT4CommonApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4CommonApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>List data servers</summary>
@@ -619,8 +646,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4DataServerListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4DataServerListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>List feeder configs</summary>
@@ -645,8 +673,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4FeederListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4FeederListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>List gateway accounts</summary>
@@ -672,8 +701,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4GatewayAccountListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4GatewayAccountListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>List gateway markups</summary>
@@ -698,8 +728,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4GatewayMarkupListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4GatewayMarkupListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>List gateway rules</summary>
@@ -723,8 +754,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4GatewayRuleListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4GatewayRuleListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>List holiday config</summary>
@@ -754,8 +786,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4HolidayListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4HolidayListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>List LiveUpdate configs</summary>
@@ -779,8 +812,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4LiveUpdateListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4LiveUpdateListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>List manager configs</summary>
@@ -804,8 +838,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4ManagerRightsListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4ManagerRightsListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get plugin config (live)</summary>
@@ -822,8 +857,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4PluginParam>> CfgRequestPluginAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgRequestPlugin";
-        var env = await _connection.SendAsync<MT4PluginParamListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4PluginParam>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4PluginParam>();
+        var result = await _connection.SendAsync<MT4PluginParamListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4PluginParam>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4PluginParam>();
     }
 
     /// <summary>List symbol configs</summary>
@@ -839,8 +875,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4SymbolConfig>> CfgRequestSymbolAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgRequestSymbol";
-        var env = await _connection.SendAsync<MT4SymbolConfigListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4SymbolConfig>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4SymbolConfig>();
+        var result = await _connection.SendAsync<MT4SymbolConfigListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4SymbolConfig>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4SymbolConfig>();
     }
 
     /// <summary>Get symbol config</summary>
@@ -857,8 +894,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4SymbolConfig?> CfgRequestSymbolBySymbolAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgRequestSymbol/{Uri.EscapeDataString(symbol)}";
-        var env = await _connection.SendAsync<MT4SymbolConfigApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4SymbolConfigApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>List sync rules</summary>
@@ -883,8 +921,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4SyncListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4SyncListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get access-hour matrix</summary>
@@ -903,8 +942,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4ServerTime?> CfgRequestTimeAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgRequestTime";
-        var env = await _connection.SendAsync<MT4ServerTimeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4ServerTimeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Reorder IP firewall rule</summary>
@@ -921,8 +961,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Reorder data-server entry</summary>
@@ -939,8 +980,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Reorder feeder config</summary>
@@ -957,8 +999,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Reorder gateway account</summary>
@@ -975,8 +1018,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Reorder gateway markup</summary>
@@ -993,8 +1037,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Reorder gateway rule</summary>
@@ -1011,8 +1056,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Reorder trading group</summary>
@@ -1029,8 +1075,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Reorder holiday entry</summary>
@@ -1047,8 +1094,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Reorder LiveUpdate config</summary>
@@ -1065,8 +1113,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Reorder manager config</summary>
@@ -1083,8 +1132,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Reorder plugin entry</summary>
@@ -1105,8 +1155,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Reorder symbol entry</summary>
@@ -1123,8 +1174,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Reorder sync rule</summary>
@@ -1141,8 +1193,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Update IP firewall rule</summary>
@@ -1168,8 +1221,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4Access?> CfgUpdateAccessAsync(int pos, MT4Access body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateAccess/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4AccessApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4AccessApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Update backup config</summary>
@@ -1192,8 +1246,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4Backup?> CfgUpdateBackupAsync(MT4Backup body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateBackup";
-        var env = await _connection.SendAsync<MT4BackupApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4BackupApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Update common config</summary>
@@ -1222,8 +1277,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4Common?> CfgUpdateCommonAsync(MT4CommonUpdate body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateCommon";
-        var env = await _connection.SendAsync<MT4CommonApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4CommonApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Update data-server entry</summary>
@@ -1243,8 +1299,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4DataServer?> CfgUpdateDataServerAsync(int pos, MT4DataServer body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateDataServer/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4DataServerApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4DataServerApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Update feeder config</summary>
@@ -1263,8 +1320,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4Feeder?> CfgUpdateFeederAsync(MT4Feeder body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateFeeder";
-        var env = await _connection.SendAsync<MT4FeederApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4FeederApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Update gateway account</summary>
@@ -1286,8 +1344,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4GatewayAccount?> CfgUpdateGatewayAccountAsync(MT4GatewayAccount body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateGatewayAccount";
-        var env = await _connection.SendAsync<MT4GatewayAccountApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4GatewayAccountApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Update gateway markup</summary>
@@ -1307,8 +1366,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4GatewayMarkup?> CfgUpdateGatewayMarkupAsync(MT4GatewayMarkup body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateGatewayMarkup";
-        var env = await _connection.SendAsync<MT4GatewayMarkupApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4GatewayMarkupApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Update gateway rule</summary>
@@ -1327,8 +1387,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4GatewayRule?> CfgUpdateGatewayRuleAsync(MT4GatewayRule body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateGatewayRule";
-        var env = await _connection.SendAsync<MT4GatewayRuleApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4GatewayRuleApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Update holiday entry</summary>
@@ -1347,8 +1408,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4Holiday?> CfgUpdateHolidayAsync(int pos, MT4Holiday body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateHoliday/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4HolidayApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4HolidayApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Update LiveUpdate config</summary>
@@ -1369,8 +1431,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4LiveUpdate?> CfgUpdateLiveUpdateAsync(MT4LiveUpdate body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateLiveUpdate";
-        var env = await _connection.SendAsync<MT4LiveUpdateApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4LiveUpdateApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Update manager config</summary>
@@ -1397,8 +1460,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4ManagerRights?> CfgUpdateManagerAsync(MT4ManagerRights body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateManager";
-        var env = await _connection.SendAsync<MT4ManagerRightsApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4ManagerRightsApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Update plugin config</summary>
@@ -1416,8 +1480,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> CfgUpdatePluginAsync(MT4PluginParam body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdatePlugin";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Update symbol config</summary>
@@ -1442,8 +1507,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4SymbolConfig?> CfgUpdateSymbolAsync(string symbol, MT4SymbolConfigUpdate body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateSymbol/{Uri.EscapeDataString(symbol)}";
-        var env = await _connection.SendAsync<MT4SymbolConfigApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4SymbolConfigApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Update symbol group</summary>
@@ -1460,8 +1526,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4SymbolGroup?> CfgUpdateSymbolGroupAsync(int pos, MT4SymbolGroup body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateSymbolGroup/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4SymbolGroupApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4SymbolGroupApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Update sync rule</summary>
@@ -1483,8 +1550,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4Sync?> CfgUpdateSyncAsync(MT4Sync body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateSync";
-        var env = await _connection.SendAsync<MT4SyncApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4SyncApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Update access-hour matrix</summary>
@@ -1511,8 +1579,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4ServerTime?> CfgUpdateTimeAsync(MT4ServerTime body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateTime";
-        var env = await _connection.SendAsync<MT4ServerTimeApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4ServerTimeApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Add chart bars</summary>
@@ -1538,8 +1607,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (period is not null) qs.Add("period=" + Uri.EscapeDataString(period.Value.ToString()));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Delete chart bars</summary>
@@ -1565,8 +1635,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (period is not null) qs.Add("period=" + Uri.EscapeDataString(period.Value.ToString()));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Get chart bars</summary>
@@ -1595,8 +1666,9 @@ public sealed partial class MT4Endpoints
         if (end is not null) qs.Add("end=" + Uri.EscapeDataString(end.Value.ToString("O", CultureInfo.InvariantCulture)));
         if (mode is not null) qs.Add("mode=" + Uri.EscapeDataString(mode.Value.ToString()));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4ChartBarListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4ChartBar>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4ChartBar>();
+        var result = await _connection.SendAsync<MT4ChartBarListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4ChartBar>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4ChartBar>();
     }
 
     /// <summary>Update chart bars</summary>
@@ -1620,8 +1692,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (period is not null) qs.Add("period=" + Uri.EscapeDataString(period.Value.ToString()));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Get daily reports</summary>
@@ -1660,8 +1733,9 @@ public sealed partial class MT4Endpoints
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (name is not null) qs.Add("name=" + Uri.EscapeDataString(name));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4DailyReportListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4DailyReport>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4DailyReport>();
+        var result = await _connection.SendAsync<MT4DailyReportListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4DailyReport>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4DailyReport>();
     }
 
     /// <summary>Get daily reports (grouped)</summary>
@@ -1693,8 +1767,9 @@ public sealed partial class MT4Endpoints
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (name is not null) qs.Add("name=" + Uri.EscapeDataString(name));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<Int32MT4DailyReportListDictionaryApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<Int32MT4DailyReportListDictionaryApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Read daily-report sync</summary>
@@ -1715,8 +1790,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4DailyReport>> DailySyncReadAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/DailySyncRead";
-        var env = await _connection.SendAsync<MT4DailyReportListApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4DailyReport>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4DailyReport>();
+        var result = await _connection.SendAsync<MT4DailyReportListApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4DailyReport>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4DailyReport>();
     }
 
     /// <summary>Start daily-report sync</summary>
@@ -1744,8 +1820,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (timestamp is not null) qs.Add("timestamp=" + timestamp.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Check group exists</summary>
@@ -1769,8 +1846,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> EnsureGroupNameExistAsync(string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/EnsureGroupNameExist/{Uri.EscapeDataString(group)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Send plugin command (binary)</summary>
@@ -1805,8 +1883,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4ExternalCommandBinaryResponse?> ExternalCommandBinaryAsync(MT4ExternalCommandBinaryRequest body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/ExternalCommandBinary";
-        var env = await _connection.SendAsync<MT4ExternalCommandBinaryResponseApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4ExternalCommandBinaryResponseApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Send plugin command (JSON)</summary>
@@ -1837,8 +1916,9 @@ public sealed partial class MT4Endpoints
     public async Task<System.Text.Json.Nodes.JsonNode?> ExternalCommandJSONAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/ExternalCommandJSON";
-        var env = await _connection.SendAsync<RawJsonApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<RawJsonApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Patch trading group</summary>
@@ -1851,8 +1931,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4Group?> GroupRecordAsync(string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/GroupRecord/{Uri.EscapeDataString(group)}";
-        var env = await _connection.SendAsync<MT4GroupApiResponse>(new HttpMethod("PATCH"), url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4GroupApiResponse>(new HttpMethod("PATCH"), url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get trading group (cached)</summary>
@@ -1869,8 +1950,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4Group?> GroupRecordGetAsync(string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/GroupRecordGet/{Uri.EscapeDataString(group)}";
-        var env = await _connection.SendAsync<MT4GroupApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4GroupApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Update trading group</summary>
@@ -1901,8 +1983,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4Group?> GroupRecordUpdateAsync(string group, MT4GroupUpdate body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/GroupRecordUpdate/{Uri.EscapeDataString(group)}";
-        var env = await _connection.SendAsync<MT4GroupApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4GroupApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get group security entries</summary>
@@ -1920,8 +2003,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4GroupSec>> GroupSecGroupsGetAsync(string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/GroupSecGroupsGet/{Uri.EscapeDataString(group)}";
-        var env = await _connection.SendAsync<MT4GroupSecListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4GroupSec>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4GroupSec>();
+        var result = await _connection.SendAsync<MT4GroupSecListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4GroupSec>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4GroupSec>();
     }
 
     /// <summary>Get group margin overrides</summary>
@@ -1939,8 +2023,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4GroupMargin>> GroupSecMarginsGetAsync(string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/GroupSecMarginsGet/{Uri.EscapeDataString(group)}";
-        var env = await _connection.SendAsync<MT4GroupMarginListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4GroupMargin>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4GroupMargin>();
+        var result = await _connection.SendAsync<MT4GroupMarginListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4GroupMargin>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4GroupMargin>();
     }
 
     /// <summary>List trading groups (cached)</summary>
@@ -1957,8 +2042,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4Group>> GroupsGetAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/GroupsGet";
-        var env = await _connection.SendAsync<MT4GroupListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4Group>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4Group>();
+        var result = await _connection.SendAsync<MT4GroupListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4Group>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Group>();
     }
 
     /// <summary>List trading groups (live)</summary>
@@ -1976,8 +2062,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4GroupListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4GroupListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Repair chart history</summary>
@@ -2001,8 +2088,9 @@ public sealed partial class MT4Endpoints
     public async Task<int> HistoryCorrectAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/HistoryCorrect/{Uri.EscapeDataString(symbol)}";
-        var env = await _connection.SendAsync<Int32ApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<Int32ApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Get server journal</summary>
@@ -2033,8 +2121,9 @@ public sealed partial class MT4Endpoints
         if (mode is not null) qs.Add("mode=" + Uri.EscapeDataString(mode.Value.ToString()));
         if (filter is not null) qs.Add("filter=" + Uri.EscapeDataString(filter));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4ServerLogListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4ServerLog>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4ServerLog>();
+        var result = await _connection.SendAsync<MT4ServerLogListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4ServerLog>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4ServerLog>();
     }
 
     /// <summary>Check license</summary>
@@ -2053,8 +2142,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> LicenseCheckAsync(string licenseName, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/LicenseCheck/{Uri.EscapeDataString(licenseName)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Get last mail path</summary>
@@ -2069,8 +2159,9 @@ public sealed partial class MT4Endpoints
     public async Task<string?> MailLastAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/MailLast";
-        var env = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Send mail to accounts</summary>
@@ -2089,8 +2180,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> MailSendAsync(MT4MailSendRequest body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/MailSend";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>List server mail</summary>
@@ -2107,8 +2199,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4MailBox>> MailsRequestAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/MailsRequest";
-        var env = await _connection.SendAsync<MT4MailBoxListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4MailBox>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4MailBox>();
+        var result = await _connection.SendAsync<MT4MailBoxListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4MailBox>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4MailBox>();
     }
 
     /// <summary>Get manager common settings</summary>
@@ -2124,8 +2217,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4Common?> ManagerCommonAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/ManagerCommon";
-        var env = await _connection.SendAsync<MT4CommonApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4CommonApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get account margin (cached)</summary>
@@ -2143,8 +2237,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4MarginLevel?> MarginLevelGetAsync(int login, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/MarginLevelGet/{login.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4MarginLevelApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4MarginLevelApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get account margin (live)</summary>
@@ -2162,8 +2257,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4MarginLevel?> MarginLevelRequestAsync(int login, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/MarginLevelRequest/{login.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4MarginLevelApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4MarginLevelApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>List account margins (cached)</summary>
@@ -2180,8 +2276,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4MarginLevel>> MarginsGetAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/MarginsGet";
-        var env = await _connection.SendAsync<MT4MarginLevelListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4MarginLevel>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4MarginLevel>();
+        var result = await _connection.SendAsync<MT4MarginLevelListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4MarginLevel>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4MarginLevel>();
     }
 
     /// <summary>Get news body (cached)</summary>
@@ -2197,8 +2294,9 @@ public sealed partial class MT4Endpoints
     public async Task<string?> NewsBodyGetAsync(int key, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/NewsBodyGet/{key.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Request news body fetch</summary>
@@ -2217,8 +2315,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> NewsBodyRequestAsync(int key, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/NewsBodyRequest/{key.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>List news headers</summary>
@@ -2236,8 +2335,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4NewsTopic>> NewsGetAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/NewsGet";
-        var env = await _connection.SendAsync<MT4NewsTopicListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4NewsTopic>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4NewsTopic>();
+        var result = await _connection.SendAsync<MT4NewsTopicListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4NewsTopic>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4NewsTopic>();
     }
 
     /// <summary>Send news to terminals</summary>
@@ -2254,8 +2354,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> NewsSendAsync(MT4NewsSendRequest body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/NewsSend";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Get news header by index</summary>
@@ -2273,8 +2374,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4NewsTopic?> NewsTopicGetAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/NewsTopicGet/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4NewsTopicApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4NewsTopicApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get news count</summary>
@@ -2289,8 +2391,9 @@ public sealed partial class MT4Endpoints
     public async Task<int> NewsTotalAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/NewsTotal";
-        var env = await _connection.SendAsync<Int32ApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<Int32ApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>NotificationsSendAsync</summary>
@@ -2300,8 +2403,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> NotificationsSendAsync(MT4NotificationsSendRequest body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/NotificationsSend";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>List online users (cached)</summary>
@@ -2326,8 +2430,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4OnlineListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4OnlineListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>List online sessions (live)</summary>
@@ -2351,8 +2456,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4OnlineListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4OnlineListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get server performance series</summary>
@@ -2378,8 +2484,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (@from is not null) qs.Add("from=" + Uri.EscapeDataString(@from.Value.ToString("O", CultureInfo.InvariantCulture)));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4PerformanceListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4Performance>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4Performance>();
+        var result = await _connection.SendAsync<MT4PerformanceListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4Performance>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Performance>();
     }
 
     /// <summary>Get plugin parameters</summary>
@@ -2396,8 +2503,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4PluginParam?> PluginParamGetAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/PluginParamGet/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4PluginParamApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4PluginParamApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Update plugin parameter</summary>
@@ -2413,8 +2521,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> PluginUpdateAsync(MT4PluginParam body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/PluginUpdate";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>List plugins (cached)</summary>
@@ -2431,8 +2540,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4Plugin>> PluginsGetAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/PluginsGet";
-        var env = await _connection.SendAsync<MT4PluginListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4Plugin>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4Plugin>();
+        var result = await _connection.SendAsync<MT4PluginListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4Plugin>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Plugin>();
     }
 
     /// <summary>Get closed-trade reports</summary>
@@ -2473,8 +2583,9 @@ public sealed partial class MT4Endpoints
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (name is not null) qs.Add("name=" + Uri.EscapeDataString(name));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4Trade>();
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>Get server time</summary>
@@ -2489,8 +2600,9 @@ public sealed partial class MT4Endpoints
     public async Task<DateTimeOffset> ServerTimeAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/ServerTime";
-        var env = await _connection.SendAsync<DateTimeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<DateTimeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Force chart resync</summary>
@@ -2511,8 +2623,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (confirm is not null) qs.Add("confirm=" + (confirm.Value ? "true" : "false"));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Get feeder log</summary>
@@ -2530,8 +2643,9 @@ public sealed partial class MT4Endpoints
     public async Task<string?> SrvFeederLogAsync(string name, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/SrvFeederLog/{Uri.EscapeDataString(name)}";
-        var env = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>List data feeders</summary>
@@ -2559,8 +2673,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4FeederListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4FeederListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Restart data feeders</summary>
@@ -2580,8 +2695,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (confirm is not null) qs.Add("confirm=" + (confirm.Value ? "true" : "false"));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Start LiveUpdate distributor</summary>
@@ -2601,8 +2717,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (confirm is not null) qs.Add("confirm=" + (confirm.Value ? "true" : "false"));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Restart server</summary>
@@ -2629,8 +2746,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (confirm is not null) qs.Add("confirm=" + (confirm.Value ? "true" : "false"));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Add symbol</summary>
@@ -2653,8 +2771,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> SymbolAddAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/SymbolAdd/{Uri.EscapeDataString(symbol)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Change symbol attributes</summary>
@@ -2679,8 +2798,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> SymbolChangeAsync(MT4SymbolChangeRequest body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/SymbolChange";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Patch symbol config</summary>
@@ -2693,8 +2813,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4SymbolConfig?> SymbolConfigAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/SymbolConfig/{Uri.EscapeDataString(symbol)}";
-        var env = await _connection.SendAsync<MT4SymbolConfigApiResponse>(new HttpMethod("PATCH"), url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4SymbolConfigApiResponse>(new HttpMethod("PATCH"), url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Hide symbol</summary>
@@ -2711,8 +2832,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> SymbolHideAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/SymbolHide/{Uri.EscapeDataString(symbol)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Get symbol market data (cached)</summary>
@@ -2733,8 +2855,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (symbol is not null) qs.Add("symbol=" + Uri.EscapeDataString(symbol));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4SymbolInfoApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4SymbolInfoApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>List updated symbols (cached)</summary>
@@ -2756,8 +2879,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4SymbolInfoListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4SymbolInfoListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Send synthetic tick</summary>
@@ -2789,8 +2913,9 @@ public sealed partial class MT4Endpoints
         if (bid is not null) qs.Add("bid=" + bid.Value.ToString("R", CultureInfo.InvariantCulture));
         if (ask is not null) qs.Add("ask=" + ask.Value.ToString("R", CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Get symbol sessions</summary>
@@ -2811,8 +2936,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4SymbolDaySessions>> SymbolSessionsGetAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/SymbolSessionsGet/{Uri.EscapeDataString(symbol)}";
-        var env = await _connection.SendAsync<MT4SymbolDaySessionsListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4SymbolDaySessions>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4SymbolDaySessions>();
+        var result = await _connection.SendAsync<MT4SymbolDaySessionsListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4SymbolDaySessions>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4SymbolDaySessions>();
     }
 
     /// <summary>List symbol groups (cached)</summary>
@@ -2829,8 +2955,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4SymbolGroup>> SymbolsGroupsGetAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/SymbolsGroupsGet";
-        var env = await _connection.SendAsync<MT4SymbolGroupListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4SymbolGroup>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4SymbolGroup>();
+        var result = await _connection.SendAsync<MT4SymbolGroupListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4SymbolGroup>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4SymbolGroup>();
     }
 
     /// <summary>Refresh symbol catalog</summary>
@@ -2846,8 +2973,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> SymbolsRefreshAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/SymbolsRefresh";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Get last ticks, all symbols (cached)</summary>
@@ -2864,8 +2992,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4TickInfo>> TickInfoLastAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TickInfoLast";
-        var env = await _connection.SendAsync<MT4TickInfoListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4TickInfo>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4TickInfo>();
+        var result = await _connection.SendAsync<MT4TickInfoListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4TickInfo>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4TickInfo>();
     }
 
     /// <summary>Get last tick (cached)</summary>
@@ -2884,8 +3013,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4TickInfo?> TickInfoLastBySymbolAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TickInfoLast/{Uri.EscapeDataString(symbol)}";
-        var env = await _connection.SendAsync<MT4TickInfoApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4TickInfoApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get historical ticks</summary>
@@ -2911,8 +3041,9 @@ public sealed partial class MT4Endpoints
         if (end is not null) qs.Add("end=" + Uri.EscapeDataString(end.Value.ToString("O", CultureInfo.InvariantCulture)));
         if (flags is not null) qs.Add("flags=" + Uri.EscapeDataString(flags.Value.ToString()));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4TickRecordListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4TickRecord>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4TickRecord>();
+        var result = await _connection.SendAsync<MT4TickRecordListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4TickRecord>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4TickRecord>();
     }
 
     /// <summary>Validate order stops</summary>
@@ -2940,8 +3071,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (price is not null) qs.Add("price=" + price.Value.ToString("R", CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Roll back trade transaction</summary>
@@ -2962,8 +3094,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> TradeClearRollbackAsync(int order, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TradeClearRollback/{order.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Get trade record (cached)</summary>
@@ -2981,8 +3114,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4Trade?> TradeRecordGetAsync(int order, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TradeRecordGet/{order.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4TradeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4TradeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get trade record (live)</summary>
@@ -3003,8 +3137,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4Trade?> TradeRecordRequestAsync(int order, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TradeRecordRequest/{order.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4TradeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4TradeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get trade records batch (live)</summary>
@@ -3030,8 +3165,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (orders is not null) foreach (var v in orders) qs.Add("orders=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4Trade>();
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>Submit trade transaction</summary>
@@ -3060,8 +3196,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4TradeTransaction?> TradeTransactionAsync(MT4TradeTransaction body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TradeTransaction";
-        var env = await _connection.SendAsync<MT4TradeTransactionApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4TradeTransactionApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>List open trades (cached)</summary>
@@ -3079,8 +3216,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get trade by ticket (cached)</summary>
@@ -3100,8 +3238,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4Trade?> TradesGetByTicketAsync(int ticket, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TradesGet/{ticket.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4TradeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4TradeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>List trades by account (cached)</summary>
@@ -3120,8 +3259,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4Trade>> TradesGetByLoginAsync(int login, string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TradesGetByLogin/{login.ToString(CultureInfo.InvariantCulture)}/{Uri.EscapeDataString(group)}";
-        var env = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4Trade>();
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>List market trades (cached)</summary>
@@ -3137,8 +3277,9 @@ public sealed partial class MT4Endpoints
     public async Task<IReadOnlyList<MT4Trade>> TradesGetByMarketAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TradesGetByMarket";
-        var env = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4Trade>();
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>List trades by symbol (cached)</summary>
@@ -3158,8 +3299,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (symbol is not null) qs.Add("symbol=" + Uri.EscapeDataString(symbol));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4Trade>();
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>Query trades (live)</summary>
@@ -3187,8 +3329,9 @@ public sealed partial class MT4Endpoints
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (group is not null) qs.Add("group=" + Uri.EscapeDataString(group));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Snapshot all trades</summary>
@@ -3207,8 +3350,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4Trade>();
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>Read trade-records sync</summary>
@@ -3228,8 +3372,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4Trade>();
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>Start trade-records sync</summary>
@@ -3251,8 +3396,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (timestamp is not null) qs.Add("timestamp=" + timestamp.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Get account trade history</summary>
@@ -3277,8 +3423,9 @@ public sealed partial class MT4Endpoints
         if (fromTime is not null) qs.Add("fromTime=" + Uri.EscapeDataString(fromTime.Value.ToString("O", CultureInfo.InvariantCulture)));
         if (toTime is not null) qs.Add("toTime=" + Uri.EscapeDataString(toTime.Value.ToString("O", CultureInfo.InvariantCulture)));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4Trade>();
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>Verify account password</summary>
@@ -3302,8 +3449,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> UserPasswordCheckAsync(int login, string body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/UserPasswordCheck/{login.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Set account password</summary>
@@ -3342,8 +3490,9 @@ public sealed partial class MT4Endpoints
         if (changeInvestor is not null) qs.Add("changeInvestor=" + (changeInvestor.Value ? "true" : "false"));
         if (cleanPubkey is not null) qs.Add("cleanPubkey=" + (cleanPubkey.Value ? "true" : "false"));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>Patch account</summary>
@@ -3362,8 +3511,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4User?> UserRecordAsync(int login, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/UserRecord/{login.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4UserApiResponse>(new HttpMethod("PATCH"), url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4UserApiResponse>(new HttpMethod("PATCH"), url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get account (cached)</summary>
@@ -3382,8 +3532,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4User?> UserRecordGetAsync(int login, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/UserRecordGet/{login.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4UserApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4UserApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Create account</summary>
@@ -3409,8 +3560,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4User?> UserRecordNewAsync(MT4UserCreate body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/UserRecordNew";
-        var env = await _connection.SendAsync<MT4UserApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4UserApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get account (live)</summary>
@@ -3429,8 +3581,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4User?> UserRecordRequestAsync(int login, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/UserRecordRequest/{login.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4UserApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4UserApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Update account</summary>
@@ -3464,8 +3617,9 @@ public sealed partial class MT4Endpoints
     public async Task<MT4User?> UserRecordUpdateAsync(int login, MT4UserUpdate body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/UserRecordUpdate/{login.ToString(CultureInfo.InvariantCulture)}";
-        var env = await _connection.SendAsync<MT4UserApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4UserApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Get accounts batch (live)</summary>
@@ -3490,8 +3644,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4User>();
+        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4User>();
     }
 
     /// <summary>Bulk account operation</summary>
@@ -3520,8 +3675,9 @@ public sealed partial class MT4Endpoints
     public async Task<bool> UsersGroupOpAsync(MT4UsersGroupOp body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/UsersGroupOp";
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
     /// <summary>List accounts (live)</summary>
@@ -3544,8 +3700,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
     }
 
     /// <summary>Snapshot all users</summary>
@@ -3567,8 +3724,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4User>();
+        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4User>();
     }
 
     /// <summary>Read user-records sync</summary>
@@ -3589,8 +3747,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
-        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<MT4User>();
+        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4User>();
     }
 
     /// <summary>Start user-records sync</summary>
@@ -3615,8 +3774,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (timestamp is not null) qs.Add("timestamp=" + timestamp.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var env = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
     }
 
 }

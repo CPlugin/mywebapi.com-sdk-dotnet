@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <SdkRoot Condition="'$(SdkRoot)' == ''">$(MSBuildThisFileDirectory)..\..\src\CPlugin.SaaSWebApi.Client\bin\Release\netstandard2.0</SdkRoot>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="NetstandardCancellationProbe.cs" />
+    <Reference Include="CPlugin.SaaSWebApi.Client" HintPath="$(SdkRoot)/CPlugin.SaaSWebApi.Client.dll" Private="true" />
+    <Reference Include="CPlugin.SaaSWebApi.Models" HintPath="$(SdkRoot)/CPlugin.SaaSWebApi.Models.dll" Private="true" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="IdentityModel" Version="6.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.10" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageReference Include="System.Net.Http.Json" Version="8.0.1" />
+  </ItemGroup>
+</Project>

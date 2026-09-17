@@ -1,6 +1,7 @@
 #if NET8_0_OR_GREATER
 using System;
 using System.Net.Http;
+using System.Threading.Tasks;
 using CPlugin.SaaSWebApi.Client.Auth;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -15,8 +16,8 @@ namespace CPlugin.SaaSWebApi.Client.DependencyInjection;
 public static class ServiceCollectionExtensions
 {
     /// <summary>Register <see cref="CPluginWebApiClient"/>, its OAuth2 client_credentials
-    /// handler chain, and a standard resilience pipeline (retries with jitter + circuit
-    /// breaker) with the DI container.</summary>
+    /// handler chain, and a bounded resilience pipeline that retries only safe HTTP
+    /// methods (GET/HEAD/OPTIONS) on transient responses or transport faults.</summary>
     /// <remarks>
     /// <para>Choose the auth mode in the options: <see cref="CPluginWebApiClientOptions.Token"/>
     /// (static) OR <see cref="CPluginWebApiClientOptions.ClientId"/> +
@@ -27,7 +28,7 @@ public static class ServiceCollectionExtensions
     ///   <item><description><c>CPluginWebApi.Tokens</c> — OIDC discovery + token exchange;
     ///   never recurses through the api handler chain.</description></item>
     ///   <item><description><c>CPluginWebApi</c> — the api-facing client with the auth handler
-    ///   and the standard resilience pipeline.</description></item>
+    ///   and the safe-method resilience pipeline.</description></item>
     /// </list></para>
     /// <para>Usage:
     /// <code>
@@ -132,6 +133,18 @@ public static class ServiceCollectionExtensions
                 o.Retry.MaxRetryAttempts = 3;
                 o.Retry.BackoffType = DelayBackoffType.Exponential;
                 o.Retry.UseJitter = true;
+                // Only transport faults and transient responses are retried, and only
+                // when the original request method is safe.
+                o.Retry.ShouldHandle = args =>
+                {
+                    var response = args.Outcome.Result;
+                    var method = response?.RequestMessage?.Method ?? args.Context.GetRequestMessage()?.Method;
+                    var safe = IsSafeMethod(method);
+                    var transientResponse = response is not null && IsTransientStatus(response.StatusCode);
+                    var transientTransport = args.Outcome.Exception is HttpRequestException;
+                    return new ValueTask<bool>(safe && (transientResponse || transientTransport));
+                };
+                o.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(30);
             });
 
         // * Singleton entry point: one shared HttpClient (factory-managed handlers rotate
@@ -158,6 +171,16 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    private static bool IsSafeMethod(HttpMethod? method) =>
+        method is not null
+        && (string.Equals(method.Method, "GET", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(method.Method, "HEAD", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(method.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase));
+
+    private static bool IsTransientStatus(System.Net.HttpStatusCode statusCode) =>
+        statusCode == System.Net.HttpStatusCode.RequestTimeout
+        || statusCode == System.Net.HttpStatusCode.TooManyRequests
+        || (int)statusCode >= 500;
     /// <summary>No-op DelegatingHandler used in static-token mode so the handler chain
     /// keeps one registration shape regardless of auth mode.</summary>
     private sealed class PassThroughHandler : DelegatingHandler { }

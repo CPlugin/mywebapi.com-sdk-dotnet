@@ -288,15 +288,16 @@ internal sealed class Operation
         // * JsonNode payloads bypass the NSwag envelope (its structural JsonNode POCO cannot
         //   hold arbitrary JSON) and use the hand-written RawJsonApiResponse instead.
         var envelopeType = DataCsType == "System.Text.Json.Nodes.JsonNode" ? "RawJsonApiResponse" : EnvelopeType;
-        sb.Append($"        var env = await _connection.SendAsync<{envelopeType}>({httpMethod}, url, {bodyArg}, options, default).ConfigureAwait(false);\n");
+        sb.Append($"        var result = await _connection.SendAsync<{envelopeType}>({httpMethod}, url, {bodyArg}, options, default).ConfigureAwait(false);\n");
+        sb.Append("        var env = result.Envelope;\n\n");
 
         sb.Append(Paged
-            ? "        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);\n"
+            ? "        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);\n"
             : DataKind switch
             {
-                "array" => $"        return (IReadOnlyList<{DataCsType}>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? Array.Empty<{DataCsType}>();\n",
-                "value" => "        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200) ?? default;\n",
-                _ => "        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);\n",
+                "array" => $"        return (IReadOnlyList<{DataCsType}>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<{DataCsType}>();\n",
+                "value" => "        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;\n",
+                _ => "        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);\n",
             });
 
         sb.Append("    }\n\n");

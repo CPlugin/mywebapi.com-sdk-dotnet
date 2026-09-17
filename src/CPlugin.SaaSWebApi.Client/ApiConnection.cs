@@ -33,7 +33,7 @@ internal sealed class ApiConnection
     /// Only non-JSON responses (proxies, dead routes) surface as <see cref="HttpRequestException"/>.
     /// Unwrapping into data / <see cref="ApiError"/> is the caller's job (see <see cref="EnvelopeGuard"/>).
     /// </remarks>
-    public async Task<TEnv> SendAsync<TEnv>(
+    public async Task<ApiResponse<TEnv>> SendAsync<TEnv>(
         HttpMethod method, string relativeUrl, object? body, CallOptions? options, CancellationToken ct)
     {
         // * CallOptions.CancellationToken wins over the positional token when set —
@@ -62,14 +62,27 @@ internal sealed class ApiConnection
 
         using var stream = await resp.Content.ReadAsStreamAsync().ConfigureAwait(false);
         var env = await JsonSerializer.DeserializeAsync<TEnv>(stream, Json, token).ConfigureAwait(false);
-        return env ?? throw new HttpRequestException(
-            $"Empty v2 envelope from {relativeUrl} (HTTP {(int)resp.StatusCode}).");
+        if (env is null)
+            throw new HttpRequestException(
+                $"Empty v2 envelope from {relativeUrl} (HTTP {(int)resp.StatusCode}).");
+        return new ApiResponse<TEnv>(env, (int)resp.StatusCode);
     }
-
     private static string ApplyFields(string url, CallOptions? options)
     {
         if (options?.Fields is not { Count: > 0 } fields) return url;
         var sep = url.Contains("?") ? '&' : '?';
         return url + sep + "fields=" + Uri.EscapeDataString(string.Join(",", fields));
     }
+}
+/// <summary>Deserialized v2 envelope together with the actual HTTP response status.</summary>
+internal readonly struct ApiResponse<TEnv>
+{
+    public ApiResponse(TEnv envelope, int statusCode)
+    {
+        Envelope = envelope;
+        StatusCode = statusCode;
+    }
+
+    public TEnv Envelope { get; }
+    public int StatusCode { get; }
 }

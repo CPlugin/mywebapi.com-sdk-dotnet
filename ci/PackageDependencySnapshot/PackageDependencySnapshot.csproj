@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <GenerateDependencyFile>true</GenerateDependencyFile>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <SdkVersion Condition="'$(SdkVersion)' == ''">0.2.0</SdkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MyWebApi.Sdk" Version="$(SdkVersion)" />
+  </ItemGroup>
+</Project>
