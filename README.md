@@ -67,7 +67,7 @@ public sealed class MyService(CPluginWebApiClient client)
 }
 ```
 
-The DI extension wires `IHttpClientFactory`-backed HttpClients, the OAuth2 handler chain, and a bounded resilience pipeline that retries only GET/HEAD/OPTIONS on transient HTTP status responses; unsafe methods are never repeated automatically. Options are validated on first resolution and surface as `OptionsValidationException`.
+The DI extension wires `IHttpClientFactory`-backed HttpClients, the OAuth2 handler chain, and a bounded resilience pipeline that retries only GET/HEAD/OPTIONS on transient HTTP status responses; unsafe methods are never repeated automatically (see [Timeouts and retries](#timeouts-and-retries)). Options are validated on first resolution and surface as `OptionsValidationException`.
 
 ### Static token (advanced / testing)
 
@@ -114,6 +114,70 @@ catch (ApiError err)
 ```
 
 OAuth2 token-endpoint and OIDC discovery failures throw `CPlugin.SaaSWebApi.Client.Auth.OAuth2TokenException` (a subclass of `HttpRequestException`). Catch `HttpRequestException` broadly to handle auth and transport failures uniformly.
+
+## Timeouts and retries
+
+Almost every call addressed to a trading platform has a server-side deadline. When the trading server does not answer in time, the API answers with an error instead of waiting indefinitely. Defaults per kind of operation (each method's XML documentation names its own):
+
+| Operation kind | Default |
+|---|---|
+| trade | 5 s |
+| read | 10 s |
+| change | 15 s |
+| history | 30 s |
+| maintenance | 60 s |
+
+Choose another deadline, from 1 to 300 seconds, per call or for the whole client. The SDK sends it as the `X-Request-Timeout` header:
+
+```csharp
+// * One call.
+var trades = await mt4.ReportsRequestAsync(from, to, options: new CallOptions { RequestTimeout = TimeSpan.FromSeconds(90) });
+
+// * Every call that sets none of its own.
+using var client = new CPluginWebApiClient(new CPluginWebApiClientOptions
+{
+    Environment    = CPluginEnvironment.Prod,
+    ClientId       = clientId,
+    ClientSecret   = clientSecret,
+    RequestTimeout = TimeSpan.FromSeconds(20),
+});
+```
+
+The client waits for the answer 30 s longer than the server-side deadline (the server may extend a deadline by up to 20 s while it connects to the platform), so that normally the server's own answer arrives first; `CPluginWebApiClientOptions.Timeout` (default 30 s) is only the minimum wait. A few operations (news and mail sending, plugin configuration, user and trade snapshots, binary external commands) have no server-side deadline and ignore `X-Request-Timeout`; for them the client waits 60 s + 30 s. If the client-side wait passes — a slow network, a slow token request, an operation without a server-side deadline — the call throws `TaskCanceledException` wrapping a `TimeoutException`. For a change or a trade that means the outcome is unknown: treat it exactly like `OutcomeUnknown` below.
+
+A request that did not finish in time throws `ApiError` with one of these codes; `Outcome` carries the `X-Request-Outcome` response header:
+
+| `Code` | `Outcome` | Meaning | What to do |
+|---|---|---|---|
+| `Timeout` | `timeout` | A read did not finish. Nothing was changed. | Repeat, possibly with a longer `RequestTimeout`. |
+| `Busy` | `not-started` | Refused before it was sent to the trading platform. | Repeat after a pause. |
+| `OutcomeUnknown` | `unknown` | A change or a trade did not finish and **may still be applied**. | Do not repeat blindly — see below. |
+| `OutcomeUnknown` | `in-progress` | A request with the same `Idempotency-Key` is still running; this one was not executed. | Repeat later with the same key. |
+
+`ApiError.IsSafeToRetry` is `true` only for the first two rows; `IsTimeout`, `IsBusy`, `IsOutcomeUnknown` and `IsInProgress` name each case, and `ApiErrorCodes` / `RequestOutcomes` hold the values.
+
+Recovery after `OutcomeUnknown`: send every change and trade with an `Idempotency-Key`, and repeat it with **the same key**. The server executes a key once: while the first request still runs, a repeat gets `OutcomeUnknown` with `Outcome = in-progress` and is not executed; once it has finished, a repeat gets the original result.
+
+```csharp
+var key = Guid.NewGuid().ToString();
+for (var attempt = 1; ; attempt++)
+{
+    try
+    {
+        return await mt4.TradeTransactionAsync(trade, new CallOptions { IdempotencyKey = key });
+    }
+    catch (ApiError err) when (err.IsOutcomeUnknown && attempt < 5)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(2 * attempt)); // same key: executed at most once
+    }
+}
+```
+
+Without a key, check the resulting state (the order, the balance, the record) before deciding to repeat.
+
+The SDK never repeats a change or a trade on its own: not on `OutcomeUnknown`, not on a lost connection, not on a transient HTTP status, and not after a 401. The DI pipeline retries only GET/HEAD/OPTIONS on transient HTTP statuses and transport faults, and never a response whose outcome is `unknown` or `in-progress`. `Timeout` and `Busy` are not retried automatically either — the decision stays with the caller.
+
+SignalR hub method calls addressed to a platform, and the v2 hub connection itself, fail after 60 s on the server side; subscriptions and streams are not affected.
 
 ## Real-time / SignalR
 
@@ -181,7 +245,8 @@ WEBAPI_E2E=1 WEBAPI_CLIENT_ID=... WEBAPI_CLIENT_SECRET=... WEBAPI_TRADE_PLATFORM
 │       ├── Auth/                         # TokenCache, OidcDiscoveryClient, ClientCredentialsHandler
 │       ├── CPluginWebApiClient.cs        # entry point: MT4()/MT5()/Realtime/ListTradePlatformsAsync
 │       ├── Environments.cs               # env presets (prod / staging / custom)
-│       ├── ApiError.cs                   # envelope error exception {Code, Description, ActivityId}
+│       ├── ApiError.cs                   # envelope error exception {Code, Description, ActivityId, Outcome}
+│       ├── CallOptions.cs                # per-call idempotency key, fields, request timeout, cancellation
 │       ├── Page.cs                       # Page<T> + PageIterator cursor helpers
 │       ├── MT4V2SignalRClient.cs         # /hubs/mt4/v2
 │       ├── MT5V2SignalRClient.cs         # /hubs/mt5/v2

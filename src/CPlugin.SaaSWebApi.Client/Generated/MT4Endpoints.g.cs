@@ -34,9 +34,11 @@ public sealed partial class MT4Endpoints
     /// list contains entries only for accounts the server flagged with a
     /// non-zero diff — clean accounts are silently omitted. Clients should
     /// treat "missing from response" as "diff = 0".
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="logins">Account logins (repeat query parameter)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4BalanceDiff>> AdmBalanceCheckAsync(IReadOnlyList<int>? logins = null, CallOptions? options = null)
     {
@@ -44,9 +46,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4BalanceDiffListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4BalanceDiffListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4BalanceDiff>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4BalanceDiff>();
+        return (IReadOnlyList<MT4BalanceDiff>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4BalanceDiff>();
     }
 
     /// <summary>Check account balance</summary>
@@ -62,16 +64,18 @@ public sealed partial class MT4Endpoints
     /// Read-only operation despite the wrapper's "Adm" prefix (the prefix
     /// signals the elevated authorization requirement, not a write side
     /// effect).
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="login">Account login (positive integer)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4BalanceDiff?> AdmBalanceCheckByLoginAsync(int login, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/AdmBalanceCheck/{login.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4BalanceDiffApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4BalanceDiffApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Fix account balances</summary>
@@ -89,9 +93,11 @@ public sealed partial class MT4Endpoints
     /// `Idempotency-Key` header; otherwise a retried fix can double-
     /// apply on an account whose original fix happened to land but whose
     /// response was lost on the wire.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="logins">Account logins to fix (repeat query parameter)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> AdmBalanceFixAsync(IReadOnlyList<int>? logins = null, CallOptions? options = null)
     {
@@ -99,9 +105,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Modify trade record (admin)</summary>
@@ -125,17 +131,19 @@ public sealed partial class MT4Endpoints
     /// Idempotency-Key strongly recommended. A retried edit without it can
     /// land twice — usually harmless, but generates audit log noise.
     /// 
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="ticket">Order ticket (path)</param>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Patch fields. The DTO's `order` field is ignored — the path parameter is the source of truth.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4Trade?> AdmTradeRecordModifyAsync(int ticket, MT4TradeUpdate body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/AdmTradeRecordModify/{ticket.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4TradeApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Delete trades (admin)</summary>
@@ -152,9 +160,11 @@ public sealed partial class MT4Endpoints
     /// server's trade table; this is not reversible from the API side.
     /// Pair with `Idempotency-Key` so retries don't re-process partial
     /// failures.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="orders">Order tickets to delete (repeat the query              parameter — must be non-empty)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> AdmTradesDeleteAsync(IReadOnlyList<int>? orders = null, CallOptions? options = null)
     {
@@ -162,9 +172,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (orders is not null) foreach (var v in orders) qs.Add("orders=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>List group trades (admin)</summary>
@@ -175,10 +185,12 @@ public sealed partial class MT4Endpoints
     /// the given group. `openOnly=true` filters out closed trades on
     /// the server side. Pair with `Idempotency-Key` on retry — large
     /// groups can return substantial payloads.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="group">Account group name (max 16 chars)</param>
     /// <param name="openOnly">If true, only open trades are returned. Defaults to true.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4Trade>> AdmTradesRequestAsync(string group, bool? openOnly = null, CallOptions? options = null)
     {
@@ -186,9 +198,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (openOnly is not null) qs.Add("openOnly=" + (openOnly.Value ? "true" : "false"));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>List group accounts (admin)</summary>
@@ -205,16 +217,18 @@ public sealed partial class MT4Endpoints
     /// commas and trims whitespace internally); the simplest call pattern
     /// is a single group name. Large groups may return substantial
     /// payloads — pair with `Idempotency-Key` on retry.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="group">Account group name (max 16 chars)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4User>> AdmUsersRequestSafeAsync(string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/AdmUsersRequestSafe/{Uri.EscapeDataString(group)}";
-        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4User>();
+        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4User>();
     }
 
     /// <summary>List order backup files</summary>
@@ -225,16 +239,18 @@ public sealed partial class MT4Endpoints
     /// `BackupInfoOrders(int mode)`. Order-side counterpart of
     /// `BackupInfoUsers` — same shape, different catalog.
     /// Read-only operation.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="mode">Backup mode selector (0 = daily, 1 = weekly — server-defined)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4BackupInfo>> BackupInfoOrdersAsync(int mode, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/BackupInfoOrders/{mode.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4BackupInfoListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4BackupInfoListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4BackupInfo>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4BackupInfo>();
+        return (IReadOnlyList<MT4BackupInfo>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4BackupInfo>();
     }
 
     /// <summary>List user backup files</summary>
@@ -249,16 +265,18 @@ public sealed partial class MT4Endpoints
     /// values: `0` = daily, `1` = weekly — confirm against your
     /// server's `ConBackup` configuration).
     /// 
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="mode">Backup mode selector (0 = daily, 1 = weekly — server-defined)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4BackupInfo>> BackupInfoUsersAsync(int mode, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/BackupInfoUsers/{mode.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4BackupInfoListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4BackupInfoListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4BackupInfo>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4BackupInfo>();
+        return (IReadOnlyList<MT4BackupInfo>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4BackupInfo>();
     }
 
     /// <summary>Read orders from backup</summary>
@@ -270,11 +288,13 @@ public sealed partial class MT4Endpoints
     /// counterpart of `BackupRequestUsers`. Same caveats:
     /// read-only, full file loaded server-side regardless of `limit`,
     /// destructive restore is a separate (Wave 4b) operation.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="file">Backup file name (from `BackupInfoOrders`)</param>
     /// <param name="request">Filter request string (empty = all orders)</param>
     /// <param name="limit">Server-side response cap (1..100000, default 10000)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4Trade>> BackupRequestOrdersAsync(string file, string? request = null, int? limit = null, CallOptions? options = null)
     {
@@ -283,9 +303,9 @@ public sealed partial class MT4Endpoints
         if (request is not null) qs.Add("request=" + Uri.EscapeDataString(request));
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>Read users from backup</summary>
@@ -307,11 +327,13 @@ public sealed partial class MT4Endpoints
     /// (default 10000, max 100000). The wrapper still loads the full
     /// file regardless of limit — limit only caps the JSON response size.
     /// 
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="file">Backup file name (from `BackupInfoUsers`)</param>
     /// <param name="request">Filter request string (empty = all users)</param>
     /// <param name="limit">Server-side response cap (1..100000, default 10000)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4User>> BackupRequestUsersAsync(string file, string? request = null, int? limit = null, CallOptions? options = null)
     {
@@ -320,9 +342,9 @@ public sealed partial class MT4Endpoints
         if (request is not null) qs.Add("request=" + Uri.EscapeDataString(request));
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4User>();
+        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4User>();
     }
 
     /// <summary>Restore orders from backup</summary>
@@ -338,10 +360,12 @@ public sealed partial class MT4Endpoints
     /// Idempotency-Key header is &lt;b&gt;strongly recommended&lt;/b&gt;. Batch cap:
     /// 10000 records per call.
     /// 
+    /// 
+    /// **Timeout:** 60 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
+    /// <param name="body">Array of trades to restore (1..10000 records)</param>
     /// <param name="confirm">Required deliberateness flag — must equal `true`</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4TradeRestoreResult>> BackupRestoreOrdersAsync(IReadOnlyList<MT4TradeRestoreInput> body, bool? confirm = null, CallOptions? options = null)
     {
@@ -349,9 +373,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (confirm is not null) qs.Add("confirm=" + (confirm.Value ? "true" : "false"));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4TradeRestoreResultListApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeRestoreResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4TradeRestoreResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4TradeRestoreResult>();
+        return (IReadOnlyList<MT4TradeRestoreResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4TradeRestoreResult>();
     }
 
     /// <summary>Restore users from backup</summary>
@@ -370,10 +394,12 @@ public sealed partial class MT4Endpoints
     /// &lt;br&gt;
     /// Batch cap: 10000 records per call. Larger restores must be split.
     /// 
+    /// 
+    /// **Timeout:** 60 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
+    /// <param name="body">Array of users to restore (1..10000 records)</param>
     /// <param name="confirm">Required deliberateness flag — must equal `true`</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> BackupRestoreUsersAsync(IReadOnlyList<MT4UserRestoreInput> body, bool? confirm = null, CallOptions? options = null)
     {
@@ -381,9 +407,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (confirm is not null) qs.Add("confirm=" + (confirm.Value ? "true" : "false"));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Delete IP firewall rule</summary>
@@ -394,166 +420,188 @@ public sealed partial class MT4Endpoints
     /// Read the current table via `CfgRequestAccess`, find the target
     /// row's index, then delete. Destructive — pair with `Idempotency-Key`
     /// on retry.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based row index in the access-rules table</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgDeleteAccessAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteAccess/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Delete data-server entry</summary>
     /// <remarks>
     /// Deletes an entry from the server's access-server (DataServer) configuration table by zero-based row position.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based row index in the data-server table</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgDeleteDataServerAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteDataServer/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Delete feeder config</summary>
     /// <remarks>
     /// Deletes an entry from the quote/news feeder configuration table by zero-based row position.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based row index in the feeders table</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgDeleteFeederAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteFeeder/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Delete gateway account</summary>
     /// <remarks>
     /// Deletes an STP gateway-account configuration entry by zero-based row position.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based row index in the gateway-accounts table</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgDeleteGatewayAccountAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteGatewayAccount/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Delete gateway markup</summary>
     /// <remarks>
     /// Deletes a per-symbol gateway markup rule by zero-based row position.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based row index in the gateway-markup table</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgDeleteGatewayMarkupAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteGatewayMarkup/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Delete gateway rule</summary>
     /// <remarks>
     /// Deletes an STP execution-routing (gateway) rule by zero-based row position.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based row index in the gateway-rules table</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgDeleteGatewayRuleAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteGatewayRule/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Delete holiday entry</summary>
     /// <remarks>
     /// Deletes a holiday-calendar entry by zero-based row position.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based row index in the holiday table</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgDeleteHolidayAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteHoliday/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Delete LiveUpdate config</summary>
     /// <remarks>
     /// Deletes a LiveUpdate service configuration by zero-based row position.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based row index in the live-update table</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgDeleteLiveUpdateAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteLiveUpdate/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Delete manager config</summary>
     /// <remarks>
     /// Deletes a manager-account configuration entry by zero-based row position.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based row index in the managers table</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgDeleteManagerAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteManager/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Delete symbol config</summary>
     /// <remarks>
     /// Deletes a symbol configuration entry by zero-based row position. This permanently removes the symbol from the server — pair with `Idempotency-Key` and prefer `SymbolHide` when you only want to suspend visibility.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based row index in the symbols table</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgDeleteSymbolAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteSymbol/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Delete sync rule</summary>
     /// <remarks>
     /// Deletes a chart-history synchronization rule by zero-based row position.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based row index in the sync-rules table</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgDeleteSyncAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgDeleteSync/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>List IP firewall rules</summary>
@@ -567,10 +615,12 @@ public sealed partial class MT4Endpoints
     /// "{IpFrom:D10}|{IpTo:D10}" — D10 width matches uint range (max
     /// 4_294_967_295 = 10 digits) so lexicographic compare matches
     /// numeric compare, and the '|' delimiter cannot appear in IP values.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4Access>> CfgRequestAccessAsync(int? limit = null, string? cursor = null, CallOptions? options = null)
     {
@@ -579,9 +629,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4AccessListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4AccessListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get backup config</summary>
@@ -594,15 +644,17 @@ public sealed partial class MT4Endpoints
     /// `WatchPassword` (slave-server credential) is intentionally
     /// dropped from the v2 contract for security and is NOT present in
     /// the response payload.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4Backup?> CfgRequestBackupAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgRequestBackup";
-        var result = await _connection.SendAsync<MT4BackupApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4BackupApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get common config (live)</summary>
@@ -614,15 +666,17 @@ public sealed partial class MT4Endpoints
     /// (Name/Owner/Build/Version/TimeZone), but sourced via the
     /// configuration-system entry point rather than the manager-context one.
     /// Pump cache is NOT consulted; data reflects the live server state.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4Common?> CfgRequestCommonAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgRequestCommon";
-        var result = await _connection.SendAsync<MT4CommonApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4CommonApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>List data servers</summary>
@@ -634,10 +688,12 @@ public sealed partial class MT4Endpoints
     /// Ip, Description, IsProxy flag, Priority (0-7 base, 255 = idle),
     /// Loading (UINT_MAX = no reporting), IpInternal, IsWitness flag.
     /// Internal Reserved padding and the Next pointer chain are dropped.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4DataServer>> CfgRequestDataServerAsync(int? limit = null, string? cursor = null, CallOptions? options = null)
     {
@@ -646,9 +702,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4DataServerListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4DataServerListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>List feeder configs</summary>
@@ -661,10 +717,12 @@ public sealed partial class MT4Endpoints
     /// (Timeout, TimeoutReconnect, TimeoutSleep, AttempsSleep),
     /// NewsLangId. The wrapper's `Password` (datafeed credentials)
     /// is intentionally excluded from the v2 contract.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4Feeder>> CfgRequestFeederAsync(int? limit = null, string? cursor = null, CallOptions? options = null)
     {
@@ -673,9 +731,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4FeederListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4FeederListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>List gateway accounts</summary>
@@ -689,10 +747,12 @@ public sealed partial class MT4Endpoints
     /// of 8 broker-side recipients, and a Flags bitmap. The wrapper's
     /// `Password` field (STP MT4 credential) is intentionally
     /// excluded from the v2 contract.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4GatewayAccount>> CfgRequestGatewayAccountAsync(int? limit = null, string? cursor = null, CallOptions? options = null)
     {
@@ -701,9 +761,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4GatewayAccountListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4GatewayAccountListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>List gateway markups</summary>
@@ -716,10 +776,12 @@ public sealed partial class MT4Endpoints
     /// Cursor is an opaque base64 string holding the composite key
     /// "{Source}|{Symbol}" — MT4 symbol wildcards use `*` and `?`
     /// (not `|`), so the delimiter is safe.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4GatewayMarkup>> CfgRequestGatewayMarkupAsync(int? limit = null, string? cursor = null, CallOptions? options = null)
     {
@@ -728,9 +790,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4GatewayMarkupListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4GatewayMarkupListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>List gateway rules</summary>
@@ -742,10 +804,12 @@ public sealed partial class MT4Endpoints
     /// execution gateway-account (ExeAccountName/ExeAccountId) with
     /// per-rule slippage and volume limits. Name is assumed unique
     /// within the rules table and serves as the cursor key.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4GatewayRule>> CfgRequestGatewayRuleAsync(int? limit = null, string? cursor = null, CallOptions? options = null)
     {
@@ -754,9 +818,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4GatewayRuleListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4GatewayRuleListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>List holiday config</summary>
@@ -774,10 +838,12 @@ public sealed partial class MT4Endpoints
     /// covers the case where multiple holidays share date and From minute
     /// (per-symbol partial-day closures), guaranteeing pagination never drops
     /// rows even inside same-(date,From) clusters.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4Holiday>> CfgRequestHolidayAsync(int? limit = null, string? cursor = null, CallOptions? options = null)
     {
@@ -786,9 +852,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4HolidayListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4HolidayListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>List LiveUpdate configs</summary>
@@ -800,10 +866,12 @@ public sealed partial class MT4Endpoints
     /// Type, Enable flag, TotalFiles. The wrapper's 128-element
     /// per-file Files descriptor table is dropped from this payload
     /// for tractability; a dedicated per-file endpoint will follow.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4LiveUpdate>> CfgRequestLiveUpdateAsync(int? limit = null, string? cursor = null, CallOptions? options = null)
     {
@@ -812,9 +880,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4LiveUpdateListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4LiveUpdateListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>List manager configs</summary>
@@ -826,10 +894,12 @@ public sealed partial class MT4Endpoints
     /// Money, Broker, Admin, Reports, Trades, MarketWatch, etc.), IP-filter
     /// range, and InfoDepth. Internal wrapper fields (SecGroups, Unused,
     /// ExpTime, Reserved) are dropped from the v2 contract.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4ManagerRights>> CfgRequestManagerAsync(int? limit = null, string? cursor = null, CallOptions? options = null)
     {
@@ -838,9 +908,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4ManagerRightsListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4ManagerRightsListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get plugin config (live)</summary>
@@ -852,14 +922,14 @@ public sealed partial class MT4Endpoints
     /// Manager-side equivalent of `PluginsGet` + per-plugin
     /// `PluginParamGet` in one round-trip.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4PluginParam>> CfgRequestPluginAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgRequestPlugin";
-        var result = await _connection.SendAsync<MT4PluginParamListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4PluginParamListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4PluginParam>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4PluginParam>();
+        return (IReadOnlyList<MT4PluginParam>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4PluginParam>();
     }
 
     /// <summary>List symbol configs</summary>
@@ -869,15 +939,17 @@ public sealed partial class MT4Endpoints
     /// Manager (live) call. Heavy response — typical platforms have dozens
     /// to hundreds of symbols, each with a 50+ field `ConSymbol`
     /// structure. Pair with `Idempotency-Key` on retry.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4SymbolConfig>> CfgRequestSymbolAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgRequestSymbol";
-        var result = await _connection.SendAsync<MT4SymbolConfigListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4SymbolConfigListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4SymbolConfig>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4SymbolConfig>();
+        return (IReadOnlyList<MT4SymbolConfig>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4SymbolConfig>();
     }
 
     /// <summary>Get symbol config</summary>
@@ -887,16 +959,18 @@ public sealed partial class MT4Endpoints
     /// Manager (live) call. Returns NotFound envelope when the symbol is
     /// not configured on the server. Same DTO shape as `CfgRequestSymbol`'s
     /// list element.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="symbol">Symbol name (max 12 chars)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4SymbolConfig?> CfgRequestSymbolBySymbolAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgRequestSymbol/{Uri.EscapeDataString(symbol)}";
-        var result = await _connection.SendAsync<MT4SymbolConfigApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4SymbolConfigApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>List sync rules</summary>
@@ -909,10 +983,12 @@ public sealed partial class MT4Endpoints
     /// TimeCorrection (minutes) adjusts incoming bar timestamps. The
     /// wrapper's `Password` (replication credentials) is
     /// intentionally excluded from the v2 contract.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4Sync>> CfgRequestSyncAsync(int? limit = null, string? cursor = null, CallOptions? options = null)
     {
@@ -921,9 +997,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4SyncListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4SyncListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get access-hour matrix</summary>
@@ -936,24 +1012,28 @@ public sealed partial class MT4Endpoints
     /// `index = day*24 + hour`, day 0 = Sunday (MT4 convention).
     /// Internal `DaysControl` and `Reserved` wrapper fields
     /// are not surfaced.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4ServerTime?> CfgRequestTimeAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgRequestTime";
-        var result = await _connection.SendAsync<MT4ServerTimeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4ServerTimeApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Reorder IP firewall rule</summary>
     /// <remarks>
     /// Reorders an entry in the access-rules table by relative displacement.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based source row index</param>
     /// <param name="shift">Relative displacement (positive = down, negative = up)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgShiftAccessAsync(int pos, int? shift = null, CallOptions? options = null)
     {
@@ -961,18 +1041,20 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Reorder data-server entry</summary>
     /// <remarks>
     /// Reorders an entry in the data-servers table by relative displacement.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based source row index</param>
     /// <param name="shift">Relative displacement (positive = down, negative = up)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgShiftDataServerAsync(int pos, int? shift = null, CallOptions? options = null)
     {
@@ -980,18 +1062,20 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Reorder feeder config</summary>
     /// <remarks>
     /// Reorders an entry in the feeders table by relative displacement.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based source row index</param>
     /// <param name="shift">Relative displacement (positive = down, negative = up)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgShiftFeederAsync(int pos, int? shift = null, CallOptions? options = null)
     {
@@ -999,18 +1083,20 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Reorder gateway account</summary>
     /// <remarks>
     /// Reorders an entry in the gateway-accounts table by relative displacement.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based source row index</param>
     /// <param name="shift">Relative displacement</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgShiftGatewayAccountAsync(int pos, int? shift = null, CallOptions? options = null)
     {
@@ -1018,18 +1104,20 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Reorder gateway markup</summary>
     /// <remarks>
     /// Reorders an entry in the gateway-markup table by relative displacement.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based source row index</param>
     /// <param name="shift">Relative displacement</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgShiftGatewayMarkupAsync(int pos, int? shift = null, CallOptions? options = null)
     {
@@ -1037,18 +1125,20 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Reorder gateway rule</summary>
     /// <remarks>
     /// Reorders an entry in the gateway-rules table by relative displacement.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based source row index</param>
     /// <param name="shift">Relative displacement</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgShiftGatewayRuleAsync(int pos, int? shift = null, CallOptions? options = null)
     {
@@ -1056,18 +1146,20 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Reorder trading group</summary>
     /// <remarks>
     /// Reorders an entry in the trading-groups table by relative displacement.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based source row index</param>
     /// <param name="shift">Relative displacement</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgShiftGroupAsync(int pos, int? shift = null, CallOptions? options = null)
     {
@@ -1075,18 +1167,20 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Reorder holiday entry</summary>
     /// <remarks>
     /// Reorders an entry in the holiday-calendar table by relative displacement.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based source row index</param>
     /// <param name="shift">Relative displacement</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgShiftHolidayAsync(int pos, int? shift = null, CallOptions? options = null)
     {
@@ -1094,18 +1188,20 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Reorder LiveUpdate config</summary>
     /// <remarks>
     /// Reorders an entry in the live-update table by relative displacement.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based source row index</param>
     /// <param name="shift">Relative displacement</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgShiftLiveUpdateAsync(int pos, int? shift = null, CallOptions? options = null)
     {
@@ -1113,18 +1209,20 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Reorder manager config</summary>
     /// <remarks>
     /// Reorders an entry in the managers table by relative displacement.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based source row index</param>
     /// <param name="shift">Relative displacement</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgShiftManagerAsync(int pos, int? shift = null, CallOptions? options = null)
     {
@@ -1132,9 +1230,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Reorder plugin entry</summary>
@@ -1144,10 +1242,12 @@ public sealed partial class MT4Endpoints
     /// Unlike the deferred `CfgRequestPlugin` read endpoint, the shift
     /// call does not dereference `ConPluginParam.Params` — it only
     /// reorders existing rows by index. Safe under wine x64.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based source row index</param>
     /// <param name="shift">Relative displacement</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgShiftPluginAsync(int pos, int? shift = null, CallOptions? options = null)
     {
@@ -1155,18 +1255,20 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Reorder symbol entry</summary>
     /// <remarks>
     /// Reorders an entry in the symbols table by relative displacement.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based source row index</param>
     /// <param name="shift">Relative displacement</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgShiftSymbolAsync(int pos, int? shift = null, CallOptions? options = null)
     {
@@ -1174,18 +1276,20 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Reorder sync rule</summary>
     /// <remarks>
     /// Reorders an entry in the sync-rules table by relative displacement.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based source row index</param>
     /// <param name="shift">Relative displacement</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgShiftSyncAsync(int pos, int? shift = null, CallOptions? options = null)
     {
@@ -1193,9 +1297,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (shift is not null) qs.Add("shift=" + shift.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Update IP firewall rule</summary>
@@ -1213,17 +1317,19 @@ public sealed partial class MT4Endpoints
     /// range yields a NotFound envelope.&lt;/item&gt;&lt;item&gt;Apply DTO overlay onto `list[pos]`.&lt;/item&gt;&lt;item&gt;Write back with `CfgUpdateAccess(merged, pos)`.&lt;/item&gt;&lt;/list&gt;`IpFrom`/`IpTo` in the body must fit in `[0, uint.MaxValue]`
     /// — out-of-range values are rejected with `errorCode=Validation`
     /// before the Mapperly checked-narrowing cast can throw.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based row index in the firewall list</param>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Replacement contents for the row at pos</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4Access?> CfgUpdateAccessAsync(int pos, MT4Access body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateAccess/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4AccessApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4AccessApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Update backup config</summary>
@@ -1239,16 +1345,18 @@ public sealed partial class MT4Endpoints
     /// `ArchiveLastTime`, `ExportLastTime`, `WatchTimestamp`.
     /// Server-derived runtime state that clients must not overwrite.&lt;/item&gt;&lt;/list&gt;
     /// Echoes the merged `MT4Backup` in the response.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Replacement backup configuration. Server-derived timestamps and the watch password are preserved.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4Backup?> CfgUpdateBackupAsync(MT4Backup body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateBackup";
-        var result = await _connection.SendAsync<MT4BackupApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4BackupApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Update common config</summary>
@@ -1270,16 +1378,18 @@ public sealed partial class MT4Endpoints
     /// Wine x64 safe: wrapper uses `cpp.AllocSafe()` (single struct
     /// pack, no UnpackObject loop). Idempotency-Key strongly recommended
     /// — overwriting common settings affects every connected client.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Replacement fields. Omitted fields keep their server value.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4Common?> CfgUpdateCommonAsync(MT4CommonUpdate body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateCommon";
-        var result = await _connection.SendAsync<MT4CommonApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4CommonApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Update data-server entry</summary>
@@ -1291,17 +1401,19 @@ public sealed partial class MT4Endpoints
     /// (`Reserved1`, `Reserved2`) and the `Next` pointer.
     /// `Loading`/`IpInternal` in the body must fit in
     /// `[0, uint.MaxValue]`.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based row index in the DataServer list</param>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Replacement contents for the row at pos</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4DataServer?> CfgUpdateDataServerAsync(int pos, MT4DataServer body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateDataServer/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4DataServerApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4DataServerApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Update feeder config</summary>
@@ -1313,16 +1425,18 @@ public sealed partial class MT4Endpoints
     /// feeder by its `Name`. Same read-modify-write flow as
     /// `CfgUpdateSync`; the datafeed credential (`Password`)
     /// is preserved server-side.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Replacement fields; `Name` identifies the feeder.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4Feeder?> CfgUpdateFeederAsync(MT4Feeder body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateFeeder";
-        var result = await _connection.SendAsync<MT4FeederApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4FeederApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Update gateway account</summary>
@@ -1337,16 +1451,18 @@ public sealed partial class MT4Endpoints
     /// credential (`Password`) carried by the live struct is
     /// preserved.&lt;/item&gt;&lt;item&gt;Write the merged struct back.&lt;/item&gt;&lt;/list&gt;
     /// Echoes the merged `MT4GatewayAccount` in the response.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Replacement fields; `Id` identifies the row.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4GatewayAccount?> CfgUpdateGatewayAccountAsync(MT4GatewayAccount body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateGatewayAccount";
-        var result = await _connection.SendAsync<MT4GatewayAccountApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4GatewayAccountApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Update gateway markup</summary>
@@ -1359,16 +1475,18 @@ public sealed partial class MT4Endpoints
     /// read endpoint uses). Same read-modify-write flow as
     /// `CfgUpdateGatewayAccount`; the wrapper's 16-int reserved
     /// padding is preserved.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Replacement fields; `Source`+`Symbol` identify the row.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4GatewayMarkup?> CfgUpdateGatewayMarkupAsync(MT4GatewayMarkup body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateGatewayMarkup";
-        var result = await _connection.SendAsync<MT4GatewayMarkupApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4GatewayMarkupApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Update gateway rule</summary>
@@ -1380,16 +1498,18 @@ public sealed partial class MT4Endpoints
     /// by its public `Name`. Same read-modify-write flow; the two
     /// wrapper reserved padding blocks (`RequestRreserved` 32-int,
     /// `ExeReserved` 25-int) are preserved server-side.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Replacement fields; `Name` identifies the rule.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4GatewayRule?> CfgUpdateGatewayRuleAsync(MT4GatewayRule body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateGatewayRule";
-        var result = await _connection.SendAsync<MT4GatewayRuleApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4GatewayRuleApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Update holiday entry</summary>
@@ -1400,17 +1520,19 @@ public sealed partial class MT4Endpoints
     /// as `int` (0/1) — the DTO surfaces it as `bool`; the
     /// mapper bridges with a `BoolToInt` helper. The 13-int
     /// `Reserved` padding and `Next` pointer are preserved.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based row index in the holiday list</param>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Replacement contents for the row at pos</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4Holiday?> CfgUpdateHolidayAsync(int pos, MT4Holiday body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateHoliday/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4HolidayApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4HolidayApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Update LiveUpdate config</summary>
@@ -1424,16 +1546,18 @@ public sealed partial class MT4Endpoints
     /// overlay → write back. The 128-element `Files` descriptor
     /// table and the runtime `Connections` counter are preserved
     /// server-side.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Replacement fields; `Company` identifies the entry.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4LiveUpdate?> CfgUpdateLiveUpdateAsync(MT4LiveUpdate body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateLiveUpdate";
-        var result = await _connection.SendAsync<MT4LiveUpdateApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4LiveUpdateApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Update manager config</summary>
@@ -1453,16 +1577,18 @@ public sealed partial class MT4Endpoints
     /// `errorCode=Validation` before `ApplyTo`, to avoid a
     /// runtime `OverflowException` from Mapperly's checked cast.
     /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Replacement fields; `Login` identifies the manager.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4ManagerRights?> CfgUpdateManagerAsync(MT4ManagerRights body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateManager";
-        var result = await _connection.SendAsync<MT4ManagerRightsApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4ManagerRightsApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Update plugin config</summary>
@@ -1474,15 +1600,15 @@ public sealed partial class MT4Endpoints
     /// `MT4PluginParam` — the plugin metadata plus its parameter
     /// array. Returns a bare-bool envelope.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Plugin metadata + parameters to apply</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> CfgUpdatePluginAsync(MT4PluginParam body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdatePlugin";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Update symbol config</summary>
@@ -1499,17 +1625,19 @@ public sealed partial class MT4Endpoints
     /// — those are `[MapperIgnoreTarget]`'d on the mapper.
     /// 
     /// Idempotency-Key strongly recommended.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="symbol">Symbol name (path parameter, max 12 chars, immutable identity)</param>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Replacement fields. Omitted-from-DTO fields are preserved server-side.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4SymbolConfig?> CfgUpdateSymbolAsync(string symbol, MT4SymbolConfigUpdate body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateSymbol/{Uri.EscapeDataString(symbol)}";
-        var result = await _connection.SendAsync<MT4SymbolConfigApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4SymbolConfigApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Update symbol group</summary>
@@ -1518,17 +1646,19 @@ public sealed partial class MT4Endpoints
     /// 
     /// Position-based read-modify-write. `ConSymbolGroup` has no
     /// reserved padding or internal pointers, so the overlay is trivial.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="pos">Zero-based row index in the symbol-group list</param>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Replacement contents for the row at pos</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4SymbolGroup?> CfgUpdateSymbolGroupAsync(int pos, MT4SymbolGroup body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateSymbolGroup/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4SymbolGroupApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4SymbolGroupApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Update sync rule</summary>
@@ -1543,16 +1673,18 @@ public sealed partial class MT4Endpoints
     /// replication credential (`Password`) carried by the
     /// live struct is preserved.&lt;/item&gt;&lt;item&gt;Write the merged struct back.&lt;/item&gt;&lt;/list&gt;
     /// Echoes the merged `MT4Sync` in the response.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Replacement fields; `Server`+`Login` identify the row.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4Sync?> CfgUpdateSyncAsync(MT4Sync body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateSync";
-        var result = await _connection.SendAsync<MT4SyncApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4SyncApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Update access-hour matrix</summary>
@@ -1572,16 +1704,18 @@ public sealed partial class MT4Endpoints
     /// MT4 may treat anything non-zero as allowed depending on build).
     /// 
     /// Echoes the merged `MT4ServerTime` in the response.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Replacement access matrix. `AccessHours.Length` must be 168.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4ServerTime?> CfgUpdateTimeAsync(MT4ServerTime body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateTime";
-        var result = await _connection.SendAsync<MT4ServerTimeApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4ServerTimeApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Add chart bars</summary>
@@ -1595,11 +1729,13 @@ public sealed partial class MT4Endpoints
     /// 
     /// Idempotency-Key strongly recommended — duplicate writes can corrupt the
     /// historical data series.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="symbol">Symbol name (max 12 chars)</param>
-    /// <param name="body">Request payload.</param>
+    /// <param name="body">OHLC bars to append. `Rates` must be non-empty.</param>
     /// <param name="period">Bar period enum (M1, M5, M15, M30, H1, H4, D1, W1, MN1)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> ChartAddAsync(string symbol, MT4ChartWriteRequest body, ChartPeriod? period = null, CallOptions? options = null)
     {
@@ -1607,9 +1743,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (period is not null) qs.Add("period=" + Uri.EscapeDataString(period.Value.ToString()));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Delete chart bars</summary>
@@ -1623,11 +1759,13 @@ public sealed partial class MT4Endpoints
     /// Idempotency-Key strongly recommended — silently repeating a delete on
     /// already-removed bars is harmless, but accidental double-submit could
     /// nudge audit logs with extra "operation requested" entries.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="symbol">Symbol name (max 12 chars)</param>
-    /// <param name="body">Request payload.</param>
+    /// <param name="body">Bars to delete; only `Time` is significant.</param>
     /// <param name="period">Bar period enum</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> ChartDeleteAsync(string symbol, MT4ChartWriteRequest body, ChartPeriod? period = null, CallOptions? options = null)
     {
@@ -1635,9 +1773,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (period is not null) qs.Add("period=" + Uri.EscapeDataString(period.Value.ToString()));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Get chart bars</summary>
@@ -1649,13 +1787,15 @@ public sealed partial class MT4Endpoints
     /// the given `period` in the date window. `mode` defaults to
     /// `RangeInExcludeOutOfRage` — bars whose time falls strictly
     /// inside the window.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="symbol">Symbol name (max 12 chars)</param>
     /// <param name="period">Bar period enum (M1, M5, M15, M30, H1, H4, D1, W1, MN1)</param>
     /// <param name="start">Window start (UTC)</param>
     /// <param name="end">Window end (UTC)</param>
     /// <param name="mode">Bar inclusion mode at the edges; defaults to RangeInExcludeOutOfRage.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4ChartBar>> ChartRequestAsync(string symbol, ChartPeriod? period = null, DateTimeOffset? start = null, DateTimeOffset? end = null, RequestMode? mode = null, CallOptions? options = null)
     {
@@ -1666,9 +1806,9 @@ public sealed partial class MT4Endpoints
         if (end is not null) qs.Add("end=" + Uri.EscapeDataString(end.Value.ToString("O", CultureInfo.InvariantCulture)));
         if (mode is not null) qs.Add("mode=" + Uri.EscapeDataString(mode.Value.ToString()));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4ChartBarListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4ChartBarListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4ChartBar>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4ChartBar>();
+        return (IReadOnlyList<MT4ChartBar>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4ChartBar>();
     }
 
     /// <summary>Update chart bars</summary>
@@ -1680,11 +1820,13 @@ public sealed partial class MT4Endpoints
     /// match an existing bar are silently ignored by the MT4 server.
     /// 
     /// Idempotency-Key strongly recommended.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="symbol">Symbol name (max 12 chars)</param>
-    /// <param name="body">Request payload.</param>
+    /// <param name="body">OHLC bars to overwrite (matched by `Time`).</param>
     /// <param name="period">Bar period enum</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> ChartUpdateAsync(string symbol, MT4ChartWriteRequest body, ChartPeriod? period = null, CallOptions? options = null)
     {
@@ -1692,9 +1834,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (period is not null) qs.Add("period=" + Uri.EscapeDataString(period.Value.ToString()));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Get daily reports</summary>
@@ -1717,12 +1859,14 @@ public sealed partial class MT4Endpoints
     /// `ResourceAccess` check is an indirect guard; a broker that
     /// mis-configured the underlying manager rights can still observe
     /// transient connection bounces.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="from">Window start (UTC, ISO 8601 — required)</param>
     /// <param name="to">Window end (UTC, ISO 8601 — required)</param>
     /// <param name="logins">Account logins to include (repeat the query              parameter — must be non-empty)</param>
     /// <param name="name">Report template name (max 31 chars). Defaults to              `"RTL_dailyreport"` when null or empty.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4DailyReport>> DailyReportsRequestAsync(DateTimeOffset? @from = null, DateTimeOffset? @to = null, IReadOnlyList<int>? logins = null, string? name = null, CallOptions? options = null)
     {
@@ -1733,9 +1877,9 @@ public sealed partial class MT4Endpoints
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (name is not null) qs.Add("name=" + Uri.EscapeDataString(name));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4DailyReportListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4DailyReportListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4DailyReport>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4DailyReport>();
+        return (IReadOnlyList<MT4DailyReport>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4DailyReport>();
     }
 
     /// <summary>Get daily reports (grouped)</summary>
@@ -1751,12 +1895,14 @@ public sealed partial class MT4Endpoints
     /// JSON shape: `{ "817542": [ ... ], "1001": [ ... ] }` — JSON
     /// object keys are strings, so int logins are stringified. Clients
     /// should parse keys back to int if needed.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="from">Window start (UTC, ISO 8601 — required)</param>
     /// <param name="to">Window end (UTC, ISO 8601 — required)</param>
     /// <param name="logins">Account logins to include (repeat the query              parameter — must be non-empty)</param>
     /// <param name="name">Report template name (max 31 chars). Defaults to              `"RTL_dailyreport"` when null or empty.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Dictionary<string, List<MT4DailyReport>?>?> DailyReportsRequestExAsync(DateTimeOffset? @from = null, DateTimeOffset? @to = null, IReadOnlyList<int>? logins = null, string? name = null, CallOptions? options = null)
     {
@@ -1767,9 +1913,9 @@ public sealed partial class MT4Endpoints
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (name is not null) qs.Add("name=" + Uri.EscapeDataString(name));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<Int32MT4DailyReportListDictionaryApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<Int32MT4DailyReportListDictionaryApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Read daily-report sync</summary>
@@ -1784,15 +1930,17 @@ public sealed partial class MT4Endpoints
     /// Call `DailySyncStart` first; calling `DailySyncRead` without
     /// a prior `DailySyncStart` may return an empty list or a non-Ok
     /// `managerAPICode` depending on server build.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4DailyReport>> DailySyncReadAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/DailySyncRead";
-        var result = await _connection.SendAsync<MT4DailyReportListApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4DailyReportListApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4DailyReport>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4DailyReport>();
+        return (IReadOnlyList<MT4DailyReport>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4DailyReport>();
     }
 
     /// <summary>Start daily-report sync</summary>
@@ -1810,9 +1958,11 @@ public sealed partial class MT4Endpoints
     /// 
     /// Returns a bare success envelope (no payload); the actual data comes
     /// from a subsequent `DailySyncRead` call.
+    /// 
+    /// **Timeout:** 60 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="timestamp">Unix-epoch-second cutoff (server-local time;              0 = pull all)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> DailySyncStartAsync(int? timestamp = null, CallOptions? options = null)
     {
@@ -1820,9 +1970,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (timestamp is not null) qs.Add("timestamp=" + timestamp.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Check group exists</summary>
@@ -1839,16 +1989,18 @@ public sealed partial class MT4Endpoints
     /// Returns `true` if the group is configured on the server,
     /// `false` otherwise. Group lookup is case-sensitive (MT4 group
     /// names are case-sensitive in the underlying API).
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="group">Group name to look up (max 16 chars)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> EnsureGroupNameExistAsync(string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/EnsureGroupNameExist/{Uri.EscapeDataString(group)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Send plugin command (binary)</summary>
@@ -1877,15 +2029,15 @@ public sealed partial class MT4Endpoints
     /// serialization logic in-process. Not exposed.
     /// 
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Binary payload</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4ExternalCommandBinaryResponse?> ExternalCommandBinaryAsync(MT4ExternalCommandBinaryRequest body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/ExternalCommandBinary";
-        var result = await _connection.SendAsync<MT4ExternalCommandBinaryResponseApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4ExternalCommandBinaryResponseApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Send plugin command (JSON)</summary>
@@ -1910,30 +2062,36 @@ public sealed partial class MT4Endpoints
     /// Idempotency-Key is strongly recommended — plugins may have side
     /// effects, and the channel itself gives no read-modify-write
     /// semantics.
+    /// 
+    /// **Timeout:** 60 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">The command as JSON, passed to the server plugin verbatim.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
-    public async Task<System.Text.Json.Nodes.JsonNode?> ExternalCommandJSONAsync(CallOptions? options = null)
+    public async Task<System.Text.Json.Nodes.JsonNode?> ExternalCommandJSONAsync(System.Text.Json.Nodes.JsonNode body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/ExternalCommandJSON";
-        var result = await _connection.SendAsync<RawJsonApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<RawJsonApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Patch trading group</summary>
     /// <remarks>
     /// Type 2 mutator — partial update of a trading group. Same semantics as `UserRecordPatch`; see that endpoint for the read-merge- write flow and forwards-compat behavior.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="group">Group name (immutable identity)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">JSON Merge Patch: an object with only the fields to change.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
-    public async Task<MT4Group?> GroupRecordAsync(string group, CallOptions? options = null)
+    public async Task<MT4Group?> GroupRecordAsync(string group, object body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/GroupRecord/{Uri.EscapeDataString(group)}";
-        var result = await _connection.SendAsync<MT4GroupApiResponse>(new HttpMethod("PATCH"), url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4GroupApiResponse>(new HttpMethod("PATCH"), url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get trading group (cached)</summary>
@@ -1943,16 +2101,18 @@ public sealed partial class MT4Endpoints
     /// Pump-cached lookup. Returns NotFound envelope if no group with the
     /// given name exists. Group names are case-sensitive — the wrapper does
     /// an exact dictionary lookup.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="group">Group name (max 16 chars)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4Group?> GroupRecordGetAsync(string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/GroupRecordGet/{Uri.EscapeDataString(group)}";
-        var result = await _connection.SendAsync<MT4GroupApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4GroupApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Update trading group</summary>
@@ -1975,17 +2135,19 @@ public sealed partial class MT4Endpoints
     /// &lt;br&gt;
     /// Idempotency-Key strongly recommended for safe retries.
     /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="group">Group name (path parameter, max 16 chars, immutable identity)</param>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Replacement fields. Omitted-from-DTO fields are preserved server-side.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4Group?> GroupRecordUpdateAsync(string group, MT4GroupUpdate body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/GroupRecordUpdate/{Uri.EscapeDataString(group)}";
-        var result = await _connection.SendAsync<MT4GroupApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4GroupApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get group security entries</summary>
@@ -1996,16 +2158,18 @@ public sealed partial class MT4Endpoints
     /// `Trade` and `Show` are both 0 are placeholders (the wrapper
     /// reserves the slot for the symbol-group regardless of whether the
     /// group is configured to trade it). Filter on the client side.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="group">Group name (max 16 chars)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4GroupSec>> GroupSecGroupsGetAsync(string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/GroupSecGroupsGet/{Uri.EscapeDataString(group)}";
-        var result = await _connection.SendAsync<MT4GroupSecListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4GroupSecListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4GroupSec>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4GroupSec>();
+        return (IReadOnlyList<MT4GroupSec>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4GroupSec>();
     }
 
     /// <summary>Get group margin overrides</summary>
@@ -2016,16 +2180,18 @@ public sealed partial class MT4Endpoints
     /// the wrapper's 128-element `SecMargins` array — the trailing
     /// slots are always uninitialised padding. `SecMarginsTotal` itself
     /// is part of the parent `MT4Group` DTO.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="group">Group name (max 16 chars)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4GroupMargin>> GroupSecMarginsGetAsync(string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/GroupSecMarginsGet/{Uri.EscapeDataString(group)}";
-        var result = await _connection.SendAsync<MT4GroupMarginListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4GroupMarginListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4GroupMargin>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4GroupMargin>();
+        return (IReadOnlyList<MT4GroupMargin>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4GroupMargin>();
     }
 
     /// <summary>List trading groups (cached)</summary>
@@ -2036,24 +2202,28 @@ public sealed partial class MT4Endpoints
     /// and nested SecGroups/SecMargins arrays (those get dedicated v2
     /// endpoints in a later wave). Typical group counts are small (dozens),
     /// so no pagination is needed.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4Group>> GroupsGetAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/GroupsGet";
-        var result = await _connection.SendAsync<MT4GroupListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4GroupListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4Group>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Group>();
+        return (IReadOnlyList<MT4Group>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4Group>();
     }
 
     /// <summary>List trading groups (live)</summary>
     /// <remarks>
     /// Manager (live) call returning a paged list of all configured groups on the platform. Sort key is the group name (string, ordinal compare) ascending. Cursor is the last returned group name encoded as opaque base64.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4Group>> GroupsRequestAsync(int? limit = null, string? cursor = null, CallOptions? options = null)
     {
@@ -2062,9 +2232,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4GroupListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4GroupListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Repair chart history</summary>
@@ -2081,16 +2251,18 @@ public sealed partial class MT4Endpoints
     /// can take many seconds on long histories; pair with
     /// `Idempotency-Key` for retry safety so a TCP retry doesn't
     /// kick off a second full sweep.
+    /// 
+    /// **Timeout:** 60 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="symbol">Symbol name (max 12 chars)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<int> HistoryCorrectAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/HistoryCorrect/{Uri.EscapeDataString(symbol)}";
-        var result = await _connection.SendAsync<Int32ApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<Int32ApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Get server journal</summary>
@@ -2105,12 +2277,14 @@ public sealed partial class MT4Endpoints
     /// Heavier endpoint — large date windows return large arrays. Pair with
     /// reasonable `from`/`to` bounds; consider `Idempotency-Key`
     /// for retry safety on slow links.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="from">Window start (UTC, ISO 8601 — required)</param>
     /// <param name="to">Window end (UTC, ISO 8601). Defaults to current server time.</param>
     /// <param name="mode">Log category filter. Defaults to Full.</param>
     /// <param name="filter">Optional substring filter applied server-side.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4ServerLog>> JournalRequestAsync(DateTimeOffset? @from = null, DateTimeOffset? @to = null, EnLogType? mode = null, string? filter = null, CallOptions? options = null)
     {
@@ -2121,9 +2295,9 @@ public sealed partial class MT4Endpoints
         if (mode is not null) qs.Add("mode=" + Uri.EscapeDataString(mode.Value.ToString()));
         if (filter is not null) qs.Add("filter=" + Uri.EscapeDataString(filter));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4ServerLogListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4ServerLogListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4ServerLog>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4ServerLog>();
+        return (IReadOnlyList<MT4ServerLog>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4ServerLog>();
     }
 
     /// <summary>Check license</summary>
@@ -2135,16 +2309,18 @@ public sealed partial class MT4Endpoints
     /// result code is `Ok`, indicating the license is recognized;
     /// `false` on any non-Ok code (covers both "license not found"
     /// and "manager lacks permission to query the license registry").
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="licenseName">License name to verify against the MT4 server's registry</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> LicenseCheckAsync(string licenseName, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/LicenseCheck/{Uri.EscapeDataString(licenseName)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Get last mail path</summary>
@@ -2153,15 +2329,17 @@ public sealed partial class MT4Endpoints
     /// 
     /// Pump-cached read — returns the path/identifier of the last mail.
     /// Empty string when no mail has been received yet on the connection.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<string?> MailLastAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/MailLast";
-        var result = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Send mail to accounts</summary>
@@ -2174,15 +2352,15 @@ public sealed partial class MT4Endpoints
     /// `throw new WrapperException("MailSend cannot be called in x64 environment")`),
     /// so this endpoint exists only in the sidecar build.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Mail content + recipient logins</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> MailSendAsync(MT4MailSendRequest body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/MailSend";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>List server mail</summary>
@@ -2194,14 +2372,14 @@ public sealed partial class MT4Endpoints
     /// `MT4MailBox` entries. Read-only; no batching parameters
     /// (the wrapper has no native pagination).
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4MailBox>> MailsRequestAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/MailsRequest";
-        var result = await _connection.SendAsync<MT4MailBoxListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4MailBoxListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4MailBox>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4MailBox>();
+        return (IReadOnlyList<MT4MailBox>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4MailBox>();
     }
 
     /// <summary>Get manager common settings</summary>
@@ -2211,15 +2389,17 @@ public sealed partial class MT4Endpoints
     /// Returns MT4Common DTO — server name, broker, server version/build,
     /// time zone. Schema is decoupled from the wrapper's ConCommon: v2
     /// clients are protected from MetaQuotes schema changes.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4Common?> ManagerCommonAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/ManagerCommon";
-        var result = await _connection.SendAsync<MT4CommonApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4CommonApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get account margin (cached)</summary>
@@ -2230,16 +2410,18 @@ public sealed partial class MT4Endpoints
     /// account's group, then `MarginLevelGet(login, group)`. Returns
     /// NotFound envelope if the account is unknown or has no open trades.
     /// For a live round-trip use MarginLevelRequest.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="login">Account login (positive integer)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4MarginLevel?> MarginLevelGetAsync(int login, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/MarginLevelGet/{login.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4MarginLevelApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4MarginLevelApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get account margin (live)</summary>
@@ -2250,16 +2432,18 @@ public sealed partial class MT4Endpoints
     /// directly. Slower than `MarginLevelGet` but always fresh. Cost-
     /// equivalent to other live Manager calls (billed per request, unlike
     /// pump reads).
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="login">Account login (positive integer)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4MarginLevel?> MarginLevelRequestAsync(int login, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/MarginLevelRequest/{login.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4MarginLevelApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4MarginLevelApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>List account margins (cached)</summary>
@@ -2270,15 +2454,17 @@ public sealed partial class MT4Endpoints
     /// for bulk monitoring of account health (margin calls / stop-out
     /// proximity). For a single account, prefer the existing
     /// MarginLevelGet/MarginLevelRequest endpoints.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4MarginLevel>> MarginsGetAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/MarginsGet";
-        var result = await _connection.SendAsync<MT4MarginLevelListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4MarginLevelListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4MarginLevel>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4MarginLevel>();
+        return (IReadOnlyList<MT4MarginLevel>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4MarginLevel>();
     }
 
     /// <summary>Get news body (cached)</summary>
@@ -2287,16 +2473,18 @@ public sealed partial class MT4Endpoints
     /// 
     /// Pump-cached read — pair with `NewsTotal` and `NewsGet` (later)
     /// to enumerate cached news. The key is the news item id known to MT4.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="key">News item id</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<string?> NewsBodyGetAsync(int key, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/NewsBodyGet/{key.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Request news body fetch</summary>
@@ -2308,16 +2496,18 @@ public sealed partial class MT4Endpoints
     /// success/failure to surface. A subsequent `NewsBodyGet(key)` will
     /// see the body once the pump has retrieved it. The payload is a sentinel
     /// `true` meaning "request dispatched".
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="key">News item key (from NewsGet/NewsTopicGet)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> NewsBodyRequestAsync(int key, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/NewsBodyRequest/{key.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>List news headers</summary>
@@ -2329,15 +2519,17 @@ public sealed partial class MT4Endpoints
     /// Category, Keywords, Priority, LangId). Body text is fetched via
     /// `NewsBodyGet(key)` after asking the pump to populate it via
     /// `NewsBodyRequest(key)`.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4NewsTopic>> NewsGetAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/NewsGet";
-        var result = await _connection.SendAsync<MT4NewsTopicListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4NewsTopicListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4NewsTopic>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4NewsTopic>();
+        return (IReadOnlyList<MT4NewsTopic>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4NewsTopic>();
     }
 
     /// <summary>Send news to terminals</summary>
@@ -2348,15 +2540,15 @@ public sealed partial class MT4Endpoints
     /// Sidecar-only because `mtmanapi64.dll` throws
     /// `PlatformNotSupportedException` on the body setter.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">News topic + body + category + priority</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> NewsSendAsync(MT4NewsSendRequest body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/NewsSend";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Get news header by index</summary>
@@ -2367,16 +2559,18 @@ public sealed partial class MT4Endpoints
     /// the whole array. Pair with `NewsTotal` to bound the index.
     /// Returns a wrapper-failure envelope when pos is
     /// out of range.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="pos">Zero-based index into the cached news array</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4NewsTopic?> NewsTopicGetAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/NewsTopicGet/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4NewsTopicApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4NewsTopicApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get news count</summary>
@@ -2385,27 +2579,32 @@ public sealed partial class MT4Endpoints
     /// 
     /// Pump-cached read — instant local lookup, no round-trip to MT4 server.
     /// Useful as a cheap polling probe before fetching news bodies.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<int> NewsTotalAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/NewsTotal";
-        var result = await _connection.SendAsync<Int32ApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<Int32ApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>NotificationsSendAsync</summary>
+    /// <remarks>
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
     /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> NotificationsSendAsync(MT4NotificationsSendRequest body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/NotificationsSend";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>List online users (cached)</summary>
@@ -2418,10 +2617,12 @@ public sealed partial class MT4Endpoints
     /// is not yet warmed (fresh connection) the response is a NoConnect
     /// error with a retry hint, not an empty list — empty list means
     /// "warmed but currently no online sessions".
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4Online>> OnlineGetAsync(int? limit = null, string? cursor = null, CallOptions? options = null)
     {
@@ -2430,9 +2631,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4OnlineListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4OnlineListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>List online sessions (live)</summary>
@@ -2444,10 +2645,12 @@ public sealed partial class MT4Endpoints
     /// reconciliation pass against the pump snapshot. Heavier than
     /// `OnlineGet`: every call hits the MT4 server. Paged the same way
     /// for caller symmetry — cursor is the trailing login (ascending).
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4Online>> OnlineRequestAsync(int? limit = null, string? cursor = null, CallOptions? options = null)
     {
@@ -2456,9 +2659,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4OnlineListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4OnlineListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get server performance series</summary>
@@ -2474,9 +2677,11 @@ public sealed partial class MT4Endpoints
     /// cache is NOT consulted — data reflects the authoritative server log.
     /// Returns an empty list (Ok envelope, not an error) when the window
     /// contains no snapshots.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="from">Window start timestamp (UTC, ISO 8601). Snapshots with              `Ctm &gt;= from` are returned. Marshalled to the wrapper as              `__time32_t` — values before 1970 or after 2038 are out of range.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4Performance>> PerformanceRequestAsync(DateTimeOffset? @from = null, CallOptions? options = null)
     {
@@ -2484,9 +2689,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (@from is not null) qs.Add("from=" + Uri.EscapeDataString(@from.Value.ToString("O", CultureInfo.InvariantCulture)));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4PerformanceListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4PerformanceListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4Performance>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Performance>();
+        return (IReadOnlyList<MT4Performance>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4Performance>();
     }
 
     /// <summary>Get plugin parameters</summary>
@@ -2498,14 +2703,14 @@ public sealed partial class MT4Endpoints
     /// safe on x86, sign-extension hazard on x64. Sidecar-only.
     /// </remarks>
     /// <param name="pos">Zero-based plugin index from `PluginsGet`</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4PluginParam?> PluginParamGetAsync(int pos, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/PluginParamGet/{pos.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4PluginParamApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4PluginParamApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Update plugin parameter</summary>
@@ -2515,15 +2720,15 @@ public sealed partial class MT4Endpoints
     /// Manager-live call to the wrapper's `PluginUpdate(ConPluginParam cpp)`.
     /// Body is `MT4PluginParam` (the same shape `PluginParamGet` returns).
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Plugin + parameter set to apply</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> PluginUpdateAsync(MT4PluginParam body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/PluginUpdate";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>List plugins (cached)</summary>
@@ -2535,14 +2740,14 @@ public sealed partial class MT4Endpoints
     /// silently-changing plugin layouts); the x86 sidecar process loads
     /// mtmanapi.dll where the layout is stable, so the call is safe.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4Plugin>> PluginsGetAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/PluginsGet";
-        var result = await _connection.SendAsync<MT4PluginListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4PluginListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4Plugin>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Plugin>();
+        return (IReadOnlyList<MT4Plugin>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4Plugin>();
     }
 
     /// <summary>Get closed-trade reports</summary>
@@ -2567,12 +2772,14 @@ public sealed partial class MT4Endpoints
     /// indirectly via the API-side `ResourceAccess` check, but a broker
     /// that mis-configured the underlying manager rights can still observe
     /// transient connection bounces.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="from">Window start (UTC, ISO 8601 — required)</param>
     /// <param name="to">Window end (UTC, ISO 8601 — required)</param>
     /// <param name="logins">Account logins to include (repeat the query              parameter for batch — must be non-empty)</param>
     /// <param name="name">Report template name (max 32 chars). Defaults to              `"RTL_report"` when null or empty.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4Trade>> ReportsRequestAsync(DateTimeOffset? @from = null, DateTimeOffset? @to = null, IReadOnlyList<int>? logins = null, string? name = null, CallOptions? options = null)
     {
@@ -2583,9 +2790,9 @@ public sealed partial class MT4Endpoints
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (name is not null) qs.Add("name=" + Uri.EscapeDataString(name));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>Get server time</summary>
@@ -2594,15 +2801,17 @@ public sealed partial class MT4Endpoints
     /// 
     /// Smoke-test endpoint exercising the v2 envelope. Returns current MT4
     /// server time wrapped in ApiResponse&lt;DateTime&gt;.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<DateTimeOffset> ServerTimeAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/ServerTime";
-        var result = await _connection.SendAsync<DateTimeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<DateTimeApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Force chart resync</summary>
@@ -2613,9 +2822,11 @@ public sealed partial class MT4Endpoints
     /// the MT4 server to walk every plugin's chart-history feed and bring
     /// the local cache in sync. Idempotent — running twice is a no-op
     /// against an already-synced state.
+    /// 
+    /// **Timeout:** 60 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="confirm">Required deliberateness flag — must equal `true`</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> SrvChartsSyncAsync(bool? confirm = null, CallOptions? options = null)
     {
@@ -2623,9 +2834,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (confirm is not null) qs.Add("confirm=" + (confirm.Value ? "true" : "false"));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Get feeder log</summary>
@@ -2636,16 +2847,18 @@ public sealed partial class MT4Endpoints
     /// the feeder's log buffer as a string (empty when the feeder is unknown
     /// or has no recent log activity). Payload is the raw log text — not an
     /// array of lines — to preserve formatting at the wrapper boundary.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="name">Feeder name (matched server-side; case-sensitive)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<string?> SrvFeederLogAsync(string name, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/SrvFeederLog/{Uri.EscapeDataString(name)}";
-        var result = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>List data feeders</summary>
@@ -2661,10 +2874,12 @@ public sealed partial class MT4Endpoints
     /// Sorted by `Name` ascending. Paged with the same cursor codec as
     /// the rest of the v2 paged endpoints (`Name` is the cursor key).
     /// 
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4Feeder>> SrvFeedersAsync(int? limit = null, string? cursor = null, CallOptions? options = null)
     {
@@ -2673,9 +2888,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4FeederListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4FeederListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Restart data feeders</summary>
@@ -2685,9 +2900,11 @@ public sealed partial class MT4Endpoints
     /// Manager (live) call to the wrapper's `SrvFeedsRestart()`.
     /// Cycles all running quote/news feeders. May cause a brief gap in
     /// the tick stream — typically a second or two. Idempotent.
+    /// 
+    /// **Timeout:** 60 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="confirm">Required deliberateness flag — must equal `true`</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> SrvFeedsRestartAsync(bool? confirm = null, CallOptions? options = null)
     {
@@ -2695,9 +2912,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (confirm is not null) qs.Add("confirm=" + (confirm.Value ? "true" : "false"));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Start LiveUpdate distributor</summary>
@@ -2707,9 +2924,11 @@ public sealed partial class MT4Endpoints
     /// Manager (live) call to the wrapper's `SrvLiveUpdateStart()`.
     /// Starts (or restarts) the server's outbound LiveUpdate broadcast.
     /// Affects connected client terminals — they may receive an update prompt.
+    /// 
+    /// **Timeout:** 60 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="confirm">Required deliberateness flag — must equal `true`</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> SrvLiveUpdateStartAsync(bool? confirm = null, CallOptions? options = null)
     {
@@ -2717,9 +2936,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (confirm is not null) qs.Add("confirm=" + (confirm.Value ? "true" : "false"));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Restart server</summary>
@@ -2736,9 +2955,11 @@ public sealed partial class MT4Endpoints
     /// query string. It is a deliberateness signal, NOT an authorization
     /// mechanism — admin rights are still enforced separately.
     /// 
+    /// 
+    /// **Timeout:** 60 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="confirm">Required deliberateness flag — must equal `true`</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> SrvRestartAsync(bool? confirm = null, CallOptions? options = null)
     {
@@ -2746,9 +2967,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (confirm is not null) qs.Add("confirm=" + (confirm.Value ? "true" : "false"));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Add symbol</summary>
@@ -2764,16 +2985,18 @@ public sealed partial class MT4Endpoints
     /// corrects the verb to POST without changing the wrapper behaviour. The
     /// path stays the same to keep traceability with the underlying wrapper
     /// method name; only the HTTP verb changes.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="symbol">Symbol name (max 12 chars)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> SymbolAddAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/SymbolAdd/{Uri.EscapeDataString(symbol)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Change symbol attributes</summary>
@@ -2791,31 +3014,36 @@ public sealed partial class MT4Endpoints
     /// path; `CfgUpdateSymbol` changes structural symbol configuration
     /// (currency, calc mode, margin, swap) that requires admin privileges
     /// and broker-side coordination.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Symbol attribute payload</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> SymbolChangeAsync(MT4SymbolChangeRequest body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/SymbolChange";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Patch symbol config</summary>
     /// <remarks>
     /// Type 2 mutator — partial update of a symbol configuration. Same flow as `UserRecordPatch`; reads existing config live, overlays the patch, writes back.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="symbol">Symbol name (immutable identity)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">JSON Merge Patch: an object with only the fields to change.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
-    public async Task<MT4SymbolConfig?> SymbolConfigAsync(string symbol, CallOptions? options = null)
+    public async Task<MT4SymbolConfig?> SymbolConfigAsync(string symbol, object body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/SymbolConfig/{Uri.EscapeDataString(symbol)}";
-        var result = await _connection.SendAsync<MT4SymbolConfigApiResponse>(new HttpMethod("PATCH"), url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4SymbolConfigApiResponse>(new HttpMethod("PATCH"), url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Hide symbol</summary>
@@ -2825,16 +3053,18 @@ public sealed partial class MT4Endpoints
     /// Removes the symbol from the active subscription set; ticks stop flowing
     /// and orders are no longer accepted for that symbol. Reversible via
     /// `SymbolAdd`. v1 exposes this as a GET — v2 fixes to POST.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="symbol">Symbol name (max 12 chars)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> SymbolHideAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/SymbolHide/{Uri.EscapeDataString(symbol)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Get symbol market data (cached)</summary>
@@ -2845,9 +3075,11 @@ public sealed partial class MT4Endpoints
     /// for the requested instrument. Returns NotFound-shaped envelope (the
     /// wrapper-level result code surfaces in ManagerAPICode / ErrorCode)
     /// when the symbol is not loaded on the connected server.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="symbol">Symbol name (e.g. EURUSD)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4SymbolInfo?> SymbolInfoGetAsync(string? symbol = null, CallOptions? options = null)
     {
@@ -2855,9 +3087,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (symbol is not null) qs.Add("symbol=" + Uri.EscapeDataString(symbol));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4SymbolInfoApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4SymbolInfoApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>List updated symbols (cached)</summary>
@@ -2867,10 +3099,12 @@ public sealed partial class MT4Endpoints
     /// Pump-cached read — instant local lookup, no MT4 round-trip. Useful for
     /// bulk refresh of a quote panel or watchlist. Sort key is the symbol
     /// name; cursors are opaque base64 strings.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4SymbolInfo>> SymbolInfoUpdatedAsync(int? limit = null, string? cursor = null, CallOptions? options = null)
     {
@@ -2879,9 +3113,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4SymbolInfoListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4SymbolInfoListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Send synthetic tick</summary>
@@ -2899,11 +3133,13 @@ public sealed partial class MT4Endpoints
     /// `bid` and `ask` are absolute prices, not deltas. Pass
     /// the symbol's last-known bid/ask if you only need to refresh the
     /// timestamp; pass adjusted prices to actually move the quote.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="symbol">Symbol name (max 11 chars)</param>
     /// <param name="bid">Bid price</param>
     /// <param name="ask">Ask price</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> SymbolSendTickAsync(string? symbol = null, double? bid = null, double? ask = null, CallOptions? options = null)
     {
@@ -2913,9 +3149,9 @@ public sealed partial class MT4Endpoints
         if (bid is not null) qs.Add("bid=" + bid.Value.ToString("R", CultureInfo.InvariantCulture));
         if (ask is not null) qs.Add("ask=" + ask.Value.ToString("R", CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Get symbol sessions</summary>
@@ -2929,16 +3165,18 @@ public sealed partial class MT4Endpoints
     /// `MT4SymbolConfig`: the parent `CfgRequestSymbol` endpoint
     /// drops the nested Sessions array to keep the DTO manageable; this
     /// dedicated endpoint exposes it.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="symbol">Symbol name (max 12 chars)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4SymbolDaySessions>> SymbolSessionsGetAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/SymbolSessionsGet/{Uri.EscapeDataString(symbol)}";
-        var result = await _connection.SendAsync<MT4SymbolDaySessionsListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4SymbolDaySessionsListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4SymbolDaySessions>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4SymbolDaySessions>();
+        return (IReadOnlyList<MT4SymbolDaySessions>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4SymbolDaySessions>();
     }
 
     /// <summary>List symbol groups (cached)</summary>
@@ -2949,15 +3187,17 @@ public sealed partial class MT4Endpoints
     /// (e.g. "Forex", "CFD", "Metals"). Each entry only carries Name and
     /// Description; ConSymbolGroup has no additional fields on the
     /// MT4-side struct.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4SymbolGroup>> SymbolsGroupsGetAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/SymbolsGroupsGet";
-        var result = await _connection.SendAsync<MT4SymbolGroupListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4SymbolGroupListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4SymbolGroup>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4SymbolGroup>();
+        return (IReadOnlyList<MT4SymbolGroup>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4SymbolGroup>();
     }
 
     /// <summary>Refresh symbol catalog</summary>
@@ -2967,15 +3207,17 @@ public sealed partial class MT4Endpoints
     /// Forces the wrapper to reload its symbol catalog. Useful after admin
     /// tooling has added/edited symbols on the MT4 server side. v1 exposes
     /// this as GET — v2 fixes to POST (mutation of the wrapper's local state).
+    /// 
+    /// **Timeout:** 60 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> SymbolsRefreshAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/SymbolsRefresh";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Get last ticks, all symbols (cached)</summary>
@@ -2986,15 +3228,17 @@ public sealed partial class MT4Endpoints
     /// when no quotes have been received yet. For sub-second updates use the
     /// SignalR tick stream — this endpoint is intended for one-shot snapshots
     /// (warm-up, monitoring dashboards, idempotent cache scenarios).
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4TickInfo>> TickInfoLastAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TickInfoLast";
-        var result = await _connection.SendAsync<MT4TickInfoListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TickInfoListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4TickInfo>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4TickInfo>();
+        return (IReadOnlyList<MT4TickInfo>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4TickInfo>();
     }
 
     /// <summary>Get last tick (cached)</summary>
@@ -3006,16 +3250,18 @@ public sealed partial class MT4Endpoints
     /// pump cache has no tick for the requested symbol (symbol not in the
     /// active subscription set, or the platform has never received a tick
     /// since startup).
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="symbol">Symbol name (e.g. "EURUSD", max 12 chars)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4TickInfo?> TickInfoLastBySymbolAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TickInfoLast/{Uri.EscapeDataString(symbol)}";
-        var result = await _connection.SendAsync<MT4TickInfoApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TickInfoApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get historical ticks</summary>
@@ -3026,24 +3272,26 @@ public sealed partial class MT4Endpoints
     /// `flags` controls whether raw and/or normalised ticks are
     /// included (defaults to `All`). Heavy endpoint — pair with
     /// `Idempotency-Key` for retry safety.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="symbol">Symbol name (max 12 chars)</param>
     /// <param name="start">Window start (UTC, ISO 8601)</param>
     /// <param name="end">Window end (UTC, ISO 8601)</param>
     /// <param name="flags">Tick request flags. Defaults to All.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
-    public async Task<IReadOnlyList<MT4TickRecord>> TicksRequestAsync(string symbol, DateTimeOffset? start = null, DateTimeOffset? end = null, TickRequestFlags? flags = null, CallOptions? options = null)
+    public async Task<IReadOnlyList<MT4TickRecord>> TicksRequestAsync(string symbol, DateTimeOffset? start = null, DateTimeOffset? end = null, string? flags = null, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TicksRequest/{Uri.EscapeDataString(symbol)}";
         var qs = new List<string>();
         if (start is not null) qs.Add("start=" + Uri.EscapeDataString(start.Value.ToString("O", CultureInfo.InvariantCulture)));
         if (end is not null) qs.Add("end=" + Uri.EscapeDataString(end.Value.ToString("O", CultureInfo.InvariantCulture)));
-        if (flags is not null) qs.Add("flags=" + Uri.EscapeDataString(flags.Value.ToString()));
+        if (flags is not null) qs.Add("flags=" + Uri.EscapeDataString(flags));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4TickRecordListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TickRecordListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4TickRecord>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4TickRecord>();
+        return (IReadOnlyList<MT4TickRecord>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4TickRecord>();
     }
 
     /// <summary>Validate order stops</summary>
@@ -3060,10 +3308,12 @@ public sealed partial class MT4Endpoints
     /// Useful for client-side pre-flight before submitting a real
     /// `TradeTransaction` — saves a server round-trip for invalid
     /// orders.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
+    /// <param name="body">Trade transaction shape — same DTO as `TradeTransaction`.</param>
     /// <param name="price">Reference price for the validation (typically current bid/ask).</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> TradeCheckStopsAsync(MT4TradeTransaction body, double? price = null, CallOptions? options = null)
     {
@@ -3071,9 +3321,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (price is not null) qs.Add("price=" + price.Value.ToString("R", CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Roll back trade transaction</summary>
@@ -3087,16 +3337,18 @@ public sealed partial class MT4Endpoints
     /// wrapper's `ResultCode` as part of the envelope on failure.
     /// 
     /// Idempotent on already-committed/already-rolled-back tickets.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="order">Order ticket (positive int) to roll back.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> TradeClearRollbackAsync(int order, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TradeClearRollback/{order.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Get trade record (cached)</summary>
@@ -3107,16 +3359,18 @@ public sealed partial class MT4Endpoints
     /// ticket, cache miss) surface in the envelope's ManagerAPICode /
     /// ErrorCode pair — clients must branch on isError before dereferencing
     /// payload.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="order">Order ticket number</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4Trade?> TradeRecordGetAsync(int order, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TradeRecordGet/{order.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4TradeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get trade record (live)</summary>
@@ -3130,16 +3384,18 @@ public sealed partial class MT4Endpoints
     /// flushed), or any flow where the caller can tolerate the latency cost
     /// in exchange for guaranteed freshness. Returns NotFound envelope when
     /// the ticket does not exist on the server.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="order">Order ticket number</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4Trade?> TradeRecordRequestAsync(int order, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TradeRecordRequest/{order.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4TradeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get trade records batch (live)</summary>
@@ -3155,9 +3411,11 @@ public sealed partial class MT4Endpoints
     /// Order in the response is NOT guaranteed to match the request order;
     /// missing tickets are silently omitted (the envelope is not an error
     /// envelope in that case — match by `order` field on the client).
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="orders">Order tickets to request (repeat the query parameter)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4Trade>> TradeRecordsRequestAsync(IReadOnlyList<int>? orders = null, CallOptions? options = null)
     {
@@ -3165,9 +3423,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (orders is not null) foreach (var v in orders) qs.Add("orders=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>Submit trade transaction</summary>
@@ -3189,25 +3447,29 @@ public sealed partial class MT4Endpoints
     /// close, or apply a balance op twice. With the header the second call
     /// returns the cached envelope from the first.
     /// 
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Transaction request body</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4TradeTransaction?> TradeTransactionAsync(MT4TradeTransaction body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TradeTransaction";
-        var result = await _connection.SendAsync<MT4TradeTransactionApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeTransactionApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>List open trades (cached)</summary>
     /// <remarks>
     /// Pump-cached snapshot of all open trades on the platform, returned paginated. Sort key is the order ticket ascending. `?limit=` caps page size; without it all open trades come back in one page.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4Trade>> TradesGetAsync(int? limit = null, string? cursor = null, CallOptions? options = null)
     {
@@ -3216,9 +3478,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get trade by ticket (cached)</summary>
@@ -3231,16 +3493,18 @@ public sealed partial class MT4Endpoints
     /// trade up in the open-trades dictionary. Behaviourally equivalent for
     /// open trades; `TradeRecordGet` can also resolve recently closed
     /// trades that linger in cache.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="ticket">Order ticket</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4Trade?> TradesGetByTicketAsync(int ticket, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TradesGet/{ticket.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4TradeApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>List trades by account (cached)</summary>
@@ -3251,17 +3515,19 @@ public sealed partial class MT4Endpoints
     /// required because the wrapper organises trades by group internally —
     /// callers can fetch the group via `UserRecordGet/{login}` first.
     /// Empty list when the account has no open trades.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="login">Account login (positive integer)</param>
     /// <param name="group">Account group name (max 16 chars)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4Trade>> TradesGetByLoginAsync(int login, string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TradesGetByLogin/{login.ToString(CultureInfo.InvariantCulture)}/{Uri.EscapeDataString(group)}";
-        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>List market trades (cached)</summary>
@@ -3271,15 +3537,17 @@ public sealed partial class MT4Endpoints
     /// Pump-cached snapshot of every open market order across all accounts.
     /// Pending orders (limits/stops) are excluded — for those query per-symbol
     /// or per-account. Empty array is a legitimate result on idle servers.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4Trade>> TradesGetByMarketAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/TradesGetByMarket";
-        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>List trades by symbol (cached)</summary>
@@ -3289,9 +3557,11 @@ public sealed partial class MT4Endpoints
     /// Pump-cached snapshot — instant local lookup, no MT4 round-trip. Useful
     /// for per-instrument risk monitoring. Empty array is a legitimate result
     /// (no live trades on that symbol).
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="symbol">Symbol to filter by (e.g. EURUSD)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4Trade>> TradesGetBySymbolAsync(string? symbol = null, CallOptions? options = null)
     {
@@ -3299,9 +3569,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (symbol is not null) qs.Add("symbol=" + Uri.EscapeDataString(symbol));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>Query trades (live)</summary>
@@ -3315,11 +3585,13 @@ public sealed partial class MT4Endpoints
     /// this endpoint returns the full server-side set the manager can see.
     /// Heavy — paginate aggressively, prefer pump variants when freshness
     /// is not critical.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
     /// <param name="group">Optional case-sensitive exact-match filter on account group.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4Trade>> TradesRequestAsync(int? limit = null, string? cursor = null, string? group = null, CallOptions? options = null)
     {
@@ -3329,9 +3601,9 @@ public sealed partial class MT4Endpoints
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (group is not null) qs.Add("group=" + Uri.EscapeDataString(group));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Snapshot all trades</summary>
@@ -3342,7 +3614,7 @@ public sealed partial class MT4Endpoints
     /// Same UnpackObject-loop hazard as the user batch reads. Sidecar-only.
     /// </remarks>
     /// <param name="limit">Optional server-side response cap (1..1000000, default 100000)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4Trade>> TradesSnapshotAsync(int? limit = null, CallOptions? options = null)
     {
@@ -3350,9 +3622,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>Read trade-records sync</summary>
@@ -3364,7 +3636,7 @@ public sealed partial class MT4Endpoints
     /// API. Same UnpackObject hazard — sidecar-only.
     /// </remarks>
     /// <param name="limit">Optional server-side response cap (1..1000000, default 100000)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4Trade>> TradesSyncReadAsync(int? limit = null, CallOptions? options = null)
     {
@@ -3372,9 +3644,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>Start trade-records sync</summary>
@@ -3386,9 +3658,11 @@ public sealed partial class MT4Endpoints
     /// (see deferral note in the Users section above). Pass
     /// `timestamp=0` to request all trades. The timestamp is Unix
     /// epoch seconds (int32) in MT4 server-local time, not UTC.
+    /// 
+    /// **Timeout:** 60 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="timestamp">Unix-epoch-second cutoff (server-local time;              0 = pull all)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> TradesSyncStartAsync(int? timestamp = null, CallOptions? options = null)
     {
@@ -3396,9 +3670,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (timestamp is not null) qs.Add("timestamp=" + timestamp.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Get account trade history</summary>
@@ -3410,11 +3684,13 @@ public sealed partial class MT4Endpoints
     /// Returns an empty list if the account has no closed trades in the
     /// window. Trades are mapped to the curated `MT4Trade` DTO; same
     /// shape as live `TradesGetByMarket` / `TradesGetBySymbol`.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="login">Account login (positive integer)</param>
     /// <param name="fromTime">Window start (UTC, ISO 8601). Optional.</param>
     /// <param name="toTime">Window end (UTC, ISO 8601). Optional.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4Trade>> TradesUserHistoryAsync(int login, DateTimeOffset? fromTime = null, DateTimeOffset? toTime = null, CallOptions? options = null)
     {
@@ -3423,9 +3699,9 @@ public sealed partial class MT4Endpoints
         if (fromTime is not null) qs.Add("fromTime=" + Uri.EscapeDataString(fromTime.Value.ToString("O", CultureInfo.InvariantCulture)));
         if (toTime is not null) qs.Add("toTime=" + Uri.EscapeDataString(toTime.Value.ToString("O", CultureInfo.InvariantCulture)));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4TradeListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4Trade>();
+        return (IReadOnlyList<MT4Trade>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4Trade>();
     }
 
     /// <summary>Verify account password</summary>
@@ -3441,17 +3717,19 @@ public sealed partial class MT4Endpoints
     /// Read-only operation: no state changes. Idempotency-Key on this endpoint
     /// is supported but rarely useful — pin if your retry policy expects the
     /// same answer across attempts.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="login">Account login (positive integer)</param>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Candidate password (JSON-encoded string body)</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> UserPasswordCheckAsync(int login, string body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/UserPasswordCheck/{login.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Set account password</summary>
@@ -3476,12 +3754,14 @@ public sealed partial class MT4Endpoints
     /// noise. With the header, the second call short-circuits to the cached
     /// response.
     /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="login">Account login (positive integer)</param>
-    /// <param name="body">Request payload.</param>
+    /// <param name="body">New password (JSON-encoded string body)</param>
     /// <param name="changeInvestor">If true, sets the investor (read-only) password instead</param>
     /// <param name="cleanPubkey">If true, also resets the account's public key</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> UserPasswordSetAsync(int login, string body, bool? changeInvestor = null, bool? cleanPubkey = null, CallOptions? options = null)
     {
@@ -3490,9 +3770,9 @@ public sealed partial class MT4Endpoints
         if (changeInvestor is not null) qs.Add("changeInvestor=" + (changeInvestor.Value ? "true" : "false"));
         if (cleanPubkey is not null) qs.Add("cleanPubkey=" + (cleanPubkey.Value ? "true" : "false"));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Patch account</summary>
@@ -3504,16 +3784,19 @@ public sealed partial class MT4Endpoints
     /// surface as `MT4Error` envelopes. Secret-preservation and
     /// computed-field protection are handled by the existing Type 1 ApplyTo
     /// mapper's ignore list.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="login">Account login (immutable identity)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">JSON Merge Patch: an object with only the fields to change.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
-    public async Task<MT4User?> UserRecordAsync(int login, CallOptions? options = null)
+    public async Task<MT4User?> UserRecordAsync(int login, object body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/UserRecord/{login.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4UserApiResponse>(new HttpMethod("PATCH"), url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4UserApiResponse>(new HttpMethod("PATCH"), url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get account (cached)</summary>
@@ -3525,16 +3808,18 @@ public sealed partial class MT4Endpoints
     /// stripped at the mapper level — they cannot be exposed via this endpoint
     /// regardless of caller permissions. Returns NotFound envelope when the
     /// pump cache does not contain the requested login.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="login">Account login (positive integer)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4User?> UserRecordGetAsync(int login, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/UserRecordGet/{login.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4UserApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4UserApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Create account</summary>
@@ -3553,16 +3838,18 @@ public sealed partial class MT4Endpoints
     /// Idempotency-Key strongly recommended — a retried create without it
     /// can land twice when the original response was lost on the wire,
     /// burning a second login id from the broker's sequence.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">New account fields. Login=0 for server-assigned id.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4User?> UserRecordNewAsync(MT4UserCreate body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/UserRecordNew";
-        var result = await _connection.SendAsync<MT4UserApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4UserApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get account (live)</summary>
@@ -3574,16 +3861,18 @@ public sealed partial class MT4Endpoints
     /// Slower than `UserRecordGet` but guarantees fresh data (just
     /// changed group, balance fix, etc). Same curated DTO, same security
     /// guarantees — passwords/OTP/API blob never cross the boundary.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="login">Account login (positive integer)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4User?> UserRecordRequestAsync(int login, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/UserRecordRequest/{login.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4UserApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4UserApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Update account</summary>
@@ -3609,17 +3898,19 @@ public sealed partial class MT4Endpoints
     /// risks silently overwriting concurrent edits that happened between
     /// the original send and the retry.
     /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="login">Account login (positive integer)</param>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Replacement fields. Omitted-from-DTO fields are preserved server-side.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4User?> UserRecordUpdateAsync(int login, MT4UserUpdate body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/UserRecordUpdate/{login.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4UserApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4UserApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get accounts batch (live)</summary>
@@ -3634,9 +3925,11 @@ public sealed partial class MT4Endpoints
     /// Order in the response is **not** guaranteed to match the request — the
     /// wrapper returns a dictionary. Missing logins are silently omitted; the
     /// envelope is not an error envelope in that case.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="logins">Account logins to request (repeat the query param)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4User>> UserRecordsRequestAsync(IReadOnlyList<int>? logins = null, CallOptions? options = null)
     {
@@ -3644,9 +3937,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4User>();
+        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4User>();
     }
 
     /// <summary>Bulk account operation</summary>
@@ -3668,16 +3961,18 @@ public sealed partial class MT4Endpoints
     /// account; the wrapper enforces this server-side. Idempotency-Key
     /// strongly recommended — bulk Delete / SetGroup operations are
     /// destructive on customer-visible state.
+    /// 
+    /// **Timeout:** 60 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="body">Operation envelope (Command, NewGroup/Leverage, Logins).</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> UsersGroupOpAsync(MT4UsersGroupOp body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/UsersGroupOp";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>List accounts (live)</summary>
@@ -3688,10 +3983,12 @@ public sealed partial class MT4Endpoints
     /// reduces only the wire payload, not MT4 server load. Items are sorted
     /// by login ascending; pages are stable across concurrent inserts as
     /// long as the new login is greater than the previous page's last login.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<Page<MT4User>> UsersRequestAsync(int? limit = null, string? cursor = null, CallOptions? options = null)
     {
@@ -3700,9 +3997,9 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
+        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Snapshot all users</summary>
@@ -3716,7 +4013,7 @@ public sealed partial class MT4Endpoints
     /// so this endpoint is sidecar-only.
     /// </remarks>
     /// <param name="limit">Optional server-side response cap (1..1000000, default 100000)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4User>> UsersSnapshotAsync(int? limit = null, CallOptions? options = null)
     {
@@ -3724,9 +4021,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4User>();
+        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4User>();
     }
 
     /// <summary>Read user-records sync</summary>
@@ -3739,7 +4036,7 @@ public sealed partial class MT4Endpoints
     /// as `UsersSnapshot` — sidecar-only.
     /// </remarks>
     /// <param name="limit">Optional server-side response cap (1..1000000, default 100000)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4User>> UsersSyncReadAsync(int? limit = null, CallOptions? options = null)
     {
@@ -3747,9 +4044,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<MT4User>();
+        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4User>();
     }
 
     /// <summary>Start user-records sync</summary>
@@ -3764,9 +4061,11 @@ public sealed partial class MT4Endpoints
     /// 
     /// `timestamp` is Unix epoch seconds (int32) in MT4 server-local
     /// time, not UTC. Returns a bare success envelope.
+    /// 
+    /// **Timeout:** 60 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="timestamp">Unix-epoch-second cutoff (server-local time;              0 = pull all)</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> UsersSyncStartAsync(int? timestamp = null, CallOptions? options = null)
     {
@@ -3774,9 +4073,9 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (timestamp is not null) qs.Add("timestamp=" + timestamp.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 60).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
 }

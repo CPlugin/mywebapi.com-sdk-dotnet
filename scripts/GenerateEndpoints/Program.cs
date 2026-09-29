@@ -117,12 +117,21 @@ internal sealed class Operation
     public required List<Param> PathParams; // excluding tradePlatform
     public required List<Param> QueryParams;
     public required string? BodyType;       // C# type of request body, null if none
+    public required string? BodyDescription;
     public required string EnvelopeType;    // MT4UserApiResponse
     public required string DataKind;        // ref | array | value | dict | none
     public required string DataCsType;      // element/base C# type (e.g. MT4User, bool)
     public required bool Paged;             // cursor query param + array data
     public required string? Summary;
     public required string? Description;
+    // * Server-side deadline for the operation (`X-Request-Timeout` default), seconds.
+    //   Null for operations the server does not guard with a deadline.
+    public required double? DefaultTimeoutSeconds;
+
+    // * Client-side basis for operations without a server-side deadline (the server ignores
+    //   X-Request-Timeout there): the longest per-kind default, so a slow sidecar call is not
+    //   cut at the client's 30 s minimum.
+    private const double UnguardedDefaultSeconds = 60;
 
     public static Operation Parse(string path, string[] tail, string method, JsonElement op, JsonElement schemas)
     {
@@ -131,6 +140,7 @@ internal sealed class Operation
 
         var pathParams = new List<Param>();
         var queryParams = new List<Param>();
+        double? defaultTimeout = null;
         if (op.TryGetProperty("parameters", out var prms))
         {
             foreach (var p in prms.EnumerateArray())
@@ -138,17 +148,28 @@ internal sealed class Operation
                 var pName = p.GetProperty("name").GetString()!;
                 if (pName == "tradePlatform") continue;
                 var where = p.GetProperty("in").GetString();
+                if (where == "header" && pName == "X-Request-Timeout")
+                {
+                    // * Not a method parameter: CallOptions.RequestTimeout sets the header; the
+                    //   documented default sizes the client-side wait (see ApiConnection).
+                    if (p.GetProperty("schema").TryGetProperty("default", out var dflt))
+                        defaultTimeout = dflt.GetDouble();
+                    continue;
+                }
                 var required = p.TryGetProperty("required", out var rq) && rq.GetBoolean();
                 var desc = p.TryGetProperty("description", out var d) ? d.GetString() : null;
-                var (csType, isArray) = MapParamType(p.GetProperty("schema"));
+                var (csType, isArray) = MapParamType(p.GetProperty("schema"), schemas);
                 var param = new Param(pName, CsIdent(pName), csType, required, isArray, desc, where!);
                 if (where == "path") pathParams.Add(param);
                 else if (where == "query") queryParams.Add(param);
-                // * header/cookie params are not used by the v2 surface.
+                // * Other header/cookie params are not used by the v2 surface.
             }
         }
 
         string? bodyType = null;
+        string? bodyDescription = null;
+        if (op.TryGetProperty("requestBody", out var rbd) && rbd.TryGetProperty("description", out var rbdd))
+            bodyDescription = rbdd.GetString();
         if (op.TryGetProperty("requestBody", out var rb)
             && rb.TryGetProperty("content", out var rbc)
             && rbc.TryGetProperty("application/json", out var rbj)
@@ -175,12 +196,14 @@ internal sealed class Operation
             PathParams = pathParams,
             QueryParams = queryParams,
             BodyType = bodyType,
+            BodyDescription = bodyDescription,
             EnvelopeType = envelope,
             DataKind = dataKind,
             DataCsType = dataCsType,
             Paged = paged,
             Summary = op.TryGetProperty("summary", out var s) ? s.GetString() : null,
             Description = op.TryGetProperty("description", out var de) ? de.GetString() : null,
+            DefaultTimeoutSeconds = defaultTimeout,
         };
     }
 
@@ -202,10 +225,10 @@ internal sealed class Operation
         foreach (var p in PathParams)
             sb.Append($"    /// <param name=\"{DocName(p)}\">").Append(Xml(p.Description ?? $"Path parameter <c>{p.Name}</c>.")).Append("</param>\n");
         if (BodyType is not null)
-            sb.Append("    /// <param name=\"body\">Request payload.</param>\n");
+            sb.Append("    /// <param name=\"body\">").Append(Xml(BodyDescription ?? "Request payload.")).Append("</param>\n");
         foreach (var p in QueryParams.OrderBy(q => q.Required ? 0 : 1))
             sb.Append($"    /// <param name=\"{DocName(p)}\">").Append(Xml(p.Description ?? DefaultQueryDoc(p.Name))).Append("</param>\n");
-        sb.Append("    /// <param name=\"options\">Per-call options: idempotency key, sparse fieldsets, cancellation.</param>\n");
+        sb.Append("    /// <param name=\"options\">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>\n");
         sb.Append($"    /// <exception cref=\"ApiError\">The response envelope carried an error.</exception>\n");
 
         // --- Signature -------------------------------------------------------
@@ -289,16 +312,18 @@ internal sealed class Operation
         // * JsonNode payloads bypass the NSwag envelope (its structural JsonNode POCO cannot
         //   hold arbitrary JSON) and use the hand-written RawJsonApiResponse instead.
         var envelopeType = DataCsType == "System.Text.Json.Nodes.JsonNode" ? "RawJsonApiResponse" : EnvelopeType;
-        sb.Append($"        var result = await _connection.SendAsync<{envelopeType}>({httpMethod}, url, {bodyArg}, options, default).ConfigureAwait(false);\n");
-        sb.Append("        var env = result.Envelope;\n\n");
+        var timeoutArg = ", defaultRequestTimeoutSeconds: "
+            + (DefaultTimeoutSeconds ?? UnguardedDefaultSeconds).ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+        sb.Append($"        var result = await _connection.SendAsync<{envelopeType}>({httpMethod}, url, {bodyArg}, options, default{timeoutArg}).ConfigureAwait(false);\n");
+        sb.Append("        var env = result.Envelope;\n");
 
         sb.Append(Paged
-            ? "        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);\n"
+            ? "        return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);\n"
             : DataKind switch
             {
-                "array" => $"        return (IReadOnlyList<{DataCsType}>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? Array.Empty<{DataCsType}>();\n",
-                "value" => "        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode) ?? default;\n",
-                _ => "        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);\n",
+                "array" => $"        return (IReadOnlyList<{DataCsType}>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<{DataCsType}>();\n",
+                "value" => "        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;\n",
+                _ => "        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);\n",
             });
 
         sb.Append("    }\n\n");
@@ -334,13 +359,21 @@ internal sealed class Operation
 
     private static string Nullable(string csType) => csType + "?";
 
-    private static (string CsType, bool IsArray) MapParamType(JsonElement schema)
+    private static (string CsType, bool IsArray) MapParamType(JsonElement schema, JsonElement schemas)
     {
-        if (TryRef(schema, out var refName)) return (refName, false); // enum ref
+        if (TryRef(schema, out var refName))
+        {
+            // * A referenced enum keeps its type; a referenced plain scalar (flags travel as
+            //   "A, B" strings) maps like the scalar itself — NSwag emits no type for it.
+            var target = schemas.GetProperty(refName);
+            if (target.TryGetProperty("enum", out _) || !target.TryGetProperty("type", out var tt))
+                return (refName, false);
+            return MapParamType(target, schemas);
+        }
         var type = schema.GetProperty("type").GetString();
         if (type == "array")
         {
-            var (inner, _) = MapParamType(schema.GetProperty("items"));
+            var (inner, _) = MapParamType(schema.GetProperty("items"), schemas);
             return ($"IReadOnlyList<{inner}>", true);
         }
         return (MapPrimitive(schema, type!), false);
@@ -349,7 +382,14 @@ internal sealed class Operation
     private static string MapBodyType(JsonElement schema)
     {
         if (TryRef(schema, out var refName)) return refName;
-        var type = schema.GetProperty("type").GetString();
+        // * No type: any JSON value (e.g. ExternalCommandJSON) — pass it as a JsonNode.
+        if (!schema.TryGetProperty("type", out var typeProp))
+            return "System.Text.Json.Nodes.JsonNode";
+        var type = typeProp.GetString();
+        // * A free-form object (JSON Merge Patch: only the fields to change) — any object STJ
+        //   can serialize: an anonymous object, a dictionary, a JsonObject.
+        if (type == "object" && !schema.TryGetProperty("properties", out _))
+            return "object";
         if (type == "array")
         {
             TryRef(schema.GetProperty("items"), out var inner);

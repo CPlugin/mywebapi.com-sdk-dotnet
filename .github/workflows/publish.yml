@@ -1,6 +1,6 @@
 name: Publish to NuGet.org
 
-# * Triggered by pushing the release version tag (for example v0.2.1).
+# * Triggered by pushing the release version tag (for example v0.3.0).
 # * Authenticates via NuGet Trusted Publishing (OIDC): NuGet/login exchanges the
 #   GitHub OIDC token for a short-lived (~1h) API key — no long-lived secret to
 #   store or rotate. Requires:

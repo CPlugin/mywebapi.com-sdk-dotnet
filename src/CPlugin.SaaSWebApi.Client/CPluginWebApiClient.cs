@@ -29,6 +29,7 @@ public sealed class CPluginWebApiClient : IDisposable
     private readonly HttpClient _apiHttp;
     private readonly IDisposable[] _owned;
     private readonly ApiConnection _connection;
+    private readonly TimeSpan _timeout;
 
     /// <summary>Resolved API base URL (no trailing slash).</summary>
     public string ApiBaseUrl { get; }
@@ -56,7 +57,9 @@ public sealed class CPluginWebApiClient : IDisposable
             _apiHttp = new HttpClient
             {
                 BaseAddress = new Uri(apiBase + "/"),
-                Timeout = options.Timeout,
+                // * Deadlines are per request (ApiConnection): a long server-side deadline must
+                //   be able to outlive the default client timeout.
+                Timeout = System.Threading.Timeout.InfiniteTimeSpan,
             };
             _apiHttp.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", options.Token);
@@ -87,12 +90,15 @@ public sealed class CPluginWebApiClient : IDisposable
             _apiHttp = new HttpClient(handler)
             {
                 BaseAddress = new Uri(apiBase + "/"),
-                Timeout = options.Timeout,
+                // * Deadlines are per request (ApiConnection): a long server-side deadline must
+                //   be able to outlive the default client timeout.
+                Timeout = System.Threading.Timeout.InfiniteTimeSpan,
             };
             _owned = new IDisposable[] { tokenHttp };
         }
 
-        _connection = new ApiConnection(_apiHttp);
+        _timeout = options.Timeout;
+        _connection = new ApiConnection(_apiHttp, options.Timeout, options.RequestTimeout);
         Realtime = new RealtimeAccessor(this);
     }
 
@@ -104,7 +110,9 @@ public sealed class CPluginWebApiClient : IDisposable
         string apiBaseUrl,
         string authority,
         ClientAccessTokenProvider? tokenProvider,
-        string? staticToken)
+        string? staticToken,
+        TimeSpan timeout,
+        TimeSpan? requestTimeout)
     {
         _apiHttp = apiHttp ?? throw new ArgumentNullException(nameof(apiHttp));
         ApiBaseUrl = apiBaseUrl;
@@ -112,7 +120,8 @@ public sealed class CPluginWebApiClient : IDisposable
         TokenProvider = tokenProvider;
         StaticToken = staticToken;
         _owned = Array.Empty<IDisposable>();
-        _connection = new ApiConnection(_apiHttp);
+        _timeout = timeout;
+        _connection = new ApiConnection(_apiHttp, timeout, requestTimeout);
         Realtime = new RealtimeAccessor(this);
     }
 
@@ -159,11 +168,20 @@ public sealed class CPluginWebApiClient : IDisposable
     /// </remarks>
     public async Task<JsonArray> ListTradePlatformsAsync(CancellationToken ct = default)
     {
-        using var resp = await _apiHttp.GetAsync("api/TradePlatforms", ct).ConfigureAwait(false);
-        resp.EnsureSuccessStatusCode();
-        var text = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
-        return JsonNode.Parse(text) as JsonArray
-            ?? throw new HttpRequestException("Expected a JSON array from /api/TradePlatforms.");
+        const string url = "api/TradePlatforms";
+        using var deadline = Deadline.Start(_timeout, ct);
+        try
+        {
+            using var resp = await _apiHttp.GetAsync(url, deadline.Token).ConfigureAwait(false);
+            resp.EnsureSuccessStatusCode();
+            var text = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
+            return JsonNode.Parse(text) as JsonArray
+                ?? throw new HttpRequestException("Expected a JSON array from /api/TradePlatforms.");
+        }
+        catch (OperationCanceledException ex) when (deadline.Expired && !ct.IsCancellationRequested)
+        {
+            throw deadline.TimeoutException(HttpMethod.Get, url, ex);
+        }
     }
 
     /// <summary>Dispose the underlying HTTP resources (API client and, in

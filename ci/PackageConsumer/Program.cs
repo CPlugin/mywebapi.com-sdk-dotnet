@@ -9,7 +9,7 @@ const string StaticToken = "loopback-static-token";
 const string ClientId = "synthetic-client-id";
 const string ClientSecret = "synthetic-client-secret";
 var platform = Guid.Parse("11111111-1111-1111-1111-111111111111");
-var artifactVersion = Environment.GetEnvironmentVariable("SDK_VERSION") ?? "0.2.1";
+var artifactVersion = Environment.GetEnvironmentVariable("SDK_VERSION") ?? "0.3.0";
 var results = new List<object>();
 
 await using (var server = await LoopbackServer.StartAsync())
@@ -213,7 +213,7 @@ static async Task<object> RunResilienceProbe(string verb, string failure, bool w
         var options = withKey ? new CallOptions { IdempotencyKey = "synthetic-retry-key" } : null;
         if (verb == "GET") await mt4.ServerTimeAsync(options);
         else if (verb == "POST") await mt4.CfgDeleteAccessAsync(7, options);
-        else await mt4.GroupRecordAsync("fault-group", options);
+        else await mt4.GroupRecordAsync("fault-group", new { Leverage = 100 }, options);
     }
     catch (Exception ex) { failureSeen = ex; }
     var expectedRequests = verb == "GET" ? 2 : 1;

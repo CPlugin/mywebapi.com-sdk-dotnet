@@ -26,8 +26,8 @@ Package names (final): **`MyWebApi.Sdk`** (client) + **`MyWebApi.Sdk.Models`** (
 2. Commit and push to `main`.
 3. Tag and push the tag — **the tag is the source of truth for the published version** (`publish.yml` packs with `-p:Version=` derived from it):
    ```sh
-   git tag v0.2.1
-   git push origin v0.2.1
+   git tag v0.3.0
+   git push origin v0.3.0
    ```
 4. `publish.yml` builds, runs the hermetic tests, packs both packages (+ `snupkg` symbols, SourceLink), exchanges the GitHub OIDC token for a short-lived NuGet API key and pushes to NuGet.org. `--skip-duplicate` makes re-runs idempotent.
 
