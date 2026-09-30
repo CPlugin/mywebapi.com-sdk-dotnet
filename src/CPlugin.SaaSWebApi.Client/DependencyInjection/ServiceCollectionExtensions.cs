@@ -1,6 +1,7 @@
 #if NET8_0_OR_GREATER
 using System;
 using System.Net.Http;
+using System.Threading.Tasks;
 using CPlugin.SaaSWebApi.Client.Auth;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -15,8 +16,9 @@ namespace CPlugin.SaaSWebApi.Client.DependencyInjection;
 public static class ServiceCollectionExtensions
 {
     /// <summary>Register <see cref="CPluginWebApiClient"/>, its OAuth2 client_credentials
-    /// handler chain, and a standard resilience pipeline (retries with jitter + circuit
-    /// breaker) with the DI container.</summary>
+    /// handler chain, and a bounded resilience pipeline that retries only safe HTTP
+    /// methods (GET/HEAD/OPTIONS) on transient responses or transport faults — never a write,
+    /// and never a response whose <c>X-Request-Outcome</c> is <c>unknown</c> or <c>in-progress</c>.</summary>
     /// <remarks>
     /// <para>Choose the auth mode in the options: <see cref="CPluginWebApiClientOptions.Token"/>
     /// (static) OR <see cref="CPluginWebApiClientOptions.ClientId"/> +
@@ -27,7 +29,7 @@ public static class ServiceCollectionExtensions
     ///   <item><description><c>CPluginWebApi.Tokens</c> — OIDC discovery + token exchange;
     ///   never recurses through the api handler chain.</description></item>
     ///   <item><description><c>CPluginWebApi</c> — the api-facing client with the auth handler
-    ///   and the standard resilience pipeline.</description></item>
+    ///   and the safe-method resilience pipeline.</description></item>
     /// </list></para>
     /// <para>Usage:
     /// <code>
@@ -111,7 +113,9 @@ public static class ServiceCollectionExtensions
                 var opts = sp.GetRequiredService<IOptions<CPluginWebApiClientOptions>>().Value;
                 var (apiBase, _) = opts.Validate();
                 http.BaseAddress = new Uri(apiBase + "/");
-                http.Timeout = opts.Timeout;
+                // * Deadlines are per request (ApiConnection sizes them from the server-side
+                //   deadline); the HttpClient-wide timeout would cut long ones short.
+                http.Timeout = System.Threading.Timeout.InfiniteTimeSpan;
                 if (opts.UsesStaticToken)
                 {
                     http.DefaultRequestHeaders.Authorization =
@@ -127,11 +131,39 @@ public static class ServiceCollectionExtensions
                     return new PassThroughHandler();
                 return sp.GetRequiredService<ClientCredentialsHandler>();
             })
-            .AddStandardResilienceHandler(o =>
+            .AddStandardResilienceHandler()
+            .Configure((o, sp) =>
             {
+                var opts = sp.GetRequiredService<IOptions<CPluginWebApiClientOptions>>().Value;
                 o.Retry.MaxRetryAttempts = 3;
                 o.Retry.BackoffType = DelayBackoffType.Exponential;
                 o.Retry.UseJitter = true;
+                // Only transport faults and transient responses are retried, and only
+                // when the original request method is safe.
+                // ! Writes are never retried here — not on a transport fault, not on a transient
+                // !   status: the server may already have applied them. Nor is any response that
+                // !   says the outcome is unknown or that another request with the same
+                // !   Idempotency-Key is still running, whatever its method.
+                o.Retry.ShouldHandle = args =>
+                {
+                    var response = args.Outcome.Result;
+                    var method = response?.RequestMessage?.Method ?? args.Context.GetRequestMessage()?.Method;
+                    var safe = IsSafeMethod(method);
+                    var transientResponse = response is not null && IsTransientStatus(response.StatusCode)
+                        && !OutcomeForbidsRetry(response);
+                    var transientTransport = args.Outcome.Exception is HttpRequestException;
+                    return new ValueTask<bool>(safe && (transientResponse || transientTransport));
+                };
+
+                // * The standard pipeline's timeouts (10 s per attempt, 30 s total) would cut a
+                //   server-side deadline of up to 300 s short. They stay as backstops sized to the
+                //   longest deadline; the real per-request deadline is ApiConnection's.
+                var attempt = MaxAttemptTimeout(opts.Timeout);
+                o.AttemptTimeout.Timeout = attempt;
+                o.TotalRequestTimeout.Timeout = TimeSpan.FromTicks(attempt.Ticks * (o.Retry.MaxRetryAttempts + 1))
+                    + TimeSpan.FromMinutes(1);
+                // * The circuit breaker requires a sampling window of at least twice the attempt timeout.
+                o.CircuitBreaker.SamplingDuration = TimeSpan.FromTicks(attempt.Ticks * 2);
             });
 
         // * Singleton entry point: one shared HttpClient (factory-managed handlers rotate
@@ -152,12 +184,43 @@ public static class ServiceCollectionExtensions
                     opts.ClientId!, opts.ClientSecret!, opts.Scopes);
             }
 
-            return new CPluginWebApiClient(http, apiBase, authority, provider, opts.Token);
+            return new CPluginWebApiClient(http, apiBase, authority, provider, opts.Token, opts.Timeout, opts.RequestTimeout);
         });
 
         return services;
     }
 
+    private static bool IsSafeMethod(HttpMethod? method) =>
+        method is not null
+        && (string.Equals(method.Method, "GET", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(method.Method, "HEAD", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(method.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase));
+
+    // * Longest client-side wait ApiConnection can ask for: the longest server-side deadline plus
+    //   its response allowance, or the configured minimum when that is longer.
+    internal static TimeSpan MaxAttemptTimeout(TimeSpan timeout)
+    {
+        var longest = CallOptions.MaxRequestTimeout + ApiConnection.ResponseAllowance + TimeSpan.FromSeconds(5);
+        if (timeout == System.Threading.Timeout.InfiniteTimeSpan) return TimeSpan.FromHours(1);
+        return timeout > longest ? timeout + TimeSpan.FromSeconds(5) : longest;
+    }
+
+    internal static bool OutcomeForbidsRetry(HttpResponseMessage response)
+    {
+        if (!response.Headers.TryGetValues(ApiConnection.OutcomeHeader, out var values)) return false;
+        foreach (var v in values)
+        {
+            if (string.Equals(v?.Trim(), RequestOutcomes.Unknown, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(v?.Trim(), RequestOutcomes.InProgress, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        return false;
+    }
+
+    private static bool IsTransientStatus(System.Net.HttpStatusCode statusCode) =>
+        statusCode == System.Net.HttpStatusCode.RequestTimeout
+        || statusCode == System.Net.HttpStatusCode.TooManyRequests
+        || (int)statusCode >= 500;
     /// <summary>No-op DelegatingHandler used in static-token mode so the handler chain
     /// keeps one registration shape regardless of auth mode.</summary>
     private sealed class PassThroughHandler : DelegatingHandler { }

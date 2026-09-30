@@ -51,25 +51,33 @@ public sealed class ClientAccessTokenProvider
 
     private async Task<TokenCache.CachedToken> AcquireTokenAsync(CancellationToken ct)
     {
-        var disco = await _discovery.GetAsync(ct).ConfigureAwait(false);
-        var request = new ClientCredentialsTokenRequest
+        try
         {
-            Address = disco.TokenEndpoint,
-            ClientId = _clientId,
-            ClientSecret = _clientSecret,
-            Scope = _scopes is { Length: > 0 } s ? string.Join(" ", s) : null,
-        };
-        var response = await _tokenHttp.RequestClientCredentialsTokenAsync(request, ct)
-                                       .ConfigureAwait(false);
-        if (response.IsError)
-        {
-            throw new OAuth2TokenException(
-                error: response.Error,
-                errorDescription: response.ErrorDescription,
-                statusCode: response.HttpStatusCode);
+            var disco = await _discovery.GetAsync(ct).ConfigureAwait(false);
+            var request = new ClientCredentialsTokenRequest
+            {
+                Address = disco.TokenEndpoint,
+                ClientId = _clientId,
+                ClientSecret = _clientSecret,
+                Scope = _scopes is { Length: > 0 } s ? string.Join(" ", s) : null,
+            };
+            var response = await _tokenHttp.RequestClientCredentialsTokenAsync(request, ct)
+                                           .ConfigureAwait(false);
+            if (response.IsError)
+            {
+                throw new OAuth2TokenException(
+                    error: response.Error,
+                    errorDescription: response.ErrorDescription,
+                    statusCode: response.HttpStatusCode);
+            }
+            return new TokenCache.CachedToken(
+                response.AccessToken!,
+                DateTimeOffset.UtcNow.AddSeconds(response.ExpiresIn));
         }
-        return new TokenCache.CachedToken(
-            response.AccessToken!,
-            DateTimeOffset.UtcNow.AddSeconds(response.ExpiresIn));
+        catch
+        {
+            _discovery.Invalidate();
+            throw;
+        }
     }
 }

@@ -14,7 +14,7 @@ namespace CPlugin.SaaSWebApi.Client;
 ///   short-lived integrations where a JWT is pasted in.</description></item>
 ///   <item><description><b>OAuth2 client_credentials</b>: set <see cref="ClientId"/>,
 ///   <see cref="ClientSecret"/>, and <see cref="IdentityUrl"/>. SDK then handles
-///   discovery + token acquisition + 401 retry transparently.</description></item>
+///   discovery + token acquisition + safe-method-only 401 retry transparently.</description></item>
 /// </list>
 /// </remarks>
 public sealed record MT4V2ClientOptions

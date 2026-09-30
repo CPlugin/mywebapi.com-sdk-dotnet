@@ -23,11 +23,11 @@ Package names (final): **`MyWebApi.Sdk`** (client) + **`MyWebApi.Sdk.Models`** (
 ## Releasing a version
 
 1. Bump `<Version>` in `Directory.Build.props` (informational for local builds) following [semver](https://semver.org/).
-2. Commit and push to `main`.
+2. Open a pull request to `main` with the change and the version bump, and merge it once CI is green — `main` accepts changes only through a pull request with passing CI.
 3. Tag and push the tag — **the tag is the source of truth for the published version** (`publish.yml` packs with `-p:Version=` derived from it):
    ```sh
-   git tag v0.2.0
-   git push origin v0.2.0
+   git tag v0.3.0
+   git push origin v0.3.0
    ```
 4. `publish.yml` builds, runs the hermetic tests, packs both packages (+ `snupkg` symbols, SourceLink), exchanges the GitHub OIDC token for a short-lived NuGet API key and pushes to NuGet.org. `--skip-duplicate` makes re-runs idempotent.
 
@@ -50,3 +50,9 @@ dotnet test tests/CPlugin.SaaSWebApi.Client.Tests/CPlugin.SaaSWebApi.Client.Test
 ```
 
 The generated-surface test asserts the method count against the spec (172 operations today) — update it alongside spec changes.
+
+## Release gate
+
+- Only repository admins can create `v*` tags; nobody can move or delete one (repository rulesets), so a published version always points at the commit it was built from.
+- `main` accepts changes only through a pull request whose CI passed. Merging that pull request is the review of what will be released.
+- The first job of `publish.yml` (`Release gate`) refuses a tag whose commit is not on `main` or has no successful CI run; nothing is built or published then. Fix it by merging the commit into `main` and tagging the merged commit — a refused tag cannot be moved, so the next version number is used.

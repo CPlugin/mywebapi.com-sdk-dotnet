@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <Version>0.1.0</Version>
+    <Version>0.3.0</Version>
     <Authors>CPlugin</Authors>
     <Company>CPlugin</Company>
     <!-- * Public repository (create under this org/name before the first release — see PUBLISHING.md). -->
@@ -9,6 +9,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <!-- ! No proprietary trading-platform trademarks in public package metadata. -->
+    <PackageReleaseNotes>0.3.0: request timeouts — CallOptions.RequestTimeout and CPluginWebApiClientOptions.RequestTimeout (X-Request-Timeout, 1–300 s); the client waits 30 s past the server-side deadline; new error codes Timeout, OutcomeUnknown, Busy with ApiError.Outcome, IsSafeToRetry and related helpers; writes are never retried automatically; PATCH methods now take the patch object. Breaking: flag-set properties and parameters are now strings ("A, B"), WebApiErrorCode gains members (Internal changes its numeric value). Full notes: https://github.com/CPlugin/mywebapi.com-sdk-dotnet/blob/v0.3.0/CHANGELOG.md</PackageReleaseNotes>
     <PackageTags>forex;trading;broker;trading-platform;cplugin;mywebapi;webapi;sdk;signalr;real-time;rest-api;openapi</PackageTags>
     <!-- * SourceLink (built into the .NET 8+ SDK) + debug symbols for nuget.org. -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

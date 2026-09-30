@@ -144,6 +144,46 @@ public class AuthTests
 
         Assert.Equal(1, discoCalls);
     }
+    [Fact]
+    public async Task OidcDiscoveryClient_BoundedTtl_RefreshesAfterExpiry()
+    {
+        var stub = new StubHandler();
+        int discoCalls = 0;
+        stub.OnGet("/.well-known/openid-configuration", _ =>
+        {
+            discoCalls++;
+            return DiscoveryResponse("https://test.local");
+        });
+        stub.OnGet("/.well-known/openid-configuration/jwks", _ => JwksResponse());
+
+        var disco = new OidcDiscoveryClient(
+            new HttpClient(stub), "https://test.local", TimeSpan.FromMilliseconds(20));
+        await disco.GetAsync(CancellationToken.None);
+        await Task.Delay(100);
+        await disco.GetAsync(CancellationToken.None);
+
+        Assert.Equal(2, discoCalls);
+    }
+
+    [Fact]
+    public async Task OidcDiscoveryClient_Invalidate_ForcesRefresh()
+    {
+        var stub = new StubHandler();
+        int discoCalls = 0;
+        stub.OnGet("/.well-known/openid-configuration", _ =>
+        {
+            discoCalls++;
+            return DiscoveryResponse("https://test.local");
+        });
+        stub.OnGet("/.well-known/openid-configuration/jwks", _ => JwksResponse());
+
+        var disco = new OidcDiscoveryClient(new HttpClient(stub), "https://test.local");
+        await disco.GetAsync(CancellationToken.None);
+        disco.Invalidate();
+        await disco.GetAsync(CancellationToken.None);
+
+        Assert.Equal(2, discoCalls);
+    }
 
     [Fact]
     public async Task OidcDiscoveryClient_DiscoveryFailure_Throws_OAuth2TokenException()
@@ -160,7 +200,44 @@ public class AuthTests
         Assert.Equal("discovery_failed", ex.Error);
     }
 
-    // ===== ClientCredentialsHandler =====
+    [Fact]
+    public async Task ClientAccessTokenProvider_TokenFailure_InvalidatesDiscoveryForRecovery()
+    {
+        var tokenStub = new StubHandler();
+        int discoveryCalls = 0;
+        int tokenCalls = 0;
+        tokenStub.OnGet("/.well-known/openid-configuration", _ =>
+        {
+            discoveryCalls++;
+            return DiscoveryResponse("https://idp.local");
+        });
+        tokenStub.OnGet("/.well-known/openid-configuration/jwks", _ => JwksResponse());
+        tokenStub.OnPost("/connect/token", _ =>
+        {
+            tokenCalls++;
+            if (tokenCalls == 1)
+            {
+                return new HttpResponseMessage(HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent("{\"error\":\"invalid_client\"}", Encoding.UTF8, "application/json"),
+                };
+            }
+            return TokenResponse("recovered", expiresIn: 600);
+        });
+
+        var http = new HttpClient(tokenStub);
+        var discovery = new OidcDiscoveryClient(http, "https://idp.local");
+        var provider = new ClientAccessTokenProvider(
+            new TokenCache(), discovery, http, "client", "secret");
+
+        await Assert.ThrowsAsync<OAuth2TokenException>(
+            () => provider.GetAccessTokenAsync(ct: CancellationToken.None));
+        var token = await provider.GetAccessTokenAsync(ct: CancellationToken.None);
+
+        Assert.Equal("recovered", token);
+        Assert.Equal(2, discoveryCalls);
+        Assert.Equal(2, tokenCalls);
+    }
 
     [Fact]
     public async Task ClientCredentialsHandler_AddsBearer()
@@ -233,13 +310,14 @@ public class AuthTests
     }
 
     [Fact]
-    public async Task ClientCredentialsHandler_PostBody_IsClonedOnRetry()
+    public async Task ClientCredentialsHandler_UnsafePostBody_IsNotReplayedAfter401()
     {
         var tokenStub = new StubHandler();
         int tokenCalls = 0;
         tokenStub.OnGet("/.well-known/openid-configuration", _ => DiscoveryResponse("https://idp.local"));
         tokenStub.OnGet("/.well-known/openid-configuration/jwks", _ => JwksResponse());
-        tokenStub.OnPost("/connect/token", _ => {
+        tokenStub.OnPost("/connect/token", _ =>
+        {
             tokenCalls++;
             return TokenResponse($"tok-{tokenCalls}", expiresIn: 600);
         });
@@ -247,12 +325,11 @@ public class AuthTests
         var apiStub = new StubHandler();
         int apiCalls = 0;
         var bodies = new List<string>();
-        apiStub.OnPost("/v2/echo", async req => {
+        apiStub.OnPost("/v2/echo", async req =>
+        {
             apiCalls++;
             bodies.Add(await req.Content!.ReadAsStringAsync().ConfigureAwait(false));
-            return apiCalls == 1
-                ? new HttpResponseMessage(HttpStatusCode.Unauthorized)
-                : new HttpResponseMessage(HttpStatusCode.OK);
+            return new HttpResponseMessage(HttpStatusCode.Unauthorized);
         });
 
         var tokenHttp = new HttpClient(tokenStub);
@@ -265,9 +342,10 @@ public class AuthTests
         var resp = await client.PostAsync("/v2/echo",
             new StringContent("hello", Encoding.UTF8, "text/plain"));
 
-        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
-        Assert.Equal(2, apiCalls);
-        Assert.Equal(new[] { "hello", "hello" }, bodies);
+        Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
+        Assert.Equal(1, apiCalls);
+        Assert.Equal(1, tokenCalls);
+        Assert.Equal(new[] { "hello" }, bodies);
     }
 
     [Fact]

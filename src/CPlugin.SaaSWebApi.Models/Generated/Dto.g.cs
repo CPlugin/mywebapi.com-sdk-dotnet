@@ -647,39 +647,6 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum EnCommReasonFlags
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Client")]
-        Client = 1,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Expert")]
-        Expert = 2,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Dealer")]
-        Dealer = 3,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"ExternalClient")]
-        ExternalClient = 4,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Mobile")]
-        Mobile = 5,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Web")]
-        Web = 6,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Signal")]
-        Signal = 7,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"All")]
-        All = 8,
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public enum EnCommissionMode
     {
 
@@ -736,51 +703,6 @@ namespace CPlugin.SaaSWebApi.Models
 
         [System.Runtime.Serialization.EnumMember(Value = @"Exchange")]
         Exchange = 3,
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum EnExpirationFlags
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"GtC")]
-        GtC = 1,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Day")]
-        Day = 2,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Specified")]
-        Specified = 3,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"SpecifiedDay")]
-        SpecifiedDay = 4,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"All")]
-        All = 5,
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum EnFillingFlags
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"FoK")]
-        FoK = 1,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"IoC")]
-        IoC = 2,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"BoC")]
-        BoC = 3,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"All")]
-        All = 4,
 
     }
 
@@ -1360,18 +1282,6 @@ namespace CPlugin.SaaSWebApi.Models
 
     }
 
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum EnInstantFlags
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"All")]
-        All = 1,
-
-    }
-
     /// <summary>
     /// This enumeration is used in the following methods:&lt;br /&gt;
     /// <br/>IMTConSymbol::IECheckMode IMTConGroupSymbol::IECheckMode&lt;br /&gt;
@@ -1690,45 +1600,6 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum EnMarginCalcFlags
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"ClearAcc")]
-        ClearAcc = 1,
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum EnMarginFlags
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"CheckProcess")]
-        CheckProcess = 1,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"CheckSLTP")]
-        CheckSLTP = 2,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"HedgeLargeLeg")]
-        HedgeLargeLeg = 3,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"ExcludePl")]
-        ExcludePl = 4,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"All")]
-        All = 5,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"RecalcRates")]
-        RecalcRates = 6,
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public enum EnMarginMode
     {
 
@@ -1777,102 +1648,6 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum EnOrderFlags
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Market")]
-        Market = 1,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Limit")]
-        Limit = 2,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Stop")]
-        Stop = 3,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"StopLimit")]
-        StopLimit = 4,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"SL")]
-        SL = 5,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"TP")]
-        TP = 6,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"CloseBy")]
-        CloseBy = 7,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"All")]
-        All = 8,
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum EnPermissionsFlags
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"CertConfirm")]
-        CertConfirm = 1,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"EnableConnection")]
-        EnableConnection = 2,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"ResetPassword")]
-        ResetPassword = 3,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"ForcedOtpUsage")]
-        ForcedOtpUsage = 4,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"RiskWarning")]
-        RiskWarning = 5,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"RegulationProtect")]
-        RegulationProtect = 6,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"NotifyDeals")]
-        NotifyDeals = 7,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"NotifyOrders")]
-        NotifyOrders = 8,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"NotifyBalances")]
-        NotifyBalances = 9,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"NotifyAll")]
-        NotifyAll = 10,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"All")]
-        All = 11,
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum EnReportsFlags
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Email")]
-        Email = 1,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Support")]
-        Support = 2,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Statements")]
-        Statements = 3,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"All")]
-        All = 4,
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public enum EnReportsMode
     {
 
@@ -1887,18 +1662,6 @@ namespace CPlugin.SaaSWebApi.Models
 
         [System.Runtime.Serialization.EnumMember(Value = @"EOMOnly")]
         EOMOnly = 3,
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum EnRequestFlags
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"All")]
-        All = 1,
 
     }
 
@@ -2023,18 +1786,6 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum EnSwapFlags
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"ConsiderHolidays")]
-        ConsiderHolidays = 1,
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public enum EnSwapMode
     {
 
@@ -2071,51 +1822,6 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum EnTickFlags
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Realtime")]
-        Realtime = 1,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"CollectRaw")]
-        CollectRaw = 2,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"FeedStats")]
-        FeedStats = 3,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"NegativePrices")]
-        NegativePrices = 4,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"All")]
-        All = 5,
-
-    }
-
-    /// <summary>
-    /// Common Trade Flags
-    /// </summary>
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum EnTradeFlags
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"ProfitByMarket")]
-        ProfitByMarket = 1,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Default")]
-        Default = 2,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"TradeFlagsAll")]
-        TradeFlagsAll = 3,
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public enum EnTradeMode
     {
 
@@ -2133,57 +1839,6 @@ namespace CPlugin.SaaSWebApi.Models
 
         [System.Runtime.Serialization.EnumMember(Value = @"Full")]
         Full = 4,
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum EnTradeRightsFlags
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Swaps")]
-        Swaps = 1,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Trailing")]
-        Trailing = 2,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Experts")]
-        Experts = 3,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Expiration")]
-        Expiration = 4,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"SignalsAll")]
-        SignalsAll = 5,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Default")]
-        Default = 6,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"SignalsOwn")]
-        SignalsOwn = 7,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"SOCompensation")]
-        SOCompensation = 8,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"SOFullyHedged")]
-        SOFullyHedged = 9,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"FifoClose")]
-        FifoClose = 10,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"HedgeProhibit")]
-        HedgeProhibit = 11,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"DealCost")]
-        DealCost = 12,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"SOCompensationCredit")]
-        SOCompensationCredit = 13,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"All")]
-        All = 14,
 
     }
 
@@ -2256,36 +1911,6 @@ namespace CPlugin.SaaSWebApi.Models
 
         [System.Runtime.Serialization.EnumMember(Value = @"DailyNoStops")]
         DailyNoStops = 2,
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum GroupRights
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Signals")]
-        Signals = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Trailing")]
-        Trailing = 1,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Advisor")]
-        Advisor = 2,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Expiration")]
-        Expiration = 3,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"SignalAll")]
-        SignalAll = 4,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"SignalsOwn")]
-        SignalsOwn = 5,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"RiskWarning")]
-        RiskWarning = 6,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"ForcedOTPUsage")]
-        ForcedOTPUsage = 7,
 
     }
 
@@ -3975,9 +3600,9 @@ namespace CPlugin.SaaSWebApi.Models
     /// <br/>    rarely consumed; can be added later once the use case is clear.
     /// <br/>            
     /// <br/>Enums (`OTPMode`, `MarginMode`, `NewsMode`,
-    /// <br/>`GroupRights`, `MarginControllingType`) serialize as strings
-    /// <br/>because CPlugin.SaaSWebApps.WebAPI.Code.Json.V2JsonContext enables
-    /// <br/>`UseStringEnumConverter`.
+    /// <br/>`MarginControllingType`) serialize as strings because
+    /// <br/>CPlugin.SaaSWebApps.WebAPI.Code.Json.V2JsonContext enables `UseStringEnumConverter`;
+    /// <br/>`GroupRights` is a flags string, the names of the set bits.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT4Group
@@ -4122,8 +3747,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// Permissions bit mask for this group
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("groupRights")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<GroupRights>))]
-        public GroupRights? GroupRights { get; set; } = default!;
+        public string? GroupRights { get; set; } = default!;
 
         /// <summary>
         /// 0 = no IE check, non-zero = check Instant Execution prices
@@ -4225,9 +3849,9 @@ namespace CPlugin.SaaSWebApi.Models
         /// <br/>    rarely consumed; can be added later once the use case is clear.
         /// <br/>            
         /// <br/>Enums (`OTPMode`, `MarginMode`, `NewsMode`,
-        /// <br/>`GroupRights`, `MarginControllingType`) serialize as strings
-        /// <br/>because CPlugin.SaaSWebApps.WebAPI.Code.Json.V2JsonContext enables
-        /// <br/>`UseStringEnumConverter`.
+        /// <br/>`MarginControllingType`) serialize as strings because
+        /// <br/>CPlugin.SaaSWebApps.WebAPI.Code.Json.V2JsonContext enables `UseStringEnumConverter`;
+        /// <br/>`GroupRights` is a flags string, the names of the set bits.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
         public MT4Group? Data { get; set; } = default!;
@@ -4662,8 +4286,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// Permissions bit mask
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("groupRights")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<GroupRights>))]
-        public GroupRights? GroupRights { get; set; } = default!;
+        public string? GroupRights { get; set; } = default!;
 
         /// <summary>
         /// 0 = no IE check, non-zero = check IE prices
@@ -8537,8 +8160,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// EnCommReasonFlags
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("reasonFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<EnCommReasonFlags>))]
-        public EnCommReasonFlags? ReasonFlags { get; set; } = default!;
+        public string? ReasonFlags { get; set; } = default!;
 
     }
 
@@ -8562,8 +8184,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// EnPermissionsFlags
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("permissionsFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<EnPermissionsFlags>))]
-        public EnPermissionsFlags? PermissionsFlags { get; set; } = default!;
+        public string? PermissionsFlags { get; set; } = default!;
 
         /// <summary>
         /// EnAuthMode
@@ -8634,8 +8255,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// EnReportsFlags
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("reportsFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<EnReportsFlags>))]
-        public EnReportsFlags? ReportsFlags { get; set; } = default!;
+        public string? ReportsFlags { get; set; } = default!;
 
         /// <summary>
         /// reports SMTP server address:ports
@@ -8688,8 +8308,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// EnTradeFlags
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("tradeFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<EnTradeRightsFlags>))]
-        public EnTradeRightsFlags? TradeFlags { get; set; } = default!;
+        public string? TradeFlags { get; set; } = default!;
 
         /// <summary>
         /// interest rate for free deposit money
@@ -8797,8 +8416,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// margin calculation flags EnMarginFlags
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("marginFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<EnMarginCalcFlags>))]
-        public EnMarginCalcFlags? MarginFlags { get; set; } = default!;
+        public string? MarginFlags { get; set; } = default!;
 
         /// <summary>
         /// max. positions limit
@@ -9221,8 +8839,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// <br/>            modification flags
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("modificationFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<TradeModifyFlags>))]
-        public TradeModifyFlags? ModificationFlags { get; set; } = default!;
+        public string? ModificationFlags { get; set; } = default!;
 
     }
 
@@ -9460,8 +9077,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// <br/>&lt;br /&gt;
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("activationFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<TradeActivationFlags>))]
-        public TradeActivationFlags? ActivationFlags { get; set; } = default!;
+        public string? ActivationFlags { get; set; } = default!;
 
         /// <summary>
         /// Gets and sets the order placing time in milliseconds, since 1970.01.01
@@ -9714,15 +9330,13 @@ namespace CPlugin.SaaSWebApi.Models
         public double? ActivationPrice { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("activationFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<TradeActivationFlags>))]
-        public TradeActivationFlags? ActivationFlags { get; set; } = default!;
+        public string? ActivationFlags { get; set; } = default!;
 
         /// <summary>
         /// modification flags
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("modificationFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<TradeModifyFlags>))]
-        public TradeModifyFlags? ModificationFlags { get; set; } = default!;
+        public string? ModificationFlags { get; set; } = default!;
 
         /// <summary>
         /// position reason - PositionReason
@@ -9891,8 +9505,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// EnTickFlags
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("tickFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<EnTickFlags>))]
-        public EnTickFlags? TickFlags { get; set; } = default!;
+        public string? TickFlags { get; set; } = default!;
 
         /// <summary>
         /// Depth of Market depth (both legs)
@@ -9974,15 +9587,13 @@ namespace CPlugin.SaaSWebApi.Models
         /// EnFillingFlags
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("fillFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<EnFillingFlags>))]
-        public EnFillingFlags? FillFlags { get; set; } = default!;
+        public string? FillFlags { get; set; } = default!;
 
         /// <summary>
         /// EnExpirationFlags
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("expirFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<EnExpirationFlags>))]
-        public EnExpirationFlags? ExpirFlags { get; set; } = default!;
+        public string? ExpirFlags { get; set; } = default!;
 
         /// <summary>
         /// symbol spread (0-floating)
@@ -10072,8 +9683,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// EnMarginFlags
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("marginFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<EnMarginFlags>))]
-        public EnMarginFlags? MarginFlags { get; set; } = default!;
+        public string? MarginFlags { get; set; } = default!;
 
         /// <summary>
         /// initial margin
@@ -10177,8 +9787,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// request execution flags
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("reFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<EnRequestFlags>))]
-        public EnRequestFlags? ReFlags { get; set; } = default!;
+        public string? ReFlags { get; set; } = default!;
 
         /// <summary>
         /// Time in seconds during which the price issued by a dealer in the request execution mode is valid.
@@ -10239,15 +9848,13 @@ namespace CPlugin.SaaSWebApi.Models
         /// EnTradeFlags
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("tradeFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<EnTradeFlags>))]
-        public EnTradeFlags? TradeFlags { get; set; } = default!;
+        public string? TradeFlags { get; set; } = default!;
 
         /// <summary>
         /// EnOrderFlags
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("orderFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<EnOrderFlags>))]
-        public EnOrderFlags? OrderFlags { get; set; } = default!;
+        public string? OrderFlags { get; set; } = default!;
 
         /// <summary>
         /// orders and positions margin rates
@@ -10347,8 +9954,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// instant execution flags with extended accuracy
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("ieFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<EnInstantFlags>))]
-        public EnInstantFlags? IeFlags { get; set; } = default!;
+        public string? IeFlags { get; set; } = default!;
 
         /// <summary>
         /// minimal volume with extended accuracy
@@ -10434,8 +10040,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// swap flags
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("swapFlags")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<EnSwapFlags>))]
-        public EnSwapFlags? SwapFlags { get; set; } = default!;
+        public string? SwapFlags { get; set; } = default!;
 
         /// <summary>
         /// swap rate for Sunday
@@ -10624,7 +10229,7 @@ namespace CPlugin.SaaSWebApi.Models
     /// <summary>
     /// MT5 user, v2 read DTO — full field set (A4 expansion). Includes all editable
     /// <br/>            fields mirrored from MT5UserUpdate plus read-only financial/metadata fields.
-    /// <br/>            `Rights` serializes as a string via `V2JsonContext.UseStringEnumConverter`.
+    /// <br/>            `Rights` is a flags string: the names of the set bits, `"Enabled, Password"`.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT5User
@@ -10781,11 +10386,10 @@ namespace CPlugin.SaaSWebApi.Models
         public string? MiddleName { get; set; } = default!;
 
         /// <summary>
-        /// Account permission flags. Serializes as a string via V2JsonContext.
+        /// Account permission flags: names of the set bits, `"Enabled, Password"` (the UsersRights schema).
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("rights")]
-        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<UsersRights>))]
-        public UsersRights? Rights { get; set; } = default!;
+        public string? Rights { get; set; } = default!;
 
         /// <summary>
         /// SSL certificate serial number (read-only).
@@ -10897,7 +10501,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// <summary>
         /// MT5 user, v2 read DTO — full field set (A4 expansion). Includes all editable
         /// <br/>            fields mirrored from MT5UserUpdate plus read-only financial/metadata fields.
-        /// <br/>            `Rights` serializes as a string via `V2JsonContext.UseStringEnumConverter`.
+        /// <br/>            `Rights` is a flags string: the names of the set bits, `"Enabled, Password"`.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
         public MT5User? Data { get; set; } = default!;
@@ -11566,54 +11170,6 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum TickRequestFlags
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Raw")]
-        Raw = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Normal")]
-        Normal = 1,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"All")]
-        All = 2,
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum TradeActivationFlags
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"NoLimit")]
-        NoLimit = 1,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"NoStop")]
-        NoStop = 2,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"NoSLimit")]
-        NoSLimit = 3,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"NoSL")]
-        NoSL = 4,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"NoTP")]
-        NoTP = 5,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"NoSO")]
-        NoSO = 6,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"NoExpiration")]
-        NoExpiration = 7,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"All")]
-        All = 8,
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public enum TradeCommand
     {
 
@@ -11655,45 +11211,6 @@ namespace CPlugin.SaaSWebApi.Models
 
         [System.Runtime.Serialization.EnumMember(Value = @"Full")]
         Full = 2,
-
-    }
-
-    /// <summary>
-    /// also used for Deal,Order,Position
-    /// </summary>
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum TradeModifyFlags
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Admin")]
-        Admin = 1,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Manager")]
-        Manager = 2,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Position")]
-        Position = 3,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Restore")]
-        Restore = 4,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"ApiAdmin")]
-        ApiAdmin = 5,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"ApiManager")]
-        ApiManager = 6,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"ApiServer")]
-        ApiServer = 7,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"ApiGateway")]
-        ApiGateway = 8,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"All")]
-        All = 9,
 
     }
 
@@ -11751,70 +11268,6 @@ namespace CPlugin.SaaSWebApi.Models
 
         [System.Runtime.Serialization.EnumMember(Value = @"Deleted")]
         Deleted = 6,
-
-    }
-
-    /// <summary>
-    /// MT5 user permission flags. Values mirror CIMTUser.EnUsersRights.
-    /// <br/>            Serializes as a string (not a number) via V2JsonContext.UseStringEnumConverter.
-    /// </summary>
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum UsersRights
-    {
-
-        [System.Runtime.Serialization.EnumMember(Value = @"None")]
-        None = 0,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Enabled")]
-        Enabled = 1,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Password")]
-        Password = 2,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"TradeDisabled")]
-        TradeDisabled = 3,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Investor")]
-        Investor = 4,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Confirmed")]
-        Confirmed = 5,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Trailing")]
-        Trailing = 6,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Expert")]
-        Expert = 7,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Obsolete")]
-        Obsolete = 8,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Reports")]
-        Reports = 9,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Readonly")]
-        Readonly = 10,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"ResetPass")]
-        ResetPass = 11,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"OTPEnabled")]
-        OTPEnabled = 12,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"SponsoredHosting")]
-        SponsoredHosting = 13,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"APIEnabled")]
-        APIEnabled = 14,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"PushNotification")]
-        PushNotification = 15,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"Technical")]
-        Technical = 16,
-
-        [System.Runtime.Serialization.EnumMember(Value = @"ExcludeReports")]
-        ExcludeReports = 17,
 
     }
 
@@ -11879,8 +11332,17 @@ namespace CPlugin.SaaSWebApi.Models
         [System.Runtime.Serialization.EnumMember(Value = @"MT5Error")]
         MT5Error = 6,
 
+        [System.Runtime.Serialization.EnumMember(Value = @"Timeout")]
+        Timeout = 7,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"OutcomeUnknown")]
+        OutcomeUnknown = 8,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Busy")]
+        Busy = 9,
+
         [System.Runtime.Serialization.EnumMember(Value = @"Internal")]
-        Internal = 7,
+        Internal = 10,
 
     }
 

@@ -44,9 +44,10 @@ public class EnvelopeTests
         {
             Respond = _ => Json("""{"data":"2026-07-02T10:00:00Z","meta":{"activityId":"abc"}}"""),
         };
-        var env = await Conn(h).SendAsync<DateTimeApiResponse>(
+        var result = await Conn(h).SendAsync<DateTimeApiResponse>(
             HttpMethod.Get, "api/v2/MT4/g/ServerTime", null, null, default);
-        var data = EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200);
+        var env = result.Envelope;
+        var data = EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode);
         Assert.NotNull(data);
         Assert.Equal(2026, data!.Value.Year);
     }
@@ -56,15 +57,16 @@ public class EnvelopeTests
     {
         var h = new StubHandler
         {
-            Respond = _ => Json("""{"data":null,"error":{"code":"NotFound","message":"no such user"},"meta":{"activityId":"trace-1"}}"""),
+            Respond = _ => Json("""{"data":null,"error":{"code":"NotFound","message":"no such user"},"meta":{"activityId":"trace-1"}}""", HttpStatusCode.BadRequest),
         };
-        var env = await Conn(h).SendAsync<MT4UserApiResponse>(
+        var result = await Conn(h).SendAsync<MT4UserApiResponse>(
             HttpMethod.Get, "api/v2/MT4/g/UserRecord/42", null, null, default);
-        var ex = Assert.Throws<ApiError>(() => EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, 200));
+        var env = result.Envelope;
+        var ex = Assert.Throws<ApiError>(() => EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.StatusCode));
         Assert.Equal("NotFound", ex.Code);
         Assert.Equal("no such user", ex.Description);
         Assert.Equal("trace-1", ex.ActivityId);
-        Assert.Equal(200, ex.Status);
+        Assert.Equal(400, ex.Status);
     }
 
     [Fact]
@@ -74,9 +76,10 @@ public class EnvelopeTests
         {
             Respond = _ => Json("""{"data":[{"login":1},{"login":2}],"meta":{"paging":{"nextCursor":"c2","hasMore":true}}}"""),
         };
-        var env = await Conn(h).SendAsync<MT4UserListApiResponse>(
+        var result = await Conn(h).SendAsync<MT4UserListApiResponse>(
             HttpMethod.Get, "api/v2/MT4/g/UsersRequest", null, null, default);
-        var page = EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var env = result.Envelope;
+        var page = EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
         Assert.Equal(2, page.Items.Count);
         Assert.True(page.HasMore);
         Assert.Equal("c2", page.NextCursor);
@@ -89,9 +92,10 @@ public class EnvelopeTests
         {
             Respond = _ => Json("""{"data":[{"login":3}],"meta":{"paging":{"nextCursor":null,"hasMore":false}}}"""),
         };
-        var env = await Conn(h).SendAsync<MT4UserListApiResponse>(
+        var result = await Conn(h).SendAsync<MT4UserListApiResponse>(
             HttpMethod.Get, "api/v2/MT4/g/UsersRequest", null, null, default);
-        var page = EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, 200);
+        var env = result.Envelope;
+        var page = EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.StatusCode);
         Assert.False(page.HasMore);
         Assert.Null(page.NextCursor);
     }
