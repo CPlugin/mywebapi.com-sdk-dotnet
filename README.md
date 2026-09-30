@@ -143,7 +143,7 @@ using var client = new CPluginWebApiClient(new CPluginWebApiClientOptions
 });
 ```
 
-The client waits for the answer 30 s longer than the server-side deadline (the server may extend a deadline by up to 20 s while it connects to the platform), so that normally the server's own answer arrives first; `CPluginWebApiClientOptions.Timeout` (default 30 s) is only the minimum wait. A few operations (news and mail sending, plugin configuration, user and trade snapshots, binary external commands) have no server-side deadline and ignore `X-Request-Timeout`; for them the client waits 60 s + 30 s. If the client-side wait passes — a slow network, a slow token request, an operation without a server-side deadline — the call throws `TaskCanceledException` wrapping a `TimeoutException`. For a change or a trade that means the outcome is unknown: treat it exactly like `OutcomeUnknown` below.
+The client waits for the answer 30 s longer than the server-side deadline (the server may extend a deadline by up to 20 s while it connects to the platform), so that normally the server's own answer arrives first; `CPluginWebApiClientOptions.Timeout` (default 30 s) is only the minimum wait. Every operation has a server-side deadline and honours `X-Request-Timeout`, including those served by the x86 sidecar (plugins, mail, news, snapshots, sync, binary external commands). If the client-side wait passes — a slow network, a slow token request — the call throws `TaskCanceledException` wrapping a `TimeoutException`. For a change or a trade that means the outcome is unknown: treat it exactly like `OutcomeUnknown` below.
 
 A request that did not finish in time throws `ApiError` with one of these codes; `Outcome` carries the `X-Request-Outcome` response header:
 

@@ -31,8 +31,7 @@ public sealed class CallOptions
     /// <remarks>Null — <see cref="CPluginWebApiClientOptions.RequestTimeout"/>, or else the
     /// server's default for the operation (trade 5 s, read 10 s, change 15 s, history 30 s,
     /// maintenance 60 s; each method's documentation names its own). The client waits for the
-    /// answer 30 s longer than this, whatever <see cref="CPluginWebApiClientOptions.Timeout"/> says.
-    /// Operations without a server-side deadline ignore the header.</remarks>
+    /// answer 30 s longer than this, whatever <see cref="CPluginWebApiClientOptions.Timeout"/> says.</remarks>
     /// <exception cref="ArgumentOutOfRangeException">Outside 1–300 s.</exception>
     public TimeSpan? RequestTimeout
     {

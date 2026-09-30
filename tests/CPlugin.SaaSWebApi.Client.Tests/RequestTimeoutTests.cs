@@ -325,10 +325,10 @@ public class RequestTimeoutTests
     }
 
     [Fact]
-    public async Task Operations_without_a_server_deadline_get_a_60_s_basis()
+    public async Task Sidecar_operations_carry_their_default_deadline()
     {
-        // * UsersSnapshot is not guarded by the server (no X-Request-Timeout in the spec); the client
-        //   still waits 60 s + 30 s rather than its 100 ms minimum.
+        // * UsersSnapshot is served by the x86 sidecar (a history call, 30 s by default): with
+        //   Timeout 100 ms the client still waits 60 s, so a 300 ms answer arrives.
         var h = new StubHandler
         {
             Respond = async (_, ct) =>
@@ -339,6 +339,16 @@ public class RequestTimeoutTests
         };
         await new MT4Endpoints(Conn(h, timeout: TimeSpan.FromMilliseconds(100)), Platform).UsersSnapshotAsync();
         Assert.Null(SentTimeout(h));
+    }
+
+    [Fact]
+    public async Task Sidecar_operations_send_the_call_timeout()
+    {
+        var h = new StubHandler();
+        await new MT4Endpoints(Conn(h), Platform).MailSendAsync(new MT4MailSendRequest(),
+            new CallOptions { RequestTimeout = TimeSpan.FromSeconds(25) });
+        Assert.Equal("25", SentTimeout(h));
+        Assert.EndsWith("/MailSend", h.LastRequest!.RequestUri!.AbsolutePath);
     }
 
     [Fact]

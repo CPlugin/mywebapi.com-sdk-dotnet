@@ -128,9 +128,9 @@ internal sealed class Operation
     //   Null for operations the server does not guard with a deadline.
     public required double? DefaultTimeoutSeconds;
 
-    // * Client-side basis for operations without a server-side deadline (the server ignores
-    //   X-Request-Timeout there): the longest per-kind default, so a slow sidecar call is not
-    //   cut at the client's 30 s minimum.
+    // * Client-side basis for an operation the spec does not guard with a deadline (none in the
+    //   current spec; the server would ignore X-Request-Timeout there): the longest per-kind
+    //   default, so such a call is not cut at the client's 30 s minimum.
     private const double UnguardedDefaultSeconds = 60;
 
     public static Operation Parse(string path, string[] tail, string method, JsonElement op, JsonElement schemas)
