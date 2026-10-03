@@ -2,6 +2,13 @@
 
 Versions follow [semver](https://semver.org/); while the major version is 0, a minor release may contain breaking changes, listed under **Breaking**.
 
+## Unreleased
+
+### Documentation
+
+- README: "What brokers do with it" — eight common back-office tasks (open positions of a group, trade stream, account creation, deposits and withdrawals, group and leverage changes, trade history, margin levels, symbol swaps), each with the SDK call that performs it; links to the product site, API reference and pricing.
+- Package metadata: `PackageProjectUrl` is now <https://mywebapi.com> (the source stays under `RepositoryUrl`); the descriptions and tags of both packages name the compatible trading platforms. Reaches nuget.org with the next release.
+
 ## 0.3.0
 
 Made for servers that support request timeouts; an older server does not read the `X-Request-Timeout` header, and the SDK then works as before.

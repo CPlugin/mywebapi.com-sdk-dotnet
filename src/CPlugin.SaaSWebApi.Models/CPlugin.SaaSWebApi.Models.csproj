@@ -5,7 +5,7 @@
          Root namespace stays CPlugin.SaaSWebApi.Models — same split as the Python
          SDK (dist mywebapi-sdk / import cplugin_webapi_sdk). -->
     <PackageId>MyWebApi.Sdk.Models</PackageId>
-    <Description>Pure POCO DTOs + envelope for the MyWebAPI.com trading platform management API (v2). Zero deps beyond System.Text.Json. Use this when you build your own HTTP layer.</Description>
+    <Description>POCO DTOs and response envelopes for CPlugin WebAPI, the REST API that works with the MetaTrader 4 and MetaTrader 5 Manager API. Zero dependencies beyond System.Text.Json; use it when you build your own HTTP layer. MetaTrader is a trademark of MetaQuotes Ltd.; this package is not affiliated with MetaQuotes.</Description>
   </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Text.Json" Version="8.0.5" />

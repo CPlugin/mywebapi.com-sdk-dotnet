@@ -7,7 +7,7 @@ Package names (final): **`MyWebApi.Sdk`** (client) + **`MyWebApi.Sdk.Models`** (
 ## One-time setup before the first release
 
 1. **Verify the package ids are free** (NuGet is a global, first-come namespace): <https://www.nuget.org/packages/MyWebApi.Sdk> and <https://www.nuget.org/packages/MyWebApi.Sdk.Models>. Consider reserving the `MyWebApi.` prefix afterwards via [package ID prefix reservation](https://learn.microsoft.com/en-us/nuget/nuget-org/id-prefix-reservation).
-2. **GitHub repository** — `CPlugin/mywebapi.com-sdk-dotnet` (mirrors the JS/Python SDK repos). `Directory.Build.props` already points `RepositoryUrl`/`PackageProjectUrl` at it.
+2. **GitHub repository** — `CPlugin/mywebapi.com-sdk-dotnet` (mirrors the JS/Python SDK repos). `Directory.Build.props` points `RepositoryUrl` at it; `PackageProjectUrl` is the product site, <https://mywebapi.com>.
 3. **Trusted Publishing policy** on <https://www.nuget.org/account/trustedpublishing> → *Add policy*:
    - Package owner: the account/organization that will own the packages
    - Repository Owner: `CPlugin`

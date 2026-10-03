@@ -7,6 +7,84 @@ Two NuGet packages, one version and release cycle (root namespaces in code are `
 - **`MyWebApi.Sdk`** — the full SDK: `CPluginWebApiClient` with a generated method for **every** v2 endpoint across both supported platform families, OAuth2 client_credentials with transparent refresh, safe-method-only 401 replay, typed `ApiError`, cursor pagination, SignalR real-time clients with auto-reconnect, optional DI integration.
 - **`MyWebApi.Sdk.Models`** — generated POCO DTOs + v2 response envelopes only. Zero dependencies beyond `System.Text.Json`. Use this when you build your own HTTP layer.
 
+The WebAPI works with MetaTrader 4 and MetaTrader 5 servers through their Manager API, so a .NET service — on Linux as well as Windows — gets REST and WebSocket (SignalR) access to a broker's trade server without the native Windows Manager API libraries.
+
+- Product and sign-up: <https://mywebapi.com>
+- API reference: <https://cplugin.com/docs/webapi> · interactive: <https://cloud.mywebapi.com/swagger>
+- Pricing: <https://cplugin.com/docs/pricing-and-terms>
+
+## What brokers do with it
+
+Typical back-office tasks, each with the SDK call that performs it. `client` is created as in [Quick start](#quick-start), `mt4` is `client.MT4(tradePlatform)` and `mt5` is `client.MT5(tradePlatform)`; DTOs live in `CPlugin.SaaSWebApi.Models`.
+
+**List open positions of a group** (MT4 `AdmTradesRequest`, MT5 `PositionByGroup`):
+
+```csharp
+var mt4Trades = await mt4.AdmTradesRequestAsync("real-usd", openOnly: true);
+var mt5Positions = await mt5.PositionByGroupAsync(@"real\*");
+foreach (var p in mt5Positions.Items)
+    Console.WriteLine($"{p.Login} {p.Symbol} {p.Volume} {p.Profit}");
+```
+
+**Stream trades in real time** (SignalR hub; the MT4 hub streams trades, ticks, account and symbol changes and margin calls):
+
+```csharp
+await using var hub = client.Realtime.MT4(tradePlatform);
+await hub.StartAsync();
+await foreach (var t in hub.StreamTradesAsync(ct))
+    Console.WriteLine($"{t.Kind} {t.Order} {t.Login} {t.Symbol} {t.VolumeLots}");
+```
+
+**Open an account from a CRM** (`UserRecordNew`, then `UserPasswordSet`):
+
+```csharp
+var user = await mt4.UserRecordNewAsync(
+    new MT4UserCreate { Login = 0, Group = "real-usd", Name = "John Smith", Email = "john@example.com", Leverage = 100 },
+    new CallOptions { IdempotencyKey = crmRequestId });
+await mt4.UserPasswordSetAsync(user!.Login!.Value, newPassword);
+```
+
+**Post a deposit or a withdrawal** (`TradeTransaction` balance operation; a negative amount withdraws):
+
+```csharp
+await mt4.TradeTransactionAsync(
+    new MT4TradeTransaction { TradeTransactionType = "BrBalance", TradeCommand = "Balance", OrderBy = 1001, Price = 500, Comment = "Deposit #8812" },
+    new CallOptions { IdempotencyKey = paymentId });
+```
+
+**Move an account to another group or change its leverage** (JSON Merge Patch, MT4 and MT5):
+
+```csharp
+await mt4.UserRecordAsync(1001, new { group = "real-vip", leverage = 200 });
+await mt5.UserRecordAsync(50001, new { leverage = 200 });
+```
+
+**Read trade history for reports and statements** (`TradesUserHistory`, MT5 `DealByGroup`):
+
+```csharp
+var closed = await mt4.TradesUserHistoryAsync(1001,
+    fromTime: new DateTimeOffset(2026, 9, 1, 0, 0, 0, TimeSpan.Zero),
+    toTime: new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero));
+var mt5Deals = await mt5.DealByGroupAsync(@"real\*", limit: 1000);
+```
+
+**Watch margin levels** (cached snapshot of every account, then the live margin-call stream):
+
+```csharp
+var atRisk = (await mt4.MarginsGetAsync()).Where(m => m.Level is > 0 and < 100).ToList();
+await foreach (var m in hub.StreamMarginCallUpdatesAsync(ct))
+    Console.WriteLine($"margin call {m.Login} {m.Level}");
+```
+
+**Change symbol settings, for example swaps** (`SymbolConfig` on MT4, `SymbolRecord` on MT5):
+
+```csharp
+await mt4.SymbolConfigAsync("EURUSD", new { swapLong = -6.1, swapShort = 1.2 });
+await mt5.SymbolRecordAsync("EURUSD", new { swapLong = -6.1, swapShort = 1.2 });
+```
+
+Every other endpoint (trading groups, server configuration, backups, journal, charts, news, plugins) is a method on the `MT4(...)` / `MT5(...)` namespace; see the [API reference](https://cplugin.com/docs/webapi).
+
 ## Install
 
 ```bash
