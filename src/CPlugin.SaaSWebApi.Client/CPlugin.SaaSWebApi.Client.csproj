@@ -4,7 +4,7 @@
     <!-- * Public NuGet id (brand parity with @mywebapi.com/sdk and mywebapi-sdk).
          Root namespace stays CPlugin.SaaSWebApi.Client. -->
     <PackageId>MyWebApi.Sdk</PackageId>
-    <Description>HttpClient-based async .NET client for the MyWebAPI.com trading platform management API (v2). Envelope-aware, supports idempotency keys, per-request timeouts, field selection, and paged iteration via IAsyncEnumerable.</Description>
+    <Description>.NET SDK for CPlugin WebAPI: async REST and WebSocket (SignalR) client that works with MetaTrader 4 and MetaTrader 5 servers. Accounts, open positions, deposits, trade history, groups and symbols for brokers; envelope-aware, idempotency keys, per-request timeouts, paged iteration via IAsyncEnumerable. MetaTrader is a trademark of MetaQuotes Ltd.; this package is not affiliated with MetaQuotes.</Description>
   </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Net.Http.Json" Version="8.0.1" />
