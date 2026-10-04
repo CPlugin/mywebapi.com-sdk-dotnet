@@ -7139,28 +7139,30 @@ namespace CPlugin.SaaSWebApi.Models
     /// <br/>            
     /// <br/>Enum fields (`TradeTransactionType`, `TradeCommand`,
     /// <br/>`TradeRequestFlags`) are exposed as plain strings. Clients submit
-    /// <br/>the enum name (e.g. `"Buy"`, `"OpenPending"`); the response
+    /// <br/>the enum name (e.g. `"Buy"`, `"PendingOpen"`); the response
     /// <br/>echoes the names back. This dodges the leaf-enum nested-generic STJ
     /// <br/>source-gen quirk documented in feedback-stj-enum-leaf-nested.
+    /// <br/>The valid names in the API reference are generated from the enums
+    /// <br/>(CPlugin.SaaSWebApps.WebAPI.Code.EnumStringSchemaFilter), so keep them out of the summaries.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT4TradeTransaction
     {
 
         /// <summary>
-        /// Transaction type: OpenPending, OpenMarket, ModifyPending, ModifyTrade, DeletePending, CloseMarket, BalanceAdd, CreditAdd, etc.
+        /// Transaction type (required). Manager-side operations use the `Br*` types, e.g. `BrBalance` with trade command `Balance` or `Credit` for a balance or credit operation.&lt;br/&gt;One of: PricesGet, PricesRequote, OpenInstant, OpenRequest, OpenMarket, PendingOpen, CloseInstant, CloseRequest, CloseMarket, Modify, Delete, CloseBy, CloseAll, BrOpen, BrClose, BrDelete, BrCloseBy, BrCloseAll, BrModify, BrActivate, BrComment, BrBalance. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("tradeTransactionType")]
         public string? TradeTransactionType { get; set; } = default!;
 
         /// <summary>
-        /// Trade command: Buy, Sell, BuyLimit, SellLimit, BuyStop, SellStop, Balance, Credit
+        /// Trade command. Empty means `Buy`.&lt;br/&gt;One of: Buy, Sell, BuyLimit, SellLimit, BuyStop, SellStop, Balance, Credit. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("tradeCommand")]
         public string? TradeCommand { get; set; } = default!;
 
         /// <summary>
-        /// Request flags: None, MarketOpen, Partial, NoExpiration, etc.
+        /// Request flags (who placed the request). Empty means `None`.&lt;br/&gt;Flags, names joined by ", ": None, Signal, Expert, Gateway, Mobile, Web, API. Case-insensitive; numbers are accepted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("tradeRequestFlags")]
         public string? TradeRequestFlags { get; set; } = default!;
@@ -7251,9 +7253,11 @@ namespace CPlugin.SaaSWebApi.Models
         /// <br/>            
         /// <br/>Enum fields (`TradeTransactionType`, `TradeCommand`,
         /// <br/>`TradeRequestFlags`) are exposed as plain strings. Clients submit
-        /// <br/>the enum name (e.g. `"Buy"`, `"OpenPending"`); the response
+        /// <br/>the enum name (e.g. `"Buy"`, `"PendingOpen"`); the response
         /// <br/>echoes the names back. This dodges the leaf-enum nested-generic STJ
         /// <br/>source-gen quirk documented in feedback-stj-enum-leaf-nested.
+        /// <br/>The valid names in the API reference are generated from the enums
+        /// <br/>(CPlugin.SaaSWebApps.WebAPI.Code.EnumStringSchemaFilter), so keep them out of the summaries.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
         public MT4TradeTransaction? Data { get; set; } = default!;
@@ -7286,7 +7290,7 @@ namespace CPlugin.SaaSWebApi.Models
     /// <br/>            
     /// <br/>&lt;br&gt;
     /// <br/>For typical stop-loss / take-profit edits prefer
-    /// <br/>`POST TradeTransaction` with `tradeTransactionType=ModifyTrade`
+    /// <br/>`POST TradeTransaction` with `tradeTransactionType=BrModify`
     /// <br/>— that goes through the wrapper's audited path. This endpoint is the
     /// <br/>low-level admin override for back-office corrections.
     /// <br/>
@@ -7999,7 +8003,7 @@ namespace CPlugin.SaaSWebApi.Models
     {
 
         /// <summary>
-        /// Bulk operation: `"Delete"`, `"Enable"`, `"Disable"`, `"Leverage"`, or `"SetGroup"`.
+        /// Bulk operation.&lt;br/&gt;One of: Delete, Enable, Disable, Leverage, SetGroup. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("command")]
         public string? Command { get; set; } = default!;

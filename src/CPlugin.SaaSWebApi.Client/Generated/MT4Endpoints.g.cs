@@ -117,7 +117,7 @@ public sealed partial class MT4Endpoints
     /// &lt;br&gt;
     /// Low-level back-office override that writes directly to the trade
     /// record. For SL/TP edits prefer
-    /// `POST TradeTransaction` with `tradeTransactionType=ModifyTrade`
+    /// `POST TradeTransaction` with `tradeTransactionType=BrModify`
     /// — that route goes through the wrapper's audited path. Use this
     /// endpoint for manual accounting corrections (commission/storage/taxes/
     /// profit, comment, magic) that the standard TradeTransaction path
@@ -3454,8 +3454,16 @@ public sealed partial class MT4Endpoints
     /// POST mutator covering every wrapper trade operation through the single
     /// `TradeTransaction` entry point. The request body's
     /// `tradeTransactionType` + `tradeCommand` combination selects
-    /// the actual operation (OpenPending+Buy, ModifyTrade, CloseMarket+Sell,
-    /// BalanceAdd+Balance, etc).
+    /// the actual operation — `OpenMarket`+`Buy`, `PendingOpen`+`BuyLimit`,
+    /// `CloseMarket`+`Sell`, and the manager-side `Br*` types:
+    /// `BrModify` (open price, SL, TP of an order), `BrDelete`,
+    /// `BrBalance`+`Balance` or `Credit` (balance/credit operation on
+    /// `orderBy`). The schema of the request body lists every accepted value.
+    /// &lt;br&gt;
+    /// An unknown `tradeTransactionType`, `tradeCommand` or
+    /// `tradeRequestFlags` value is refused with error code `Validation`
+    /// and the list of valid values; nothing is sent to the trading platform.
+    /// Names are case-insensitive; the numeric value of a member is accepted too.
     /// &lt;br&gt;
     /// On success the response echoes the wrapper's mutated structure — most
     /// importantly the `Order` field, which the server assigns on Open
