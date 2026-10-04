@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <Version>0.3.0</Version>
+    <Version>0.3.1</Version>
     <Authors>CPlugin</Authors>
     <Company>CPlugin</Company>
     <!-- * Project URL is the product site; the source repository is RepositoryUrl (shown on nuget.org as "Source repository"). -->
@@ -9,8 +9,8 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <!-- * Platform names only as nominative compatibility wording (owner decision 03.10.2026); package IDs stay neutral. -->
-    <PackageReleaseNotes>0.3.0: request timeouts — CallOptions.RequestTimeout and CPluginWebApiClientOptions.RequestTimeout (X-Request-Timeout, 1–300 s); the client waits 30 s past the server-side deadline; new error codes Timeout, OutcomeUnknown, Busy with ApiError.Outcome, IsSafeToRetry and related helpers; writes are never retried automatically; PATCH methods now take the patch object. Breaking: flag-set properties and parameters are now strings ("A, B"), WebApiErrorCode gains members (Internal changes its numeric value). Full notes: https://github.com/CPlugin/mywebapi.com-sdk-dotnet/blob/v0.3.0/CHANGELOG.md</PackageReleaseNotes>
-    <PackageTags>mt4;mt5;metatrader;metatrader4;metatrader5;mt4-api;mt5-api;manager-api;mt5-manager-api;broker;forex;trading;trading-platform;rest-api;websocket;signalr;real-time;sdk;openapi;cplugin;mywebapi;webapi</PackageTags>
+    <PackageReleaseNotes>0.3.1: regenerated from the WebAPI v2 specification of 03.10.2026 — the XML documentation of the MT4 trade-transaction and bulk user-group fields lists the values the server accepts; an unknown value is refused with error code Validation instead of silently becoming the default. No API surface changes. Package project URL is https://mywebapi.com. Full notes: https://github.com/CPlugin/mywebapi.com-sdk-dotnet/blob/v0.3.1/CHANGELOG.md</PackageReleaseNotes>
+    <PackageTags>mt4;mt5;metatrader;metatrader4;metatrader5;mt4-api;mt5-api;broker;forex;trading;trading-platform;rest-api;websocket;signalr;real-time;sdk;openapi;cplugin;mywebapi;webapi</PackageTags>
     <!-- * SourceLink (built into the .NET 8+ SDK) + debug symbols for nuget.org. -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>

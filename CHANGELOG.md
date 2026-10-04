@@ -2,12 +2,19 @@
 
 Versions follow [semver](https://semver.org/); while the major version is 0, a minor release may contain breaking changes, listed under **Breaking**.
 
-## Unreleased
+## 0.3.1
+
+Regenerated from the WebAPI v2 specification of 03.10.2026; no change to the API surface or to the DTO types.
+
+### Changed
+
+- The MT4 enum fields of `MT4TradeTransaction` (`TradeTransactionType`, `TradeCommand`, `TradeRequestFlags`, used by `MT4Endpoints.TradeTransactionAsync` and `TradeCheckStopsAsync`) and `MT4UsersGroupOp.Command` now document the values the server accepts; the old XML documentation listed names such as `ModifyTrade` and `BalanceAdd` that the server does not know. Values are case-insensitive, and the numeric value is accepted too.
+- An unknown value in `TradeTransactionType`, `TradeCommand` or `MT4UsersGroupOp.Command` is now refused by the server with `ApiError.Code` = `Validation`; until 03.10.2026 it was silently replaced by the enum's default. The behaviour belongs to the server, so it applies to every SDK version; check code that builds these values from user input.
 
 ### Documentation
 
 - README: "What brokers do with it" — eight common back-office tasks (open positions of a group, trade stream, account creation, deposits and withdrawals, group and leverage changes, trade history, margin levels, symbol swaps), each with the SDK call that performs it; links to the product site, API reference and pricing.
-- Package metadata: `PackageProjectUrl` is now <https://mywebapi.com> (the source stays under `RepositoryUrl`); the descriptions and tags of both packages name the compatible trading platforms. Reaches nuget.org with the next release.
+- Package metadata: `PackageProjectUrl` is now <https://mywebapi.com> (the source stays under `RepositoryUrl`); the descriptions and tags of both packages name the compatible trading platforms (MetaTrader 4 and MetaTrader 5).
 
 ## 0.3.0
 

@@ -7,7 +7,7 @@ Two NuGet packages, one version and release cycle (root namespaces in code are `
 - **`MyWebApi.Sdk`** — the full SDK: `CPluginWebApiClient` with a generated method for **every** v2 endpoint across both supported platform families, OAuth2 client_credentials with transparent refresh, safe-method-only 401 replay, typed `ApiError`, cursor pagination, SignalR real-time clients with auto-reconnect, optional DI integration.
 - **`MyWebApi.Sdk.Models`** — generated POCO DTOs + v2 response envelopes only. Zero dependencies beyond `System.Text.Json`. Use this when you build your own HTTP layer.
 
-The WebAPI works with MetaTrader 4 and MetaTrader 5 servers through their Manager API, so a .NET service — on Linux as well as Windows — gets REST and WebSocket (SignalR) access to a broker's trade server without the native Windows Manager API libraries.
+The WebAPI works with MetaTrader 4 and MetaTrader 5 servers, so a .NET service — on Linux as well as Windows — gets REST and WebSocket (SignalR) access to a broker's trade server without installing native Windows platform libraries.
 
 - Product and sign-up: <https://mywebapi.com>
 - API reference: <https://cplugin.com/docs/webapi> · interactive: <https://cloud.mywebapi.com/swagger>
