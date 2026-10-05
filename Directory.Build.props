@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <Version>0.3.1</Version>
+    <Version>0.3.3</Version>
     <Authors>CPlugin</Authors>
     <Company>CPlugin</Company>
     <!-- * Project URL is the product site; the source repository is RepositoryUrl (shown on nuget.org as "Source repository"). -->
@@ -9,7 +9,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <!-- * Platform names only as nominative compatibility wording (owner decision 03.10.2026); package IDs stay neutral. -->
-    <PackageReleaseNotes>0.3.1: regenerated from the WebAPI v2 specification of 03.10.2026 — the XML documentation of the MT4 trade-transaction and bulk user-group fields lists the values the server accepts; an unknown value is refused with error code Validation instead of silently becoming the default. No API surface changes. Package project URL is https://mywebapi.com. Full notes: https://github.com/CPlugin/mywebapi.com-sdk-dotnet/blob/v0.3.1/CHANGELOG.md</PackageReleaseNotes>
+    <PackageReleaseNotes>0.3.3: regenerated from the WebAPI v2 specification of 05.10.2026 — the XML documentation of the operations and DTOs no longer names the server's internal library. No API surface changes. Full notes: https://github.com/CPlugin/mywebapi.com-sdk-dotnet/blob/v0.3.3/CHANGELOG.md</PackageReleaseNotes>
     <PackageTags>mt4;mt5;metatrader;metatrader4;metatrader5;mt4-api;mt5-api;broker;forex;trading;trading-platform;rest-api;websocket;signalr;real-time;sdk;openapi;cplugin;mywebapi;webapi</PackageTags>
     <!-- * SourceLink (built into the .NET 8+ SDK) + debug symbols for nuget.org. -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

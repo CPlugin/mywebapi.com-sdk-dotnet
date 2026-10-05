@@ -111,17 +111,15 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-    /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-    /// <br/>the global JSON context policy serialises null fields, so we override that here
-    /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+    /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+    /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class ApiMeta
     {
 
         /// <summary>
-        /// W3C trace id for correlating this response in logs and tracing (Seq/SigNoz).
+        /// W3C trace id of the request. Quote it when you contact support: it finds this exact call in the server logs.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("activityId")]
         public string? ActivityId { get; set; } = default!;
@@ -227,10 +225,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -306,10 +302,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -1935,10 +1929,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -1966,10 +1958,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -2012,10 +2002,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -2033,7 +2021,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for a single MT4 firewall (access) rule. Curated subset of
-    /// <br/>the wrapper's ConAccess struct — drops the 17-int Reserved padding.
+    /// <br/>the platform's ConAccess struct — drops the 17-int Reserved padding.
     /// <br/>IpFrom/IpTo are widened from uint to long so the JSON-serialized
     /// <br/>numeric value fits inside JS Number safely (no precision loss).
     /// </summary>
@@ -2043,7 +2031,7 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// Firewall rule action — raw MT4 value preserved (FW_BLOCK / FW_PERMIT
-        /// <br/>per the wrapper's enum encoding; surfaced as int because the wrapper
+        /// <br/>per the platform's enum encoding; surfaced as int because the platform
         /// <br/>itself surfaces it as int).
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("action")]
@@ -2080,7 +2068,7 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// v2 DTO for a single MT4 firewall (access) rule. Curated subset of
-        /// <br/>the wrapper's ConAccess struct — drops the 17-int Reserved padding.
+        /// <br/>the platform's ConAccess struct — drops the 17-int Reserved padding.
         /// <br/>IpFrom/IpTo are widened from uint to long so the JSON-serialized
         /// <br/>numeric value fits inside JS Number safely (no precision loss).
         /// </summary>
@@ -2096,10 +2084,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -2127,10 +2113,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -2138,11 +2122,8 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// v2 DTO for the MT4 server's backup configuration (wrapper's ConBackup).
-    /// <br/>Curated subset — drops the WatchPassword field (slave-server credential)
-    /// <br/>for security. All other wrapper public fields are preserved, enums are
-    /// <br/>surfaced as enum types (V2JsonContext serializes them as strings via
-    /// <br/>UseStringEnumConverter=true).
+    /// Backup configuration of the MT4 server. All fields except the slave-server password, which is never
+    /// <br/>returned. Enumerations are returned as their names.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT4Backup
@@ -2251,7 +2232,7 @@ namespace CPlugin.SaaSWebApi.Models
         public string? WatchOpposite { get; set; } = default!;
 
         /// <summary>
-        /// Watchdog IP (32-bit, raw wrapper representation)
+        /// Watchdog IP (32-bit, raw platform representation)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("watchIp")]
         public int? WatchIp { get; set; } = default!;
@@ -2283,7 +2264,7 @@ namespace CPlugin.SaaSWebApi.Models
         public int? WatchLogin { get; set; } = default!;
 
         /// <summary>
-        /// Watchdog last-seen timestamp (raw int — wrapper does not auto-convert)
+        /// Watchdog last-seen timestamp (raw int — platform does not auto-convert)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("watchTimestamp")]
         public int? WatchTimestamp { get; set; } = default!;
@@ -2300,11 +2281,8 @@ namespace CPlugin.SaaSWebApi.Models
     {
 
         /// <summary>
-        /// v2 DTO for the MT4 server's backup configuration (wrapper's ConBackup).
-        /// <br/>Curated subset — drops the WatchPassword field (slave-server credential)
-        /// <br/>for security. All other wrapper public fields are preserved, enums are
-        /// <br/>surfaced as enum types (V2JsonContext serializes them as strings via
-        /// <br/>UseStringEnumConverter=true).
+        /// Backup configuration of the MT4 server. All fields except the slave-server password, which is never
+        /// <br/>returned. Enumerations are returned as their names.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
         public MT4Backup? Data { get; set; } = default!;
@@ -2318,10 +2296,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -2330,7 +2306,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for a single MT4 backup file descriptor. Curated subset of
-    /// <br/>the wrapper's `BackupInfo` — drops the 6-int reserved blob and
+    /// <br/>the platform's `BackupInfo` — drops the 6-int reserved blob and
     /// <br/>keeps only the three consumer-facing fields.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -2346,7 +2322,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// <summary>
         /// File size in bytes. Source field is a 32-bit signed int —
         /// <br/>widened to `long` here to give the client JSON-safe
-        /// <br/>numeric range without re-shaping after a future wrapper fix.
+        /// <br/>numeric range without re-shaping after a future platform fix.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("size")]
         public long? Size { get; set; } = default!;
@@ -2380,10 +2356,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -2443,10 +2417,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -2474,10 +2446,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -2485,9 +2455,9 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// v2 DTO for one OHLC chart bar. Curated from the wrapper's `RateInfoEx`;
+    /// v2 DTO for one OHLC chart bar. Curated from the platform's `RateInfoEx`;
     /// <br/>drops the internal `SymbolMultiply`/`Digits` scaling helpers
-    /// <br/>(callers don't need them — the wrapper's `buildRI` already
+    /// <br/>(callers don't need them — the platform's `buildRI` already
     /// <br/>normalised Open/High/Low/Close from raw int prices into floating point).
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -2553,10 +2523,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -2583,7 +2551,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for MT4 server-wide common settings. Curated subset of the
-    /// <br/>wrapper's ConCommon struct — exposes fields useful to clients while
+    /// <br/>the platform's ConCommon struct — exposes fields useful to clients while
     /// <br/>shielding the v2 contract from MetaQuotes schema drift.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -2633,7 +2601,7 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// v2 DTO for MT4 server-wide common settings. Curated subset of the
-        /// <br/>wrapper's ConCommon struct — exposes fields useful to clients while
+        /// <br/>the platform's ConCommon struct — exposes fields useful to clients while
         /// <br/>shielding the v2 contract from MetaQuotes schema drift.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
@@ -2648,10 +2616,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -2660,9 +2626,9 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 Type 1 mutator DTO for MT4 server-wide common settings. Curated
-    /// <br/>subset of the wrapper's `ConCommon` struct — exposes the fields
+    /// <br/>subset of the platform's `ConCommon` struct — exposes the fields
     /// <br/>most likely to need adjustment from a SaaS surface while leaving
-    /// <br/>runtime counters, derived state, and the wrapper's internal arrays
+    /// <br/>runtime counters, derived state, and the platform's internal arrays
     /// <br/>to the secret-preservation overlay on the controller side.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -2712,7 +2678,7 @@ namespace CPlugin.SaaSWebApi.Models
         public int? MinClient { get; set; } = default!;
 
         /// <summary>
-        /// Minimum acceptable Manager API build number.
+        /// Minimum client API build the trade server accepts.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("minApi")]
         public int? MinApi { get; set; } = default!;
@@ -2744,7 +2710,7 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// v2 DTO mirroring the wrapper's `DailyReport`: one end-of-day
+    /// v2 DTO mirroring the platform's `DailyReport`: one end-of-day
     /// <br/>balance/equity/PnL snapshot for a single account. Used by the broker
     /// <br/>daily-report family (per-login query, bulk pull, incremental sync).
     /// <br/>Internal underscore-prefixed unix-time field, the `Next` pointer
@@ -2764,7 +2730,7 @@ namespace CPlugin.SaaSWebApi.Models
         public int? Login { get; set; } = default!;
 
         /// <summary>
-        /// Day boundary timestamp (wrapper internal: __time32_t, server-local time)
+        /// Day boundary timestamp (platform internal: __time32_t, server-local time)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("ctm")]
         public System.DateTimeOffset? Ctm { get; set; } = default!;
@@ -2858,10 +2824,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -2870,7 +2834,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for a single MT4 access-server (DataServer) configuration entry.
-    /// <br/>Curated subset of the wrapper's ConDataServer — drops the internal
+    /// <br/>Curated subset of the platform's ConDataServer — drops the internal
     /// <br/>Reserved1/Reserved2 padding and the Next pointer chain. Loading and
     /// <br/>IpInternal are widened from uint to long for JSON-safe numeric
     /// <br/>serialization.
@@ -2886,7 +2850,7 @@ namespace CPlugin.SaaSWebApi.Models
         public string? Server { get; set; } = default!;
 
         /// <summary>
-        /// Server IP (raw wrapper int — sign-preserved; high-bit IPs may serialize as negative)
+        /// Server IP (raw platform int — sign-preserved; high-bit IPs may serialize as negative)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("ip")]
         public int? Ip { get; set; } = default!;
@@ -2898,7 +2862,7 @@ namespace CPlugin.SaaSWebApi.Models
         public string? Description { get; set; } = default!;
 
         /// <summary>
-        /// Whether the server can act as a proxy (0/1; raw wrapper int preserved)
+        /// Whether the server can act as a proxy (0/1; raw platform int preserved)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("isProxy")]
         public int? IsProxy { get; set; } = default!;
@@ -2940,7 +2904,7 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// v2 DTO for a single MT4 access-server (DataServer) configuration entry.
-        /// <br/>Curated subset of the wrapper's ConDataServer — drops the internal
+        /// <br/>Curated subset of the platform's ConDataServer — drops the internal
         /// <br/>Reserved1/Reserved2 padding and the Next pointer chain. Loading and
         /// <br/>IpInternal are widened from uint to long for JSON-safe numeric
         /// <br/>serialization.
@@ -2957,10 +2921,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -2988,10 +2950,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -3000,7 +2960,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for a single MT4 quote/news feeder configuration. Curated
-    /// <br/>subset of the wrapper's ConFeeder — drops the wrapper's Unused
+    /// <br/>subset of the platform's ConFeeder — drops the platform's Unused
     /// <br/>reserved blob AND the `Password` field (datafeed credentials).
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -3038,13 +2998,13 @@ namespace CPlugin.SaaSWebApi.Models
         public string? Keywords { get; set; } = default!;
 
         /// <summary>
-        /// Enable flag (0 = disabled, 1 = enabled — raw wrapper int)
+        /// Enable flag (0 = disabled, 1 = enabled — raw platform int)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("enable")]
         public int? Enable { get; set; } = default!;
 
         /// <summary>
-        /// Feed mode (quotes / news / both — wrapper enum)
+        /// Feed mode (quotes / news / both — platform enum)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("dataFeedMode")]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<DataFeedMode>))]
@@ -3093,7 +3053,7 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// v2 DTO for a single MT4 quote/news feeder configuration. Curated
-        /// <br/>subset of the wrapper's ConFeeder — drops the wrapper's Unused
+        /// <br/>subset of the platform's ConFeeder — drops the platform's Unused
         /// <br/>reserved blob AND the `Password` field (datafeed credentials).
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
@@ -3108,10 +3068,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -3139,10 +3097,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -3151,10 +3107,10 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for a single MT4 STP gateway-account configuration entry.
-    /// <br/>Curated subset of the wrapper's ConGatewayAccount — drops the
+    /// <br/>Curated subset of the platform's ConGatewayAccount — drops the
     /// <br/>23-int Reserved block AND the `Password` field (STP MT4
     /// <br/>credential to the external server). NotifyLogins is preserved
-    /// <br/>as int[8] because the wrapper exposes a fixed-size 8-slot array.
+    /// <br/>as int[8] because the platform exposes a fixed-size 8-slot array.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT4GatewayAccount
@@ -3203,7 +3159,7 @@ namespace CPlugin.SaaSWebApi.Models
         public System.Collections.Generic.List<int>? NotifyLogins { get; set; } = default!;
 
         /// <summary>
-        /// Gateway-account flag bitmap (wrapper enum, serialized as string)
+        /// Gateway-account flag bitmap (platform enum, serialized as string)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("flags")]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<EnGatewayAccountFlags>))]
@@ -3222,10 +3178,10 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// v2 DTO for a single MT4 STP gateway-account configuration entry.
-        /// <br/>Curated subset of the wrapper's ConGatewayAccount — drops the
+        /// <br/>Curated subset of the platform's ConGatewayAccount — drops the
         /// <br/>23-int Reserved block AND the `Password` field (STP MT4
         /// <br/>credential to the external server). NotifyLogins is preserved
-        /// <br/>as int[8] because the wrapper exposes a fixed-size 8-slot array.
+        /// <br/>as int[8] because the platform exposes a fixed-size 8-slot array.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
         public MT4GatewayAccount? Data { get; set; } = default!;
@@ -3239,10 +3195,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -3270,10 +3224,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -3282,7 +3234,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for a single MT4 gateway markup rule. Curated subset of the
-    /// <br/>wrapper's ConGatewayMarkup — drops the 16-int Reserved padding.
+    /// <br/>the platform's ConGatewayMarkup — drops the 16-int Reserved padding.
     /// <br/>Source describes the external symbol (or a wildcard/group mask)
     /// <br/>being mapped onto Symbol on this server, with per-side spread
     /// <br/>adjustments BidMarkup and AskMarkup expressed in pips.
@@ -3346,7 +3298,7 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// v2 DTO for a single MT4 gateway markup rule. Curated subset of the
-        /// <br/>wrapper's ConGatewayMarkup — drops the 16-int Reserved padding.
+        /// <br/>the platform's ConGatewayMarkup — drops the 16-int Reserved padding.
         /// <br/>Source describes the external symbol (or a wildcard/group mask)
         /// <br/>being mapped onto Symbol on this server, with per-side spread
         /// <br/>adjustments BidMarkup and AskMarkup expressed in pips.
@@ -3363,10 +3315,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -3394,10 +3344,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -3406,7 +3354,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for a single MT4 gateway-rule entry (STP execution routing
-    /// <br/>policy). Curated subset of the wrapper's ConGatewayRule — drops the
+    /// <br/>policy). Curated subset of the platform's ConGatewayRule — drops the
     /// <br/>internal RequestRreserved/ExeReserved padding blocks.
     /// <br/>&lt;br&gt;
     /// <br/>Each rule selects orders by RequestSymbol and RequestGroup (each can
@@ -3498,7 +3446,7 @@ namespace CPlugin.SaaSWebApi.Models
         public int? ExeVolumePercent { get; set; } = default!;
 
         /// <summary>
-        /// Execution flags bitmap (raw wrapper int)
+        /// Execution flags bitmap (raw platform int)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("exeFlags")]
         public int? ExeFlags { get; set; } = default!;
@@ -3516,7 +3464,7 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// v2 DTO for a single MT4 gateway-rule entry (STP execution routing
-        /// <br/>policy). Curated subset of the wrapper's ConGatewayRule — drops the
+        /// <br/>policy). Curated subset of the platform's ConGatewayRule — drops the
         /// <br/>internal RequestRreserved/ExeReserved padding blocks.
         /// <br/>&lt;br&gt;
         /// <br/>Each rule selects orders by RequestSymbol and RequestGroup (each can
@@ -3537,10 +3485,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -3568,10 +3514,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -3580,7 +3524,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO describing a trading group configuration. Curated subset of the
-    /// <br/>wrapper's `ConGroup` — exposes the configuration fields that callers
+    /// <br/>the platform's `ConGroup` — exposes the configuration fields that callers
     /// <br/>need to inspect margin/leverage/rights settings.
     /// <br/>            
     /// <br/>Deliberately omitted from v2 (vs v1's full ConGroup shape):
@@ -3590,7 +3534,7 @@ namespace CPlugin.SaaSWebApi.Models
     /// <br/>    is rarely useful without its credentials and exposes infra topology.
     /// <br/>  * `Templates` — server-side filesystem path, irrelevant to API
     /// <br/>    consumers and a minor information-disclosure risk.
-    /// <br/>  * `SecuritiesHash` — opaque byte[], wrapper bookkeeping.
+    /// <br/>  * `SecuritiesHash` — opaque byte[], platform bookkeeping.
     /// <br/>  * `Reserved`, `UnusedRights`, `SecGroups[32]`,
     /// <br/>    `SecMargins[128]` — reserved/internal arrays. The two nested
     /// <br/>    arrays (SecGroups, SecMargins) deserve their own dedicated v2
@@ -3600,8 +3544,7 @@ namespace CPlugin.SaaSWebApi.Models
     /// <br/>    rarely consumed; can be added later once the use case is clear.
     /// <br/>            
     /// <br/>Enums (`OTPMode`, `MarginMode`, `NewsMode`,
-    /// <br/>`MarginControllingType`) serialize as strings because
-    /// <br/>CPlugin.SaaSWebApps.WebAPI.Code.Json.V2JsonContext enables `UseStringEnumConverter`;
+    /// <br/>`MarginControllingType`) are returned as their names;
     /// <br/>`GroupRights` is a flags string, the names of the set bits.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -3829,7 +3772,7 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// v2 DTO describing a trading group configuration. Curated subset of the
-        /// <br/>wrapper's `ConGroup` — exposes the configuration fields that callers
+        /// <br/>the platform's `ConGroup` — exposes the configuration fields that callers
         /// <br/>need to inspect margin/leverage/rights settings.
         /// <br/>            
         /// <br/>Deliberately omitted from v2 (vs v1's full ConGroup shape):
@@ -3839,7 +3782,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// <br/>    is rarely useful without its credentials and exposes infra topology.
         /// <br/>  * `Templates` — server-side filesystem path, irrelevant to API
         /// <br/>    consumers and a minor information-disclosure risk.
-        /// <br/>  * `SecuritiesHash` — opaque byte[], wrapper bookkeeping.
+        /// <br/>  * `SecuritiesHash` — opaque byte[], platform bookkeeping.
         /// <br/>  * `Reserved`, `UnusedRights`, `SecGroups[32]`,
         /// <br/>    `SecMargins[128]` — reserved/internal arrays. The two nested
         /// <br/>    arrays (SecGroups, SecMargins) deserve their own dedicated v2
@@ -3849,8 +3792,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// <br/>    rarely consumed; can be added later once the use case is clear.
         /// <br/>            
         /// <br/>Enums (`OTPMode`, `MarginMode`, `NewsMode`,
-        /// <br/>`MarginControllingType`) serialize as strings because
-        /// <br/>CPlugin.SaaSWebApps.WebAPI.Code.Json.V2JsonContext enables `UseStringEnumConverter`;
+        /// <br/>`MarginControllingType`) are returned as their names;
         /// <br/>`GroupRights` is a flags string, the names of the set bits.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
@@ -3865,10 +3807,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -3896,10 +3836,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -3908,7 +3846,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for one of a group's "special securities" margin overrides. Curated
-    /// <br/>from `ConGroupMargin` — the wrapper's per-symbol swap/margin overrides
+    /// <br/>from `ConGroupMargin` — the platform's per-symbol swap/margin overrides
     /// <br/>stored as a 128-element array on `ConGroup.SecMargins`. The
     /// <br/>`Reserved` int[7] padding is dropped.
     /// </summary>
@@ -3963,10 +3901,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -3976,9 +3912,7 @@ namespace CPlugin.SaaSWebApi.Models
     /// <summary>
     /// v2 DTO for one entry in a group's `SecGroups` array (32 elements
     /// <br/>indexed by symbol-group). Curated from `ConGroupSec`; drops the
-    /// <br/>`Reserved` int[3] padding. Enum fields are typed as string for
-    /// <br/>the leaf-nested-generic STJ source-gen reason — see
-    /// <br/>feedback-stj-enum-leaf-nested.
+    /// <br/>`Reserved` int[3] padding. Enum fields are returned as their names.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT4GroupSec
@@ -4127,10 +4061,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -4139,7 +4071,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// Type 1 mutator input — full-replace shape for `GroupRecordUpdate`.
-    /// <br/>Same field set as the read DTO CPlugin.SaaSWebApps.WebAPI.DTOs.MT4.v2.MT4Group minus the immutable
+    /// <br/>Same field set as the read DTO MT4Group minus the immutable
     /// <br/>group name (path parameter) and the derived `SecMarginsTotal`
     /// <br/>(computed from SecMargins length).
     /// <br/>            
@@ -4148,7 +4080,7 @@ namespace CPlugin.SaaSWebApi.Models
     /// <br/>  * `SmtpServer`, `SmtpLogin`, `SmtpPassword` — SMTP creds,
     /// <br/>    never client-controlled.
     /// <br/>  * `Templates` — server-side filesystem path.
-    /// <br/>  * `SecuritiesHash` — opaque wrapper bookkeeping.
+    /// <br/>  * `SecuritiesHash` — opaque platform bookkeeping.
     /// <br/>  * `Reserved`, `UnusedRights` — reserved arrays.
     /// <br/>  * `SecGroups[32]`, `SecMargins[128]` — nested arrays, planned
     /// <br/>    as dedicated v2 endpoints.
@@ -4359,9 +4291,9 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for a single MT4 holiday-calendar entry. Curated subset of the
-    /// <br/>wrapper's ConHoliday struct — exposes the broker-facing fields and
+    /// <br/>the platform's ConHoliday struct — exposes the broker-facing fields and
     /// <br/>drops the internal Reserved/Next pointer block. Date is split into
-    /// <br/>Year/Month/Day ints (wire-compatible with the wrapper, no DateTime
+    /// <br/>Year/Month/Day ints (wire-compatible with the platform, no DateTime
     /// <br/>conversion to avoid timezone ambiguity for date-only entries).
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -4429,9 +4361,9 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// v2 DTO for a single MT4 holiday-calendar entry. Curated subset of the
-        /// <br/>wrapper's ConHoliday struct — exposes the broker-facing fields and
+        /// <br/>the platform's ConHoliday struct — exposes the broker-facing fields and
         /// <br/>drops the internal Reserved/Next pointer block. Date is split into
-        /// <br/>Year/Month/Day ints (wire-compatible with the wrapper, no DateTime
+        /// <br/>Year/Month/Day ints (wire-compatible with the platform, no DateTime
         /// <br/>conversion to avoid timezone ambiguity for date-only entries).
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
@@ -4446,10 +4378,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -4477,10 +4407,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -4489,9 +4417,9 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for a single MT4 LiveUpdate configuration entry. Curated
-    /// <br/>subset of the wrapper's ConLiveUpdate — exposes the metadata
+    /// <br/>subset of the platform's ConLiveUpdate — exposes the metadata
     /// <br/>(Company, Path, Version/Build, connection limits and counters,
-    /// <br/>Type, Enable, TotalFiles). The wrapper's `Files` array
+    /// <br/>Type, Enable, TotalFiles). The platform's `Files` array
     /// <br/>(128-element LiveInfoFile descriptor table) is intentionally
     /// <br/>deferred to a future endpoint to keep this payload tractable; v2
     /// <br/>callers needing per-file detail will get a separate
@@ -4538,13 +4466,13 @@ namespace CPlugin.SaaSWebApi.Models
         public int? Connections { get; set; } = default!;
 
         /// <summary>
-        /// LiveUpdate kind/type (raw wrapper int — LIVE_UPDATE_* constants)
+        /// LiveUpdate kind/type (raw platform int — LIVE_UPDATE_* constants)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("type")]
         public int? Type { get; set; } = default!;
 
         /// <summary>
-        /// Enable flag (0 = disabled, 1 = enabled — raw wrapper int)
+        /// Enable flag (0 = disabled, 1 = enabled — raw platform int)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("enable")]
         public int? Enable { get; set; } = default!;
@@ -4568,9 +4496,9 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// v2 DTO for a single MT4 LiveUpdate configuration entry. Curated
-        /// <br/>subset of the wrapper's ConLiveUpdate — exposes the metadata
+        /// <br/>subset of the platform's ConLiveUpdate — exposes the metadata
         /// <br/>(Company, Path, Version/Build, connection limits and counters,
-        /// <br/>Type, Enable, TotalFiles). The wrapper's `Files` array
+        /// <br/>Type, Enable, TotalFiles). The platform's `Files` array
         /// <br/>(128-element LiveInfoFile descriptor table) is intentionally
         /// <br/>deferred to a future endpoint to keep this payload tractable; v2
         /// <br/>callers needing per-file detail will get a separate
@@ -4588,10 +4516,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -4619,10 +4545,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -4631,7 +4555,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for an MT4 manager-account configuration entry. Curated subset
-    /// <br/>of the wrapper's ConManager struct — exposes Login/Name/Groups/MailBox,
+    /// <br/>of the platform's ConManager struct — exposes Login/Name/Groups/MailBox,
     /// <br/>the 19 boolean permission rights, IP-filter fields, and InfoDepth.
     /// <br/>Drops internal fields: SecGroups, ExpTime, Unused, Reserved blocks.
     /// <br/>IPFrom/IPTo are widened from uint to long so the JSON-serialized value
@@ -4648,7 +4572,7 @@ namespace CPlugin.SaaSWebApi.Models
         public int? Login { get; set; } = default!;
 
         /// <summary>
-        /// Display name of the manager (read-only on the wrapper side)
+        /// Display name of the manager (read-only on the platform side)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string? Name { get; set; } = default!;
@@ -4729,7 +4653,7 @@ namespace CPlugin.SaaSWebApi.Models
         public bool? TechSupport { get; set; } = default!;
 
         /// <summary>
-        /// IP filtering mode (0 = disabled; non-zero = enabled — raw MT4 wrapper value, semantics preserved)
+        /// IP filtering mode (0 = disabled; non-zero = enabled — raw MT4 platform value, semantics preserved)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("ipFilter")]
         public int? IpFilter { get; set; } = default!;
@@ -4759,7 +4683,7 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// v2 DTO for an MT4 manager-account configuration entry. Curated subset
-        /// <br/>of the wrapper's ConManager struct — exposes Login/Name/Groups/MailBox,
+        /// <br/>of the platform's ConManager struct — exposes Login/Name/Groups/MailBox,
         /// <br/>the 19 boolean permission rights, IP-filter fields, and InfoDepth.
         /// <br/>Drops internal fields: SecGroups, ExpTime, Unused, Reserved blocks.
         /// <br/>IPFrom/IPTo are widened from uint to long so the JSON-serialized value
@@ -4777,10 +4701,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -4808,10 +4730,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -4819,11 +4739,10 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// v2 DTO mirroring the wrapper's MarginLevel record. All fields are kept
+    /// v2 DTO mirroring the platform's MarginLevel record. All fields are kept
     /// <br/>because clients monitoring margin call / stop-out conditions need the
-    /// <br/>complete state. ControllingType and LevelType remain as MT4 enums and
-    /// <br/>serialize as string names via the V2JsonContext UseStringEnumConverter
-    /// <br/>option (e.g. "Percent" rather than 0).
+    /// <br/>complete state. ControllingType and LevelType are returned as their names
+    /// <br/>(e.g. "Percent" rather than 0).
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT4MarginLevel
@@ -4915,11 +4834,10 @@ namespace CPlugin.SaaSWebApi.Models
     {
 
         /// <summary>
-        /// v2 DTO mirroring the wrapper's MarginLevel record. All fields are kept
+        /// v2 DTO mirroring the platform's MarginLevel record. All fields are kept
         /// <br/>because clients monitoring margin call / stop-out conditions need the
-        /// <br/>complete state. ControllingType and LevelType remain as MT4 enums and
-        /// <br/>serialize as string names via the V2JsonContext UseStringEnumConverter
-        /// <br/>option (e.g. "Percent" rather than 0).
+        /// <br/>complete state. ControllingType and LevelType are returned as their names
+        /// <br/>(e.g. "Percent" rather than 0).
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
         public MT4MarginLevel? Data { get; set; } = default!;
@@ -4933,10 +4851,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -4964,10 +4880,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -4975,15 +4889,12 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// v2 DTO describing a single news topic header as held in the wrapper's
-    /// <br/>pumping cache. Curated subset of the wrapper's NewsTopic: enough to render
+    /// v2 DTO describing a single news topic header as held in the platform's
+    /// <br/>pumping cache. Curated subset of the platform's NewsTopic: enough to render
     /// <br/>a list / browse view of broker-distributed news (Key for follow-up
     /// <br/>NewsBodyGet / NewsBodyRequest, Time, Topic, Category, Keywords, Priority,
-    /// <br/>LangId). The wrapper's `Body` property is intentionally excluded —
-    /// <br/>it is x86-only at the unmanaged layer (the MT4 ManagerAPI lays out the
-    /// <br/>body pointer as a 32-bit field and the wrapper throws
-    /// <br/>System.PlatformNotSupportedException on x64) and is fetched
-    /// <br/>separately via `NewsBodyGet(key)`.
+    /// <br/>LangId). The news body is not part of the topic; fetch it with
+    /// <br/>`NewsBodyGet(key)`.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT4NewsTopic
@@ -5003,15 +4914,15 @@ namespace CPlugin.SaaSWebApi.Models
         public System.DateTimeOffset? Time { get; set; } = default!;
 
         /// <summary>
-        /// News headline / subject (max 256 chars at the wrapper layer).
+        /// News headline / subject (max 256 chars at the platform layer).
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("topic")]
         public string? Topic { get; set; } = default!;
 
         /// <summary>
-        /// News category. Slash-separated path on the wrapper side (e.g.
+        /// News category. Slash-separated path on the platform side (e.g.
         /// <br/>"Markets\Asian Markets News") used by the MT4 client terminal to
-        /// <br/>build a tree view. Max 64 chars at the wrapper layer.
+        /// <br/>build a tree view. Max 64 chars at the platform layer.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("category")]
         public string? Category { get; set; } = default!;
@@ -5049,15 +4960,12 @@ namespace CPlugin.SaaSWebApi.Models
     {
 
         /// <summary>
-        /// v2 DTO describing a single news topic header as held in the wrapper's
-        /// <br/>pumping cache. Curated subset of the wrapper's NewsTopic: enough to render
+        /// v2 DTO describing a single news topic header as held in the platform's
+        /// <br/>pumping cache. Curated subset of the platform's NewsTopic: enough to render
         /// <br/>a list / browse view of broker-distributed news (Key for follow-up
         /// <br/>NewsBodyGet / NewsBodyRequest, Time, Topic, Category, Keywords, Priority,
-        /// <br/>LangId). The wrapper's `Body` property is intentionally excluded —
-        /// <br/>it is x86-only at the unmanaged layer (the MT4 ManagerAPI lays out the
-        /// <br/>body pointer as a 32-bit field and the wrapper throws
-        /// <br/>System.PlatformNotSupportedException on x64) and is fetched
-        /// <br/>separately via `NewsBodyGet(key)`.
+        /// <br/>LangId). The news body is not part of the topic; fetch it with
+        /// <br/>`NewsBodyGet(key)`.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
         public MT4NewsTopic? Data { get; set; } = default!;
@@ -5071,10 +4979,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -5102,10 +5008,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -5115,7 +5019,7 @@ namespace CPlugin.SaaSWebApi.Models
     /// <summary>
     /// Request body for the v2 `NotificationsSend` admin endpoint —
     /// <br/>pushes a single message to one or more MT4 clients identified by
-    /// <br/>account login. Maps onto the wrapper's
+    /// <br/>account login. Maps onto the platform's
     /// <br/>`NotificationsSend2(int[] logins, string message)`.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -5124,7 +5028,7 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// Account logins to deliver the notification to (server-side fan-out
-        /// <br/>— the wrapper sends one notification per recipient in a single
+        /// <br/>— the platform sends one notification per recipient in a single
         /// <br/>Manager-API call).
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("logins")]
@@ -5142,11 +5046,11 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO describing an online user session entry. Curated subset of the
-    /// <br/>wrapper's OnlineRecord — exposes the login id and group name, which is
+    /// <br/>the platform's OnlineRecord — exposes the login id and group name, which is
     /// <br/>what callers actually need to know who is connected. IP, Counter and
     /// <br/>internal Reserved fields are intentionally omitted: IP is potentially
     /// <br/>PII and not always meaningful (NAT, proxies), Counter/Reserved are
-    /// <br/>wrapper bookkeeping.
+    /// <br/>platform bookkeeping.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT4Online
@@ -5187,10 +5091,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -5199,19 +5101,19 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for a single MT4 server performance snapshot — one row in the
-    /// <br/>time-series that `PerformanceRequest` returns. Mirrors the wrapper's
+    /// <br/>time-series that `PerformanceRequest` returns. Mirrors the platform's
     /// <br/>`PerformanceInfo` struct: a periodic resource sample (server-defined
     /// <br/>cadence, typically every 5 minutes) covering CPU, memory, network, socket
-    /// <br/>count, and connected-user count at CPlugin.SaaSWebApps.WebAPI.DTOs.MT4.v2.MT4Performance.Ctm. Used for capacity
-    /// <br/>planning, dashboards, and incident timelines. The wrapper's private
-    /// <br/>underscore-prefixed unix-time field is masked by CPlugin.SaaSWebApps.WebAPI.DTOs.MT4.v2.MT4Performance.Ctm.
+    /// <br/>count, and connected-user count at MT4Performance.Ctm. Used for capacity
+    /// <br/>planning, dashboards, and incident timelines. The platform's private
+    /// <br/>underscore-prefixed unix-time field is masked by MT4Performance.Ctm.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT4Performance
     {
 
         /// <summary>
-        /// Snapshot timestamp (wrapper internal: __time32_t)
+        /// Snapshot timestamp (platform internal: __time32_t)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("ctm")]
         public System.DateTimeOffset? Ctm { get; set; } = default!;
@@ -5269,10 +5171,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -5282,9 +5182,8 @@ namespace CPlugin.SaaSWebApi.Models
     /// <summary>
     /// v2 DTO for one MT4 server journal entry. Returned by `JournalRequest`
     /// <br/>when querying server-side logs for a date window. Same field set as the
-    /// <br/>wrapper's `ServerLog` — the wrapper struct is already minimal, no
-    /// <br/>secrets to drop. `Code` serialises as a string via
-    /// <br/>CPlugin.SaaSWebApps.WebAPI.Code.Json.V2JsonContext's `UseStringEnumConverter`.
+    /// <br/>the platform's `ServerLog` — the platform struct is already minimal, no
+    /// <br/>secrets to drop. `Code` is returned as its name.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT4ServerLog
@@ -5292,22 +5191,12 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// Log level / message category (Ok / Trade / Login / Warn / Err / Att).
-        /// <br/>&lt;br&gt;
-        /// <br/>Exposed as a plain string instead of an enum because STJ source-gen's
-        /// <br/>global `UseStringEnumConverter` doesn't consistently apply to
-        /// <br/>leaf-enum fields reachable only via nested generics
-        /// <br/>(`List&lt;MT4ServerLog&gt;.Code`). Property-level
-        /// <br/>`[JsonConverter(typeof(JsonStringEnumConverter&lt;T&gt;))]` also
-        /// <br/>failed for the same reason — the source generator does not bind the
-        /// <br/>attribute at the leaf. Mapping at the mapper level (enum.ToString())
-        /// <br/>is the most reliable path that survives the source generator.
-        /// <br/>
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("code")]
         public string? Code { get; set; } = default!;
 
         /// <summary>
-        /// Server-side timestamp as the wrapper formats it (string, not DateTime — preserved verbatim)
+        /// Server-side timestamp as the platform formats it (string, not DateTime — preserved verbatim)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("time")]
         public string? Time { get; set; } = default!;
@@ -5347,10 +5236,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -5358,14 +5245,14 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// v2 DTO for the MT4 server's per-hour access matrix (wrapper's
+    /// v2 DTO for the MT4 server's per-hour access matrix (the platform's
     /// <br/>`ConTime.Days` field). 168-element flat array; each element
     /// <br/>is `0` (denied) or `1` (allowed) for one hour of the
     /// <br/>week. Layout: `index = day * 24 + hour`, day-of-week 0..6
     /// <br/>matches MT4's native convention where day 0 = Sunday.
     /// <br/>&lt;br&gt;
     /// <br/>Example: `AccessHours[24..47]` covers Monday's 24 hours.
-    /// <br/>Internal `DaysControl` and `Reserved` wrapper fields
+    /// <br/>Internal `DaysControl` and `Reserved` platform fields
     /// <br/>are not part of the v2 contract.
     /// <br/>
     /// </summary>
@@ -5392,14 +5279,14 @@ namespace CPlugin.SaaSWebApi.Models
     {
 
         /// <summary>
-        /// v2 DTO for the MT4 server's per-hour access matrix (wrapper's
+        /// v2 DTO for the MT4 server's per-hour access matrix (the platform's
         /// <br/>`ConTime.Days` field). 168-element flat array; each element
         /// <br/>is `0` (denied) or `1` (allowed) for one hour of the
         /// <br/>week. Layout: `index = day * 24 + hour`, day-of-week 0..6
         /// <br/>matches MT4's native convention where day 0 = Sunday.
         /// <br/>&lt;br&gt;
         /// <br/>Example: `AccessHours[24..47]` covers Monday's 24 hours.
-        /// <br/>Internal `DaysControl` and `Reserved` wrapper fields
+        /// <br/>Internal `DaysControl` and `Reserved` platform fields
         /// <br/>are not part of the v2 contract.
         /// <br/>
         /// </summary>
@@ -5415,10 +5302,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -5427,7 +5312,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// POST body for the Manager-live `SymbolChange` endpoint. Maps 1:1 to the
-    /// <br/>wrapper's `SymbolProperties` struct (the public properties, not the
+    /// <br/>the platform's `SymbolProperties` struct (the public properties, not the
     /// <br/>underscore-prefixed backing fields). The struct's 8-int `Reserved`
     /// <br/>padding is dropped from the v2 contract.
     /// <br/>            
@@ -5441,7 +5326,7 @@ namespace CPlugin.SaaSWebApi.Models
     {
 
         /// <summary>
-        /// Symbol name (max 12 chars — wrapper's fixed slot)
+        /// Symbol name (max 12 chars — the platform's fixed slot)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("symbol")]
         public string? Symbol { get; set; } = default!;
@@ -5490,10 +5375,9 @@ namespace CPlugin.SaaSWebApi.Models
     /// <br/>`ConSymbol`; drops reserved / unused arrays and the nested
     /// <br/>`Sessions` table (planned as its own endpoint).
     /// <br/>            
-    /// <br/>Seven wrapper enum fields (`TradeMode`, `ProfitCalculationMode`,
+    /// <br/>Seven platform enum fields (`TradeMode`, `ProfitCalculationMode`,
     /// <br/>`SymbolExecMode`, `SwapType`, `GTCMode`,
-    /// <br/>`MarginCalculationMode`) are exposed as strings; see
-    /// <br/>feedback-stj-enum-leaf-nested for why the conversion happens at the mapper.
+    /// <br/>`MarginCalculationMode`) are returned as their names.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT4SymbolConfig
@@ -5821,10 +5705,9 @@ namespace CPlugin.SaaSWebApi.Models
         /// <br/>`ConSymbol`; drops reserved / unused arrays and the nested
         /// <br/>`Sessions` table (planned as its own endpoint).
         /// <br/>            
-        /// <br/>Seven wrapper enum fields (`TradeMode`, `ProfitCalculationMode`,
+        /// <br/>Seven platform enum fields (`TradeMode`, `ProfitCalculationMode`,
         /// <br/>`SymbolExecMode`, `SwapType`, `GTCMode`,
-        /// <br/>`MarginCalculationMode`) are exposed as strings; see
-        /// <br/>feedback-stj-enum-leaf-nested for why the conversion happens at the mapper.
+        /// <br/>`MarginCalculationMode`) are returned as their names.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
         public MT4SymbolConfig? Data { get; set; } = default!;
@@ -5838,10 +5721,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -5869,10 +5750,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -5881,13 +5760,11 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// Type 1 mutator input for `CfgUpdateSymbol`. Same field set as the read
-    /// <br/>DTO CPlugin.SaaSWebApps.WebAPI.DTOs.MT4.v2.MT4SymbolConfig minus:
+    /// <br/>DTO MT4SymbolConfig minus:
     /// <br/>  * `Symbol` (path parameter, immutable identity);
     /// <br/>  * `Count`, `CountOriginal`, `FilterCounter` — server-side
     /// <br/>    counters, derived;
-    /// <br/>  * Stringified enum fields are submitted as their original wrapper enum
-    /// <br/>    types here (one-way deserialisation accepts JsonStringEnumConverter
-    /// <br/>    via the existing global STJ options).
+    /// <br/>  * Enum fields are submitted as their names.
     /// <br/>            
     /// <br/>Fields preserved by the server-side read step (NOT on this DTO):
     /// <br/>  * `Symbol` identity.
@@ -6101,10 +5978,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -6113,7 +5988,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO describing a single MT4 symbol group (security category).
-    /// <br/>Mirrors the wrapper's ConSymbolGroup — which only carries Name and
+    /// <br/>Mirrors the platform's ConSymbolGroup — which only carries Name and
     /// <br/>Description as fixed-size ANSI fields. There is no ProfitCurrency on
     /// <br/>the MT4-side group struct (that lives on per-symbol settings, not on
     /// <br/>the group level), so the DTO faithfully exposes only what exists.
@@ -6147,7 +6022,7 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// v2 DTO describing a single MT4 symbol group (security category).
-        /// <br/>Mirrors the wrapper's ConSymbolGroup — which only carries Name and
+        /// <br/>Mirrors the platform's ConSymbolGroup — which only carries Name and
         /// <br/>Description as fixed-size ANSI fields. There is no ProfitCurrency on
         /// <br/>the MT4-side group struct (that lives on per-symbol settings, not on
         /// <br/>the group level), so the DTO faithfully exposes only what exists.
@@ -6164,10 +6039,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -6195,10 +6068,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -6207,7 +6078,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO describing a single symbol's market data and metadata as held in
-    /// <br/>the wrapper's pumping cache. Curated subset of the wrapper's SymbolInfo:
+    /// <br/>the platform's pumping cache. Curated subset of the platform's SymbolInfo:
     /// <br/>covers what clients monitoring tick feeds / building a quote panel
     /// <br/>actually need — current Bid/Ask, session High/Low, tick precision
     /// <br/>(Digits, Point), current Spread (in points), last-tick direction, and
@@ -6301,7 +6172,7 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// v2 DTO describing a single symbol's market data and metadata as held in
-        /// <br/>the wrapper's pumping cache. Curated subset of the wrapper's SymbolInfo:
+        /// <br/>the platform's pumping cache. Curated subset of the platform's SymbolInfo:
         /// <br/>covers what clients monitoring tick feeds / building a quote panel
         /// <br/>actually need — current Bid/Ask, session High/Low, tick precision
         /// <br/>(Digits, Point), current Spread (in points), last-tick direction, and
@@ -6322,10 +6193,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -6353,10 +6222,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -6364,9 +6231,9 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// v2 DTO for one open/close session window. The wrapper stores three of these
-    /// <br/>per direction (Quote/Trade) per weekday — see CPlugin.SaaSWebApps.WebAPI.DTOs.MT4.v2.MT4SymbolDaySessions.
-    /// <br/>All four time components are server-local (the wrapper itself has no
+    /// v2 DTO for one open/close session window. The platform stores three of these
+    /// <br/>per direction (Quote/Trade) per weekday — see MT4SymbolDaySessions.
+    /// <br/>All four time components are server-local (the platform itself has no
     /// <br/>timezone — the trading server's clock is the reference frame).
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -6401,7 +6268,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for a single MT4 chart-history synchronization rule. Curated
-    /// <br/>subset of the wrapper's ConSync — drops the Reserved padding, the
+    /// <br/>subset of the platform's ConSync — drops the Reserved padding, the
     /// <br/>Next pointer chain, the unused port slot, AND the `Password`
     /// <br/>field (replication credentials to the upstream sync source).
     /// </summary>
@@ -6422,13 +6289,13 @@ namespace CPlugin.SaaSWebApi.Models
         public string? Login { get; set; } = default!;
 
         /// <summary>
-        /// Enable flag (0 = disabled, 1 = enabled — raw wrapper int)
+        /// Enable flag (0 = disabled, 1 = enabled — raw platform int)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("enable")]
         public int? Enable { get; set; } = default!;
 
         /// <summary>
-        /// Synchronization mode (Add / Update / Insert — wrapper enum)
+        /// Synchronization mode (Add / Update / Insert — platform enum)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("mode")]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<SynchronizationMode>))]
@@ -6471,7 +6338,7 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// v2 DTO for a single MT4 chart-history synchronization rule. Curated
-        /// <br/>subset of the wrapper's ConSync — drops the Reserved padding, the
+        /// <br/>subset of the platform's ConSync — drops the Reserved padding, the
         /// <br/>Next pointer chain, the unused port slot, AND the `Password`
         /// <br/>field (replication credentials to the upstream sync source).
         /// </summary>
@@ -6487,10 +6354,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -6518,10 +6383,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -6531,9 +6394,9 @@ namespace CPlugin.SaaSWebApi.Models
     /// <summary>
     /// v2 DTO describing the last known tick for a trading symbol. Pump-cached
     /// <br/>snapshot of bid/ask quote — for sub-second updates, prefer the SignalR
-    /// <br/>tick stream over polling this endpoint. The wrapper's `TickInfo`
+    /// <br/>tick stream over polling this endpoint. The platform's `TickInfo`
     /// <br/>has no additional fields; the curated DTO is 1:1 on field semantics
-    /// <br/>with the wrapper, only the timestamp source field is renamed for
+    /// <br/>with the platform, only the timestamp source field is renamed for
     /// <br/>readability (`Ctm` → `Time`).
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -6578,9 +6441,9 @@ namespace CPlugin.SaaSWebApi.Models
         /// <summary>
         /// v2 DTO describing the last known tick for a trading symbol. Pump-cached
         /// <br/>snapshot of bid/ask quote — for sub-second updates, prefer the SignalR
-        /// <br/>tick stream over polling this endpoint. The wrapper's `TickInfo`
+        /// <br/>tick stream over polling this endpoint. The platform's `TickInfo`
         /// <br/>has no additional fields; the curated DTO is 1:1 on field semantics
-        /// <br/>with the wrapper, only the timestamp source field is renamed for
+        /// <br/>with the platform, only the timestamp source field is renamed for
         /// <br/>readability (`Ctm` → `Time`).
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
@@ -6595,10 +6458,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -6626,10 +6487,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -6638,10 +6497,9 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for one historical tick from `TicksRequest`. Same fields as the
-    /// <br/>wrapper's `TickRecord`; `Ctm` is renamed to `Time` at the API
-    /// <br/>boundary (consistent with CPlugin.SaaSWebApps.WebAPI.DTOs.MT4.v2.MT4TickInfo). The wrapper's
-    /// <br/>`TickRequestFlags` enum is exposed as a string to avoid the leaf-enum
-    /// <br/>nested-generic serialization issue documented in feedback-stj-enum-leaf-nested.
+    /// <br/>the platform's `TickRecord`; `Ctm` is renamed to `Time` at the API
+    /// <br/>boundary (consistent with MT4TickInfo). The tick flags are
+    /// <br/>returned as their names.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT4TickRecord
@@ -6673,7 +6531,6 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// Tick flags as string — combination of `Raw`, `Normal`, `All`.
-        /// <br/>String-typed for the same STJ source-gen reason as CPlugin.SaaSWebApps.WebAPI.DTOs.MT4.v2.MT4ServerLog.Code.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("flags")]
         public string? Flags { get; set; } = default!;
@@ -6701,10 +6558,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -6712,16 +6567,13 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// v2 DTO mirroring the wrapper's TradeRecord. The set of fields is curated
+    /// v2 DTO mirroring the platform's TradeRecord. The set of fields is curated
     /// <br/>for typical client use-cases — order monitoring, P&amp;L reporting, trade
     /// <br/>history reconciliation. Internal padding/reserved/gateway-internal/raw
-    /// <br/>underscore-prefixed fields are intentionally excluded. Span&lt;&gt;-typed
-    /// <br/>helpers (ConvRates, ConvReserv, APIData) are excluded because System.Text.Json
-    /// <br/>cannot serialize ref-struct-backed properties — those would force callers
-    /// <br/>onto a custom converter for marginal value.
+    /// <br/>underscore-prefixed fields are intentionally excluded, as are the raw
+    /// <br/>conversion-rate and API data blocks (ConvRates, ConvReserv, APIData).
     /// <br/>Enum members (TradeCommand, TradeRecordState, TradeRecordReason,
-    /// <br/>ActivationType) serialize as string names via V2JsonContext
-    /// <br/>UseStringEnumConverter — e.g. "Buy" rather than 0.
+    /// <br/>ActivationType) are returned as their names — e.g. "Buy" rather than 0.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT4Trade
@@ -6899,16 +6751,13 @@ namespace CPlugin.SaaSWebApi.Models
     {
 
         /// <summary>
-        /// v2 DTO mirroring the wrapper's TradeRecord. The set of fields is curated
+        /// v2 DTO mirroring the platform's TradeRecord. The set of fields is curated
         /// <br/>for typical client use-cases — order monitoring, P&amp;L reporting, trade
         /// <br/>history reconciliation. Internal padding/reserved/gateway-internal/raw
-        /// <br/>underscore-prefixed fields are intentionally excluded. Span&lt;&gt;-typed
-        /// <br/>helpers (ConvRates, ConvReserv, APIData) are excluded because System.Text.Json
-        /// <br/>cannot serialize ref-struct-backed properties — those would force callers
-        /// <br/>onto a custom converter for marginal value.
+        /// <br/>underscore-prefixed fields are intentionally excluded, as are the raw
+        /// <br/>conversion-rate and API data blocks (ConvRates, ConvReserv, APIData).
         /// <br/>Enum members (TradeCommand, TradeRecordState, TradeRecordReason,
-        /// <br/>ActivationType) serialize as string names via V2JsonContext
-        /// <br/>UseStringEnumConverter — e.g. "Buy" rather than 0.
+        /// <br/>ActivationType) are returned as their names — e.g. "Buy" rather than 0.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
         public MT4Trade? Data { get; set; } = default!;
@@ -6922,10 +6771,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -6953,10 +6800,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -6984,7 +6829,7 @@ namespace CPlugin.SaaSWebApi.Models
         public int? Login { get; set; } = default!;
 
         /// <summary>
-        /// Symbol (e.g. `EURUSD`; max 12 ASCII chars on the wrapper side)
+        /// Symbol (e.g. `EURUSD`; max 12 ASCII chars on the platform side)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("symbol")]
         public string? Symbol { get; set; } = default!;
@@ -7069,7 +6914,7 @@ namespace CPlugin.SaaSWebApi.Models
         public int? Magic { get; set; } = default!;
 
         /// <summary>
-        /// Free-form comment (max ~31 ASCII chars on the wrapper side)
+        /// Free-form comment (max ~31 ASCII chars on the platform side)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("comment")]
         public string? Comment { get; set; } = default!;
@@ -7078,7 +6923,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for a single per-order result of a backup-restore operation.
-    /// <br/>Mirrors the wrapper's `TradeRestoreResult` — order ticket plus
+    /// <br/>Mirrors the platform's `TradeRestoreResult` — order ticket plus
     /// <br/>a 1-byte status flag.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -7120,10 +6965,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -7132,18 +6975,15 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for a trade transaction — input AND output of `TradeTransaction`.
-    /// <br/>The wrapper's `TradeTransInfo` is in/out: the caller fills the request
+    /// <br/>The platform's `TradeTransInfo` is in/out: the caller fills the request
     /// <br/>fields (operation type, command, symbol, volume, price), submits via POST,
     /// <br/>and the server populates the resulting `Order` id (for Open) or
     /// <br/>echoes the modified record (for Modify/Close).
     /// <br/>            
     /// <br/>Enum fields (`TradeTransactionType`, `TradeCommand`,
-    /// <br/>`TradeRequestFlags`) are exposed as plain strings. Clients submit
-    /// <br/>the enum name (e.g. `"Buy"`, `"PendingOpen"`); the response
-    /// <br/>echoes the names back. This dodges the leaf-enum nested-generic STJ
-    /// <br/>source-gen quirk documented in feedback-stj-enum-leaf-nested.
-    /// <br/>The valid names in the API reference are generated from the enums
-    /// <br/>(CPlugin.SaaSWebApps.WebAPI.Code.EnumStringSchemaFilter), so keep them out of the summaries.
+    /// <br/>`TradeRequestFlags`) are plain strings. Clients submit the name
+    /// <br/>(e.g. `"Buy"`, `"PendingOpen"`); the response echoes the names
+    /// <br/>back. Each field lists its valid names.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT4TradeTransaction
@@ -7246,18 +7086,15 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// v2 DTO for a trade transaction — input AND output of `TradeTransaction`.
-        /// <br/>The wrapper's `TradeTransInfo` is in/out: the caller fills the request
+        /// <br/>The platform's `TradeTransInfo` is in/out: the caller fills the request
         /// <br/>fields (operation type, command, symbol, volume, price), submits via POST,
         /// <br/>and the server populates the resulting `Order` id (for Open) or
         /// <br/>echoes the modified record (for Modify/Close).
         /// <br/>            
         /// <br/>Enum fields (`TradeTransactionType`, `TradeCommand`,
-        /// <br/>`TradeRequestFlags`) are exposed as plain strings. Clients submit
-        /// <br/>the enum name (e.g. `"Buy"`, `"PendingOpen"`); the response
-        /// <br/>echoes the names back. This dodges the leaf-enum nested-generic STJ
-        /// <br/>source-gen quirk documented in feedback-stj-enum-leaf-nested.
-        /// <br/>The valid names in the API reference are generated from the enums
-        /// <br/>(CPlugin.SaaSWebApps.WebAPI.Code.EnumStringSchemaFilter), so keep them out of the summaries.
+        /// <br/>`TradeRequestFlags`) are plain strings. Clients submit the name
+        /// <br/>(e.g. `"Buy"`, `"PendingOpen"`); the response echoes the names
+        /// <br/>back. Each field lists its valid names.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
         public MT4TradeTransaction? Data { get; set; } = default!;
@@ -7271,10 +7108,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -7291,7 +7126,7 @@ namespace CPlugin.SaaSWebApi.Models
     /// <br/>&lt;br&gt;
     /// <br/>For typical stop-loss / take-profit edits prefer
     /// <br/>`POST TradeTransaction` with `tradeTransactionType=BrModify`
-    /// <br/>— that goes through the wrapper's audited path. This endpoint is the
+    /// <br/>— that goes through the platform's audited path. This endpoint is the
     /// <br/>low-level admin override for back-office corrections.
     /// <br/>
     /// </summary>
@@ -7362,7 +7197,7 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// v2 DTO describing a trading account. Curated subset of the wrapper's
+    /// v2 DTO describing a trading account. Curated subset of the platform's
     /// <br/>`UserRecord` — exposes identity, contact, financial and flag fields
     /// <br/>that callers actually need.
     /// <br/>            
@@ -7370,11 +7205,11 @@ namespace CPlugin.SaaSWebApi.Models
     /// <br/>  * Password / PasswordInvestor / PasswordPhone / OtpSecret / ApiData /
     /// <br/>    SecureReserved — credentials and secrets must never cross the v2
     /// <br/>    boundary regardless of access level.
-    /// <br/>  * Unused / Reserved2 / EnableReserved / TimeStamp — wrapper bookkeeping
+    /// <br/>  * Unused / Reserved2 / EnableReserved / TimeStamp — platform bookkeeping
     /// <br/>    with no caller-visible semantics.
     /// <br/>            
-    /// <br/>Account flags are exposed as a single CPlugin.SaaSWebApps.WebAPI.DTOs.MT4.v2.MT4User.EnableFlags bitfield
-    /// <br/>(the wrapper's native representation). Bit semantics are documented under
+    /// <br/>Account flags are exposed as a single MT4User.EnableFlags bitfield
+    /// <br/>(the platform's native representation). Bit semantics are documented under
     /// <br/>that property — splitting it into separate booleans would hide the fact
     /// <br/>that MetaQuotes occasionally reuses bit positions across builds.
     /// </summary>
@@ -7413,7 +7248,7 @@ namespace CPlugin.SaaSWebApi.Models
         public System.DateTimeOffset? LastDate { get; set; } = default!;
 
         /// <summary>
-        /// External customer identifier (e.g. CRM/KYC link). Wrapper's `Id` field.
+        /// External customer identifier (e.g. CRM/KYC link). The platform's `Id` field.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("externalId")]
         public string? ExternalId { get; set; } = default!;
@@ -7545,7 +7380,7 @@ namespace CPlugin.SaaSWebApi.Models
         public double? Taxes { get; set; } = default!;
 
         /// <summary>
-        /// Account flag bitfield (wrapper's `EnableFlags`). Documented bits:
+        /// Account flag bitfield (the platform's `EnableFlags`). Documented bits:
         /// <br/>  * 0x01 = account enabled (login allowed)
         /// <br/>  * 0x02 = client may change password
         /// <br/>  * 0x04 = account is read-only (no trading)
@@ -7565,7 +7400,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// <summary>
         /// MetaQuotes ID for mobile push notifications (0 if not linked).
         /// <br/>Typed as `long` in v2 even though current builds store it in
-        /// <br/>32 bits — the wrapper exposes a wider underlying type and a checked
+        /// <br/>32 bits — the platform exposes a wider underlying type and a checked
         /// <br/>narrowing cast would crash for accounts whose mqid sits above
         /// <br/>Int32.MaxValue. Future-proofs the contract against MQ widening.
         /// </summary>
@@ -7590,7 +7425,7 @@ namespace CPlugin.SaaSWebApi.Models
     {
 
         /// <summary>
-        /// v2 DTO describing a trading account. Curated subset of the wrapper's
+        /// v2 DTO describing a trading account. Curated subset of the platform's
         /// <br/>`UserRecord` — exposes identity, contact, financial and flag fields
         /// <br/>that callers actually need.
         /// <br/>            
@@ -7598,11 +7433,11 @@ namespace CPlugin.SaaSWebApi.Models
         /// <br/>  * Password / PasswordInvestor / PasswordPhone / OtpSecret / ApiData /
         /// <br/>    SecureReserved — credentials and secrets must never cross the v2
         /// <br/>    boundary regardless of access level.
-        /// <br/>  * Unused / Reserved2 / EnableReserved / TimeStamp — wrapper bookkeeping
+        /// <br/>  * Unused / Reserved2 / EnableReserved / TimeStamp — platform bookkeeping
         /// <br/>    with no caller-visible semantics.
         /// <br/>            
-        /// <br/>Account flags are exposed as a single CPlugin.SaaSWebApps.WebAPI.DTOs.MT4.v2.MT4User.EnableFlags bitfield
-        /// <br/>(the wrapper's native representation). Bit semantics are documented under
+        /// <br/>Account flags are exposed as a single MT4User.EnableFlags bitfield
+        /// <br/>(the platform's native representation). Bit semantics are documented under
         /// <br/>that property — splitting it into separate booleans would hide the fact
         /// <br/>that MetaQuotes occasionally reuses bit positions across builds.
         /// </summary>
@@ -7618,10 +7453,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -7630,15 +7463,15 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// Type 1 mutator input — full create shape for `UserRecordNew`.
-    /// <br/>Same writable fields as CPlugin.SaaSWebApps.WebAPI.DTOs.MT4.v2.MT4UserUpdate minus the explicit
+    /// <br/>Same writable fields as MT4UserUpdate minus the explicit
     /// <br/>`Balance`/`Credit` (those should come through dedicated balance
-    /// <br/>operations after the account exists). The wrapper allocates the next free
+    /// <br/>operations after the account exists). The platform allocates the next free
     /// <br/>login id when `Login = 0`; clients may also request a specific id by
     /// <br/>setting `Login &gt; 0` (the server rejects collisions).
     /// <br/>            
     /// <br/>Password / OTP / API-data fields are NOT on this DTO. After successful
     /// <br/>creation, set the initial password via a separate
-    /// <br/>`POST UserPasswordSet/{login}` call. The wrapper accepts the new
+    /// <br/>`POST UserPasswordSet/{login}` call. The platform accepts the new
     /// <br/>account with empty password bytes; the password endpoint lifts it to
     /// <br/>usable credentials.
     /// </summary>
@@ -7649,7 +7482,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// <summary>
         /// Optional preferred login. `0` = let server assign the next free
         /// <br/>id. `&gt; 0` = request this exact id (server rejects collisions
-        /// <br/>via wrapper error code).
+        /// <br/>via platform error code).
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("login")]
         public int? Login { get; set; } = default!;
@@ -7740,10 +7573,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -7808,7 +7639,7 @@ namespace CPlugin.SaaSWebApi.Models
         public double? Credit { get; set; } = default!;
 
         /// <summary>
-        /// Account enabled flag (0 = disabled, 1 = enabled — raw wrapper int)
+        /// Account enabled flag (0 = disabled, 1 = enabled — raw platform int)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("enable")]
         public int? Enable { get; set; } = default!;
@@ -7841,10 +7672,10 @@ namespace CPlugin.SaaSWebApi.Models
     /// <br/>  * `Password`, `PasswordInvestor`, `PasswordPhone` —
     /// <br/>    change via `POST UserPasswordSet`.
     /// <br/>  * `OTPSecret` — provisioned via separate admin flow.
-    /// <br/>  * `APIData` — wrapper-internal blob, never client-controlled.
+    /// <br/>  * `APIData` — platform-internal blob, never client-controlled.
     /// <br/>            
     /// <br/>&lt;br&gt;&lt;b&gt;Note on Balance/Credit:&lt;/b&gt; these fields ARE accepted here because the
-    /// <br/>wrapper `UserRecordUpdate` writes them directly. However, the audit-
+    /// <br/>platform `UserRecordUpdate` writes them directly. However, the audit-
     /// <br/>trail-preserving way to move money is the dedicated balance operation
     /// <br/>endpoints (forthcoming) — submitting Balance via this DTO bypasses the
     /// <br/>audit log on MT4 server side.
@@ -8475,10 +8306,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -8552,10 +8381,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -8810,7 +8637,7 @@ namespace CPlugin.SaaSWebApi.Models
         public double? PriceGateway { get; set; } = default!;
 
         /// <summary>
-        /// &lt;strong&gt;Has No Setter In ManagerAPI, so all you can is to read this value.&lt;/strong&gt;
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>            Get the market Bid price as at the time of deal execution by the server
@@ -8819,7 +8646,7 @@ namespace CPlugin.SaaSWebApi.Models
         public double? MarketBid { get; set; } = default!;
 
         /// <summary>
-        /// &lt;strong&gt;Has No Setter In ManagerAPI, so all you can is to read this value.&lt;/strong&gt;
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>            Get the market Ask price as at the time of deal execution by the server
@@ -8828,7 +8655,7 @@ namespace CPlugin.SaaSWebApi.Models
         public double? MarketAsk { get; set; } = default!;
 
         /// <summary>
-        /// &lt;strong&gt;Has No Setter In ManagerAPI, so all you can is to read this value.&lt;/strong&gt;
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>            Get the market Last price as at the time of deal execution by the server
@@ -8837,7 +8664,7 @@ namespace CPlugin.SaaSWebApi.Models
         public double? MarketLast { get; set; } = default!;
 
         /// <summary>
-        /// &lt;strong&gt;Has No Setter In ManagerAPI, so all you can is to read this value.&lt;/strong&gt;
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>            modification flags
@@ -8868,10 +8695,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -9050,7 +8875,7 @@ namespace CPlugin.SaaSWebApi.Models
         public string? Comment { get; set; } = default!;
 
         /// <summary>
-        /// &lt;strong&gt;Has No Setter In ManagerAPI, so all you can is to read this value.&lt;/strong&gt;
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>            order activation state, time and price
@@ -9059,7 +8884,7 @@ namespace CPlugin.SaaSWebApi.Models
         public int? ActivationMode { get; set; } = default!;
 
         /// <summary>
-        /// &lt;strong&gt;Has No Setter In ManagerAPI, so all you can is to read this value.&lt;/strong&gt;
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>&lt;br /&gt;
         /// </summary>
@@ -9067,7 +8892,7 @@ namespace CPlugin.SaaSWebApi.Models
         public System.DateTimeOffset? ActivationTime { get; set; } = default!;
 
         /// <summary>
-        /// &lt;strong&gt;Has No Setter In ManagerAPI, so all you can is to read this value.&lt;/strong&gt;
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>            Gets the price, at which the order was activated
@@ -9076,7 +8901,7 @@ namespace CPlugin.SaaSWebApi.Models
         public double? ActivationPrice { get; set; } = default!;
 
         /// <summary>
-        /// &lt;strong&gt;Has No Setter In ManagerAPI, so all you can is to read this value.&lt;/strong&gt;
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>&lt;br /&gt;
         /// </summary>
@@ -9150,10 +8975,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -9372,10 +9195,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -9441,7 +9262,7 @@ namespace CPlugin.SaaSWebApi.Models
         public string? CurrencyBase { get; set; } = default!;
 
         /// <summary>
-        /// &lt;strong&gt;Has No Setter In ManagerAPI, so all you can is to read this value.&lt;/strong&gt;
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>&lt;br /&gt;
         /// </summary>
@@ -9455,7 +9276,7 @@ namespace CPlugin.SaaSWebApi.Models
         public string? CurrencyProfit { get; set; } = default!;
 
         /// <summary>
-        /// &lt;strong&gt;Has No Setter In ManagerAPI, so all you can is to read this value.&lt;/strong&gt;
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>&lt;br /&gt;
         /// </summary>
@@ -9469,7 +9290,7 @@ namespace CPlugin.SaaSWebApi.Models
         public string? CurrencyMargin { get; set; } = default!;
 
         /// <summary>
-        /// &lt;strong&gt;Has No Setter In ManagerAPI, so all you can is to read this value.&lt;/strong&gt;
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>&lt;br /&gt;
         /// </summary>
@@ -9498,7 +9319,7 @@ namespace CPlugin.SaaSWebApi.Models
         public double? Point { get; set; } = default!;
 
         /// <summary>
-        /// &lt;strong&gt;Has No Setter In ManagerAPI, so all you can is to read this value.&lt;/strong&gt;
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
         /// <br/>&lt;br /&gt;
         /// <br/>&lt;br /&gt;
         /// </summary>
@@ -10111,10 +9932,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -10220,10 +10039,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -10519,10 +10336,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -11094,10 +10909,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -11307,7 +11120,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// Transport-level error classification for v2 responses. Stable across MT4
-    /// <br/>wrapper versions — clients can branch on this without knowing MT-specific
+    /// <br/>platform versions — clients can branch on this without knowing MT-specific
     /// <br/>codes. When ErrorCode == MT4Error, see ManagerCode for the underlying
     /// <br/>MT4 ResultCode value.
     /// </summary>
@@ -11407,10 +11220,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -11419,7 +11230,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for a single mailbox entry returned by `GET MailsRequest`
-    /// <br/>(sidecar-only). Curated subset of the wrapper's `MailBox` —
+    /// <br/>(sidecar-only). Curated subset of the platform's `MailBox` —
     /// <br/>keeps the consumer-facing fields, drops the internal
     /// <br/>`ReceiversCount` bookkeeping.
     /// </summary>
@@ -11480,10 +11291,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -11492,7 +11301,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 request DTO for `POST MailSend` (sidecar-only). Sends an
-    /// <br/>email to one or more client logins. Wrapper signature:
+    /// <br/>email to one or more client logins. Platform signature:
     /// <br/>`ResultCode MailSend(MailBox mail, ICollection&lt;int&gt; logins)`.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -11534,7 +11343,7 @@ namespace CPlugin.SaaSWebApi.Models
     /// <summary>
     /// v2 request DTO for `POST NewsSend` — pushes a single news item
     /// <br/>to the MT4 server, which fans it out to all connected client
-    /// <br/>terminals. Wrapper signature: `ResultCode NewsSend(NewsTopic news)`.
+    /// <br/>terminals. Platform signature: `ResultCode NewsSend(NewsTopic news)`.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT4NewsSendRequest
@@ -11567,7 +11376,7 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// v2 DTO for MT4 plugin metadata (sidecar-only). Mirrors wrapper's
+    /// v2 DTO for MT4 plugin metadata (sidecar-only). Mirrors the platform's
     /// <br/>`ConPlugin` with its embedded `PluginInfo` flattened.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -11575,7 +11384,7 @@ namespace CPlugin.SaaSWebApi.Models
     {
 
         /// <summary>
-        /// Plugin DLL filename (max 256 chars on the wrapper side)
+        /// Plugin DLL filename (max 256 chars on the platform side)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("file")]
         public string? File { get; set; } = default!;
@@ -11620,7 +11429,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for a single plugin parameter pair (sidecar-only).
-    /// <br/>Mirrors wrapper's `PluginCfg`.
+    /// <br/>Mirrors the platform's `PluginCfg`.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT4PluginConfig
@@ -11661,10 +11470,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -11673,7 +11480,7 @@ namespace CPlugin.SaaSWebApi.Models
 
     /// <summary>
     /// v2 DTO for an MT4 plugin together with its parameter set (sidecar-only).
-    /// <br/>Mirrors wrapper's `ConPluginParam`.
+    /// <br/>Mirrors the platform's `ConPluginParam`.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT4PluginParam
@@ -11704,7 +11511,7 @@ namespace CPlugin.SaaSWebApi.Models
 
         /// <summary>
         /// v2 DTO for an MT4 plugin together with its parameter set (sidecar-only).
-        /// <br/>Mirrors wrapper's `ConPluginParam`.
+        /// <br/>Mirrors the platform's `ConPluginParam`.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
         public MT4PluginParam? Data { get; set; } = default!;
@@ -11718,10 +11525,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
@@ -11749,10 +11554,8 @@ namespace CPlugin.SaaSWebApi.Models
         public ApiError? Error { get; set; } = default!;
 
         /// <summary>
-        /// Response metadata. ActivityId is the W3C trace-id for correlation in Seq/SigNoz.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted —
-        /// <br/>the global JSON context policy serialises null fields, so we override that here
-        /// <br/>with System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull.
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;

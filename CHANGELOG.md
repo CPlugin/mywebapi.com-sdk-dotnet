@@ -2,6 +2,14 @@
 
 Versions follow [semver](https://semver.org/); while the major version is 0, a minor release may contain breaking changes, listed under **Breaking**.
 
+## 0.3.3
+
+Regenerated from the WebAPI v2 specification of 05.10.2026; no change to the API surface or to the DTO types.
+
+### Changed
+
+- The XML documentation of `MT4Endpoints`, `MT5Endpoints` and the DTOs, and the specification header they come from, no longer name the server's internal library; the texts speak about the trading platform itself. Documentation only; no change in behaviour.
+
 ## 0.3.1
 
 Regenerated from the WebAPI v2 specification of 03.10.2026; no change to the API surface or to the DTO types.
