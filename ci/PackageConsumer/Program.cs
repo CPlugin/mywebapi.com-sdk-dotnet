@@ -9,7 +9,7 @@ const string StaticToken = "loopback-static-token";
 const string ClientId = "synthetic-client-id";
 const string ClientSecret = "synthetic-client-secret";
 var platform = Guid.Parse("11111111-1111-1111-1111-111111111111");
-var artifactVersion = Environment.GetEnvironmentVariable("SDK_VERSION") ?? "0.3.1";
+var artifactVersion = Environment.GetEnvironmentVariable("SDK_VERSION") ?? "0.3.3";
 var results = new List<object>();
 
 await using (var server = await LoopbackServer.StartAsync())

@@ -61,7 +61,7 @@ public sealed partial class MT4Endpoints
     /// non-zero → admin tooling can run `AdmBalanceFix` to recompute
     /// (forthcoming Wave 3 endpoint).
     /// 
-    /// Read-only operation despite the wrapper's "Adm" prefix (the prefix
+    /// Read-only operation despite the platform's "Adm" prefix (the prefix
     /// signals the elevated authorization requirement, not a write side
     /// effect).
     /// 
@@ -118,7 +118,7 @@ public sealed partial class MT4Endpoints
     /// Low-level back-office override that writes directly to the trade
     /// record. For SL/TP edits prefer
     /// `POST TradeTransaction` with `tradeTransactionType=BrModify`
-    /// — that route goes through the wrapper's audited path. Use this
+    /// — that route goes through the platform's audited path. Use this
     /// endpoint for manual accounting corrections (commission/storage/taxes/
     /// profit, comment, magic) that the standard TradeTransaction path
     /// does not cover.
@@ -150,7 +150,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Bulk-deletes a list of trade tickets (administrative scope). Used for cleanup after reconciliation mistakes, simulator state reset, or compliance-mandated removal.
     /// 
-    /// Manager-live POST. The wrapper accepts a flat `int[]` of order
+    /// Manager-live POST. The platform accepts a flat `int[]` of order
     /// tickets and a count; we mirror the existing batched-int pattern
     /// (repeat `?orders=` per ticket — same convention as
     /// `UserRecordsRequest`'s `?logins=`). Empty arrays are
@@ -208,12 +208,12 @@ public sealed partial class MT4Endpoints
     /// All user accounts in a given group (admin scope) — the safe variant that honors permission checks server-side.
     /// 
     /// Manager (live) call. Returns the curated `MT4User` projection
-    /// for every account in the specified group. The wrapper's "Safe" suffix
+    /// for every account in the specified group. The platform's "Safe" suffix
     /// indicates it runs through `RunSafe` with the `Admin` rights
     /// guard — a manager lacking that permission receives a sensible error
     /// rather than a connection drop.
     /// 
-    /// Comma-separated group lists are accepted by the wrapper (it strips
+    /// Comma-separated group lists are accepted by the platform (it strips
     /// commas and trims whitespace internally); the simplest call pattern
     /// is a single group name. Large groups may return substantial
     /// payloads — pair with `Idempotency-Key` on retry.
@@ -235,7 +235,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// List backup order files available on the MT4 server for a given mode.
     /// 
-    /// Manager (live) call to the wrapper's
+    /// Manager (live) call to the platform's
     /// `BackupInfoOrders(int mode)`. Order-side counterpart of
     /// `BackupInfoUsers` — same shape, different catalog.
     /// Read-only operation.
@@ -257,7 +257,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// List backup user files available on the MT4 server for a given mode.
     /// 
-    /// Manager (live) call to the wrapper's
+    /// Manager (live) call to the platform's
     /// `BackupInfoUsers(int mode)`. Returns the catalog of backup
     /// files (filename, size, mtime) — does NOT touch the files themselves.
     /// Read-only operation: safe to call repeatedly.
@@ -283,7 +283,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Read trade records out of a backup file (does NOT restore — read-only).
     /// 
-    /// Manager (live) call to the wrapper's
+    /// Manager (live) call to the platform's
     /// `BackupRequestOrders(string file, string request)`. Order-side
     /// counterpart of `BackupRequestUsers`. Same caveats:
     /// read-only, full file loaded server-side regardless of `limit`,
@@ -312,8 +312,8 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Read user records out of a backup file (does NOT restore — read-only).
     /// 
-    /// Manager (live) call to the wrapper's
-    /// `BackupRequestUsers(string file, string request)`. The wrapper
+    /// Manager (live) call to the platform's
+    /// `BackupRequestUsers(string file, string request)`. The platform
     /// extracts records from the named backup file but does NOT write
     /// them back to the live DB — that requires a separate (destructive)
     /// `BackupRestoreUsers` call which is part of Wave 4b.
@@ -322,9 +322,9 @@ public sealed partial class MT4Endpoints
     /// file names. The optional `request` query
     /// is a server-defined filter string; empty string returns all users.
     /// &lt;br&gt;&lt;b&gt;Heavy operation:&lt;/b&gt; backup files can contain millions of
-    /// records — the wrapper returns the full set in one shot. The
+    /// records — the platform returns the full set in one shot. The
     /// optional `limit` query truncates the response server-side
-    /// (default 10000, max 100000). The wrapper still loads the full
+    /// (default 10000, max 100000). The platform still loads the full
     /// file regardless of limit — limit only caps the JSON response size.
     /// 
     /// 
@@ -351,7 +351,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Restore order records into the live MT4 database. Destructive — requires `?confirm=true`.
     /// 
-    /// Manager (live) call to the wrapper's
+    /// Manager (live) call to the platform's
     /// `BackupRestoreOrders(TradeRecord[] trades)`. Returns
     /// `MT4TradeRestoreResult[]` — one entry per input trade, with
     /// `Order` (ticket) and `Res` (0 = error, 1 = restored).
@@ -382,7 +382,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Restore user records into the live MT4 database. Destructive — requires `?confirm=true`.
     /// 
-    /// Manager (live) call to the wrapper's
+    /// Manager (live) call to the platform's
     /// `BackupRestoreUsers(UserRecord[] users)`. Each input
     /// `MT4UserRestoreInput` is mapped to a fresh `UserRecord`
     /// with the narrow restore field set — secrets, OTP, server-managed
@@ -416,7 +416,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Deletes an entry from the server's IP firewall (Access) configuration table by zero-based row position.
     /// 
-    /// Manager-live POST. Maps to the wrapper's `CfgDeleteAccess(int pos)`.
+    /// Manager-live POST. Maps to the platform's `CfgDeleteAccess(int pos)`.
     /// Read the current table via `CfgRequestAccess`, find the target
     /// row's index, then delete. Destructive — pair with `Idempotency-Key`
     /// on retry.
@@ -638,9 +638,9 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// MT4 server backup configuration (full + archive + export schedules, watchdog HA pair settings).
     /// 
-    /// Manager-live read (round-trip). Returns the wrapper's ConBackup as
+    /// Manager-live read (round-trip). Returns the platform's ConBackup as
     /// MT4Backup DTO — full/archive/export schedule enums and paths, last
-    /// completion timestamps, and HA-watchdog fields. The wrapper's
+    /// completion timestamps, and HA-watchdog fields. The platform's
     /// `WatchPassword` (slave-server credential) is intentionally
     /// dropped from the v2 contract for security and is NOT present in
     /// the response payload.
@@ -659,7 +659,7 @@ public sealed partial class MT4Endpoints
 
     /// <summary>Get common config (live)</summary>
     /// <remarks>
-    /// Server-wide MT4 common configuration via the wrapper's `CfgRequestCommon` Manager-live read.
+    /// Server-wide MT4 common configuration via the platform's `CfgRequestCommon` Manager-live read.
     /// 
     /// Manager-live read (round-trip to MT4 server) — sibling of
     /// `ManagerCommon`. Returns the same curated `MT4Common` DTO
@@ -715,7 +715,7 @@ public sealed partial class MT4Endpoints
     /// path), Server (upstream), Login, Keywords (news filter),
     /// Enable flag, DataFeedMode (quotes/news/both), connection timeouts
     /// (Timeout, TimeoutReconnect, TimeoutSleep, AttempsSleep),
-    /// NewsLangId. The wrapper's `Password` (datafeed credentials)
+    /// NewsLangId. The platform's `Password` (datafeed credentials)
     /// is intentionally excluded from the v2 contract.
     /// 
     /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
@@ -744,7 +744,7 @@ public sealed partial class MT4Endpoints
     /// MT4 server connection used for STP order routing: public Name, an
     /// internal Id (stable identifier — used as the cursor key), the
     /// external server Login + Address, a NotifyLogins fixed-size array
-    /// of 8 broker-side recipients, and a Flags bitmap. The wrapper's
+    /// of 8 broker-side recipients, and a Flags bitmap. The platform's
     /// `Password` field (STP MT4 credential) is intentionally
     /// excluded from the v2 contract.
     /// 
@@ -863,7 +863,7 @@ public sealed partial class MT4Endpoints
     /// 
     /// Manager-live read (round-trip). Each entry: Company (cursor key),
     /// Path, Version/Build, MaxConnect, current Connections (read-only),
-    /// Type, Enable flag, TotalFiles. The wrapper's 128-element
+    /// Type, Enable flag, TotalFiles. The platform's 128-element
     /// per-file Files descriptor table is dropped from this payload
     /// for tractability; a dedicated per-file endpoint will follow.
     /// 
@@ -892,7 +892,7 @@ public sealed partial class MT4Endpoints
     /// Manager-live read (round-trip). Each entry surfaces the manager's
     /// Login/Name/Groups/MailBox, the 19 boolean permission rights (Manager,
     /// Money, Broker, Admin, Reports, Trades, MarketWatch, etc.), IP-filter
-    /// range, and InfoDepth. Internal wrapper fields (SecGroups, Unused,
+    /// range, and InfoDepth. Internal platform fields (SecGroups, Unused,
     /// ExpTime, Reserved) are dropped from the v2 contract.
     /// 
     /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
@@ -917,7 +917,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Read the plugin configuration (Manager-live).
     /// 
-    /// Manager (live) call to the wrapper's `CfgRequestPlugin()`.
+    /// Manager (live) call to the platform's `CfgRequestPlugin()`.
     /// Returns the full plugin set with their parameter arrays — the
     /// Manager-side equivalent of `PluginsGet` + per-plugin
     /// `PluginParamGet` in one round-trip.
@@ -983,7 +983,7 @@ public sealed partial class MT4Endpoints
     /// from an upstream source — Server (cursor key) + Login identify
     /// the source, Mode/From/To/Securities define the sync scope, and
     /// TimeCorrection (minutes) adjusts incoming bar timestamps. The
-    /// wrapper's `Password` (replication credentials) is
+    /// the platform's `Password` (replication credentials) is
     /// intentionally excluded from the v2 contract.
     /// 
     /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
@@ -1012,7 +1012,7 @@ public sealed partial class MT4Endpoints
     /// a flat 168-element `AccessHours` array; each element is 0
     /// (denied) or 1 (allowed) for one hour of the week. Layout:
     /// `index = day*24 + hour`, day 0 = Sunday (MT4 convention).
-    /// Internal `DaysControl` and `Reserved` wrapper fields
+    /// Internal `DaysControl` and `Reserved` platform fields
     /// are not surfaced.
     /// 
     /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
@@ -1239,11 +1239,8 @@ public sealed partial class MT4Endpoints
 
     /// <summary>Reorder plugin entry</summary>
     /// <remarks>
-    /// Reorders an entry in the plugins table by relative displacement.
-    /// 
-    /// Unlike the deferred `CfgRequestPlugin` read endpoint, the shift
-    /// call does not dereference `ConPluginParam.Params` — it only
-    /// reorders existing rows by index. Safe under wine x64.
+    /// Reorders an entry in the plugins table by relative displacement. Only
+    /// the order of the rows changes; plugin parameters are not touched.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -1308,7 +1305,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Update an IP firewall rule at a given list position — Type 1 mutator.
     /// 
-    /// Manager (live) call. The wrapper's `CfgUpdateAccess(cfg, pos)`
+    /// Manager (live) call. The platform's `CfgUpdateAccess(cfg, pos)`
     /// signature requires a position rather than a unique-key lookup (the
     /// rule table has no stable identifiers — multiple rules can carry the
     /// same range/action/comment). The v2 endpoint exposes the position as
@@ -1318,7 +1315,7 @@ public sealed partial class MT4Endpoints
     /// &lt;list type="number"&gt;&lt;item&gt;Read the live list via `CfgRequestAccess`.&lt;/item&gt;&lt;item&gt;Bounds-check `pos` against the list length — out of
     /// range yields a NotFound envelope.&lt;/item&gt;&lt;item&gt;Apply DTO overlay onto `list[pos]`.&lt;/item&gt;&lt;item&gt;Write back with `CfgUpdateAccess(merged, pos)`.&lt;/item&gt;&lt;/list&gt;`IpFrom`/`IpTo` in the body must fit in `[0, uint.MaxValue]`
     /// — out-of-range values are rejected with `errorCode=Validation`
-    /// before the Mapperly checked-narrowing cast can throw.
+    /// before anything is written.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -1342,7 +1339,7 @@ public sealed partial class MT4Endpoints
     /// the fields in `MT4Backup` onto it, and writes back via
     /// `CfgUpdateBackup`. Two classes of preserved fields:
     /// &lt;list type="bullet"&gt;&lt;item&gt;&lt;b&gt;Slave-server credential&lt;/b&gt; — `WatchPassword` stays
-    /// whatever the wrapper read live. It is unreachable from the
+    /// whatever the platform read live. It is unreachable from the
     /// v2 request body (DTO does not expose it).&lt;/item&gt;&lt;item&gt;&lt;b&gt;Last-completion timestamps&lt;/b&gt; — `FullBackupLastTime`,
     /// `ArchiveLastTime`, `ExportLastTime`, `WatchTimestamp`.
     /// Server-derived runtime state that clients must not overwrite.&lt;/item&gt;&lt;/list&gt;
@@ -1377,9 +1374,8 @@ public sealed partial class MT4Endpoints
     /// collections — own endpoints planned).&lt;/item&gt;&lt;item&gt;Demo-account subsystem, paths, rollover/statement modes
     /// (sensitive admin areas with separate endpoints).&lt;/item&gt;&lt;/list&gt;
     /// 
-    /// Wine x64 safe: wrapper uses `cpp.AllocSafe()` (single struct
-    /// pack, no UnpackObject loop). Idempotency-Key strongly recommended
-    /// — overwriting common settings affects every connected client.
+    /// Idempotency-Key strongly recommended — overwriting common settings
+    /// affects every connected client.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -1475,7 +1471,7 @@ public sealed partial class MT4Endpoints
     /// `CfgRequestGatewayMarkup`); the v2 contract identifies a rule
     /// by the composite key `(Source, Symbol)` (same cursor key the
     /// read endpoint uses). Same read-modify-write flow as
-    /// `CfgUpdateGatewayAccount`; the wrapper's 16-int reserved
+    /// `CfgUpdateGatewayAccount`; the platform's 16-int reserved
     /// padding is preserved.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
@@ -1498,7 +1494,7 @@ public sealed partial class MT4Endpoints
     /// Manager (live) call. Gateway rules are paged on the read side (see
     /// `CfgRequestGatewayRule`); the v2 contract identifies a rule
     /// by its public `Name`. Same read-modify-write flow; the two
-    /// wrapper reserved padding blocks (`RequestRreserved` 32-int,
+    /// platform reserved padding blocks (`RequestRreserved` 32-int,
     /// `ExeReserved` 25-int) are preserved server-side.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
@@ -1518,7 +1514,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Update a holiday-calendar entry at a given list position — Type 1 mutator.
     /// 
-    /// Position-based read-modify-write. The wrapper stores `Enable`
+    /// Position-based read-modify-write. The platform stores `Enable`
     /// as `int` (0/1) — the DTO surfaces it as `bool`; the
     /// mapper bridges with a `BoolToInt` helper. The 13-int
     /// `Reserved` padding and `Next` pointer are preserved.
@@ -1570,14 +1566,13 @@ public sealed partial class MT4Endpoints
     /// side (see `CfgRequestManager`); the v2 contract identifies an
     /// entry by `Login`. Flow: read live list → match by Login →
     /// overlay (19 permission flags + IP filter + MailBox/Groups/InfoDepth)
-    /// → write back. The wrapper's `Name` (read-only — server sets
+    /// → write back. The platform's `Name` (read-only — server sets
     /// it), `SecGroups` (32-entry permission table), `ExpTime`,
     /// `Unused`, and `Reserved` are preserved.
     /// &lt;br&gt;`IpFrom`/`IpTo` in the body are `long` (DTO widens
-    /// the wrapper's `uint` for safe JSON numerics) — values outside
+    /// the platform's `uint` for safe JSON numerics) — values outside
     /// `[0, uint.MaxValue]` are rejected with
-    /// `errorCode=Validation` before `ApplyTo`, to avoid a
-    /// runtime `OverflowException` from Mapperly's checked cast.
+    /// `errorCode=Validation` before anything is written.
     /// 
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
@@ -1597,7 +1592,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Update plugin configuration (Manager-live).
     /// 
-    /// Manager (live) call to the wrapper's
+    /// Manager (live) call to the platform's
     /// `CfgUpdatePlugin(ConPlugin cp, PluginCfg[] cfgs)`. Body is
     /// `MT4PluginParam` — the plugin metadata plus its parameter
     /// array. Returns a bare-bool envelope.
@@ -1697,14 +1692,14 @@ public sealed partial class MT4Endpoints
     /// 
     /// Manager (live) call. Reads the current `ConTime`, replaces the
     /// 168-hour access matrix with the supplied `AccessHours`, and
-    /// writes back. The wrapper's internal `DaysControl` (server
+    /// writes back. The platform's internal `DaysControl` (server
     /// housekeeping) and `Reserved` (forward-compat padding) fields
     /// are preserved across the round-trip.
     /// 
     /// `AccessHours` must be exactly 168 entries long; index =
     /// `day * 24 + hour` with day 0 = Sunday. Each value is
     /// `0` (denied) or `1` (allowed) — any other value is
-    /// passed through verbatim (the wrapper does not validate, and
+    /// passed through verbatim (the platform does not validate, and
     /// MT4 may treat anything non-zero as allowed depending on build).
     /// 
     /// Echoes the merged `MT4ServerTime` in the response.
@@ -1727,7 +1722,7 @@ public sealed partial class MT4Endpoints
     /// Append OHLC bars to a symbol's chart history — POST destructive.
     /// 
     /// Manager (live) call that appends the provided bars to the symbol's
-    /// historical chart for the given `period`. The wrapper looks up the
+    /// historical chart for the given `period`. The platform looks up the
     /// symbol's scale (`Multiply`/`Digits`) internally to encode the
     /// float OHLC values back into native integer prices.
     /// 
@@ -1787,7 +1782,7 @@ public sealed partial class MT4Endpoints
     /// OHLC chart bars for a symbol over a date range.
     /// 
     /// Manager (live) call. Resolves the symbol's `ConSymbol` first
-    /// (needed by the wrapper to set scale/digits), then asks for bars of
+    /// (needed by the platform to set scale/digits), then asks for bars of
     /// the given `period` in the date window. `mode` defaults to
     /// `RangeInExcludeOutOfRage` — bars whose time falls strictly
     /// inside the window.
@@ -1857,7 +1852,7 @@ public sealed partial class MT4Endpoints
     /// local time zone, **not** UTC — clients should treat `Ctm` as
     /// "broker day boundary" and convert as appropriate.
     /// 
-    /// Note: the wrapper warns that asking for a window where the manager
+    /// Note: the platform warns that asking for a window where the manager
     /// account lacks the `Automatic server reports` permission may
     /// cause MT4 to drop the manager connection. The API-side
     /// `ResourceAccess` check is an indirect guard; a broker that
@@ -1891,7 +1886,7 @@ public sealed partial class MT4Endpoints
     /// Same data set as `DailyReportsRequest`, but server-side grouped by login. Convenience shape for clients that pivot the data per-account (per-day rollups, account dashboards).
     /// 
     /// Manager-live read — single round-trip to MT4 server, identical billing
-    /// cost to `DailyReportsRequest`. The wrapper returns a sorted-list
+    /// cost to `DailyReportsRequest`. The platform returns a sorted-list
     /// of sorted-lists (by login, then by date); the v2 envelope flattens
     /// the inner list to a chronologically-ordered `MT4DailyReport`
     /// array, leaving the outer keying by login.
@@ -1957,7 +1952,7 @@ public sealed partial class MT4Endpoints
     /// `timestamp=0` to request all records.
     /// 
     /// `timestamp` is a Unix epoch second (int32) in MT4 server-local
-    /// time, not UTC. Wrapper marshals it directly to `__time32_t` —
+    /// time, not UTC. Platform marshals it directly to `__time32_t` —
     /// pre-1970 / post-2038 values are out of range.
     /// 
     /// Returns a bare success envelope (no payload); the actual data comes
@@ -1983,12 +1978,12 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Checks whether a trading group exists on the connected MT4 server. Useful as a validation pre-flight before creating users, moving users between groups, or wiring up automated provisioning.
     /// 
-    /// Manager-live read. The wrapper's `EnsureGroupNameExist` helper
+    /// Manager-live read. The platform's `EnsureGroupNameExist` helper
     /// is internal/private, so this v2 endpoint re-implements the check
     /// directly: enumerate the full group catalog via
     /// `GroupsRequest` and look up the key. The same Manager request
     /// is incurred either way; there is no cheaper "exists" call in the
-    /// MT4 ManagerAPI surface.
+    /// MT4 trade-server surface.
     /// 
     /// Returns `true` if the group is configured on the server,
     /// `false` otherwise. Group lookup is case-sensitive (MT4 group
@@ -2012,7 +2007,7 @@ public sealed partial class MT4Endpoints
     /// Pass arbitrary binary payload to the MT4 server's plugin pipeline.
     /// 
     /// &lt;br&gt;
-    /// Manager (live) call via the wrapper's
+    /// Manager (live) call via the platform's
     /// `ExternalCommandCustom&lt;byte[], byte[]&gt;` overload with a
     /// pass-through byte-array marshaller. The first installed plugin
     /// that returns `RET_OK` wins; its response bytes become the
@@ -2020,14 +2015,14 @@ public sealed partial class MT4Endpoints
     /// &lt;br&gt;
     /// Wire format: `byte[]` serializes as base64 in JSON. Clients
     /// agree with the plugin author on the binary layout.
-    /// &lt;br&gt;&lt;b&gt;Why sidecar-only:&lt;/b&gt; the wrapper's binary variants rely on
+    /// &lt;br&gt;&lt;b&gt;Why sidecar-only:&lt;/b&gt; the platform's binary variants rely on
     /// `Marshal.SizeOf` + native `ExternalCommand` dispatch.
     /// On `mtmanapi64.dll` the signed/unsigned marshalling
     /// diverges from `mtmanapi.dll` — same payload byte-for-byte
     /// can decode differently on x64. The x86 sidecar process loads the
     /// 32-bit DLL where the marshalling is the original one.
     /// &lt;br&gt;
-    /// The wrapper's third `ExternalCommandCustom` overload that
+    /// The platform's third `ExternalCommandCustom` overload that
     /// takes an `ICustomSerializer` interface is genuinely not
     /// REST-translatable — it requires the caller to provide C#
     /// serialization logic in-process. Not exposed.
@@ -2057,12 +2052,12 @@ public sealed partial class MT4Endpoints
     /// (no field renaming, no schema enforcement) so the plugin author
     /// owns the over-the-wire contract on both ends.
     /// 
-    /// The wrapper trio (`ExternalCommand&lt;TIn,TOut&gt;` for binary
+    /// The platform trio (`ExternalCommand&lt;TIn,TOut&gt;` for binary
     /// marshal, `ExternalCommandCustom&lt;T&gt;` for caller-supplied
     /// serializer) is intentionally not exposed in v2 — those variants
     /// require compile-time struct layouts shared between client and
     /// plugin, which a REST surface cannot guarantee. Plugin developers
-    /// who need binary transport should keep using the wrapper directly
+    /// who need binary transport should keep using the platform directly
     /// from the WebAPI process or build a dedicated binary endpoint.
     /// 
     /// Idempotency-Key is strongly recommended — plugins may have side
@@ -2105,7 +2100,7 @@ public sealed partial class MT4Endpoints
     /// Single trading group configuration by name (pump-cached).
     /// 
     /// Pump-cached lookup. Returns NotFound envelope if no group with the
-    /// given name exists. Group names are case-sensitive — the wrapper does
+    /// given name exists. Group names are case-sensitive — the platform does
     /// an exact dictionary lookup.
     /// 
     /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
@@ -2134,9 +2129,9 @@ public sealed partial class MT4Endpoints
     /// arrays, and NewsLanguages — none of those are on the input DTO so
     /// they survive untouched.
     /// &lt;br&gt;
-    /// Wraps the wrapper's `CfgUpdateGroup` — v2 renames to
+    /// Wraps the platform's `CfgUpdateGroup` — v2 renames to
     /// `GroupRecordUpdate` for consistency with
-    /// `UserRecordUpdate`; the underlying wrapper call is the same as
+    /// `UserRecordUpdate`; the underlying platform call is the same as
     /// v1's `POST CfgUpdateGroup` endpoint.
     /// &lt;br&gt;
     /// Idempotency-Key strongly recommended for safe retries.
@@ -2161,7 +2156,7 @@ public sealed partial class MT4Endpoints
     /// Security-group entries (`SecGroups[32]`) for one trading group.
     /// 
     /// Pump-cached read. Returns the full 32-element array; entries whose
-    /// `Trade` and `Show` are both 0 are placeholders (the wrapper
+    /// `Trade` and `Show` are both 0 are placeholders (the platform
     /// reserves the slot for the symbol-group regardless of whether the
     /// group is configured to trade it). Filter on the client side.
     /// 
@@ -2183,7 +2178,7 @@ public sealed partial class MT4Endpoints
     /// Special-securities margin overrides (`SecMargins`) for one group.
     /// 
     /// Pump-cached read. Returns the first `SecMarginsTotal` entries of
-    /// the wrapper's 128-element `SecMargins` array — the trailing
+    /// the platform's 128-element `SecMargins` array — the trailing
     /// slots are always uninitialised padding. `SecMarginsTotal` itself
     /// is part of the parent `MT4Group` DTO.
     /// 
@@ -2310,8 +2305,8 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Check a license name against the MT4 server's license registry — admin-only read.
     /// 
-    /// Manager (live) call to the wrapper's `LicenseCheck(name)`.
-    /// Returns a bare `bool` payload: `true` when the wrapper's
+    /// Manager (live) call to the platform's `LicenseCheck(name)`.
+    /// Returns a bare `bool` payload: `true` when the platform's
     /// result code is `Ok`, indicating the license is recognized;
     /// `false` on any non-Ok code (covers both "license not found"
     /// and "manager lacks permission to query the license registry").
@@ -2352,10 +2347,9 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Send an email to one or more client logins. Requires 'Email' admin right.
     /// 
-    /// Manager (live) call to the wrapper's
+    /// Manager (live) call to the platform's
     /// `MailSend(MailBox mail, ICollection&lt;int&gt; logins)`.
-    /// The wrapper itself refuses to run on x64 (
-    /// `throw new WrapperException("MailSend cannot be called in x64 environment")`),
+    /// The call is not available in the 64-bit build,
     /// so this endpoint exists only in the sidecar build.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
@@ -2375,10 +2369,10 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// List all mail messages currently stored on the MT4 server.
     /// 
-    /// Manager (live) call to the wrapper's `MailsRequest()`.
+    /// Manager (live) call to the platform's `MailsRequest()`.
     /// Returns the server-side mailbox store as a flat list of
     /// `MT4MailBox` entries. Read-only; no batching parameters
-    /// (the wrapper has no native pagination).
+    /// (the platform has no native pagination).
     /// 
     /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
@@ -2397,7 +2391,7 @@ public sealed partial class MT4Endpoints
     /// Server-wide MT4 trade server settings (curated subset).
     /// 
     /// Returns MT4Common DTO — server name, broker, server version/build,
-    /// time zone. Schema is decoupled from the wrapper's ConCommon: v2
+    /// time zone. Schema is decoupled from the platform's ConCommon: v2
     /// clients are protected from MetaQuotes schema changes.
     /// 
     /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
@@ -2502,7 +2496,7 @@ public sealed partial class MT4Endpoints
     /// Ask the pump to fetch the body for the given news key (fire-and-forget).
     /// 
     /// POST because this is a side-effect on the pump (it queues a fetch).
-    /// The wrapper method returns `void` — there is no synchronous
+    /// The platform method returns `void` — there is no synchronous
     /// success/failure to surface. A subsequent `NewsBodyGet(key)` will
     /// see the body once the pump has retrieved it. The payload is a sentinel
     /// `true` meaning "request dispatched".
@@ -2546,7 +2540,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Push a news item to all connected client terminals. Requires 'Send news' admin right.
     /// 
-    /// Manager (live) call to the wrapper's `NewsSend(NewsTopic news)`.
+    /// Manager (live) call to the platform's `NewsSend(NewsTopic news)`.
     /// Sidecar-only because `mtmanapi64.dll` throws
     /// `PlatformNotSupportedException` on the body setter.
     /// 
@@ -2569,7 +2563,7 @@ public sealed partial class MT4Endpoints
     /// 
     /// Pump-cached read — useful for paginating news without re-marshalling
     /// the whole array. Pair with `NewsTotal` to bound the index.
-    /// Returns a wrapper-failure envelope when pos is
+    /// Returns a platform-failure envelope when pos is
     /// out of range.
     /// 
     /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
@@ -2604,11 +2598,24 @@ public sealed partial class MT4Endpoints
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
-    /// <summary>NotificationsSendAsync</summary>
+    /// <summary>Send push notification</summary>
     /// <remarks>
+    /// Send a push notification to one or more MT4 mobile clients — admin write.
+    /// 
+    /// Manager (live) call to the platform's
+    /// `NotificationsSend2(int[] logins, string message)`. The MT4
+    /// server fans the message out to each login's registered mobile
+    /// device via the MetaQuotes push channel.
+    /// &lt;br&gt;
+    /// Validation rules:
+    /// &lt;list type="bullet"&gt;&lt;item&gt;`Logins` must contain at least one positive value.&lt;/item&gt;&lt;item&gt;`Message` must be non-empty and at most 1024 characters.&lt;/item&gt;&lt;/list&gt;
+    /// Returns a bare `bool` envelope: `true` when the platform
+    /// reports the dispatch succeeded.
+    /// 
+    /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Request payload.</param>
+    /// <param name="body">Recipient logins and the notification message</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<bool> NotificationsSendAsync(MT4NotificationsSendRequest body, CallOptions? options = null)
@@ -2692,7 +2699,7 @@ public sealed partial class MT4Endpoints
     /// 
     /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
-    /// <param name="from">Window start timestamp (UTC, ISO 8601). Snapshots with              `Ctm &gt;= from` are returned. Marshalled to the wrapper as              `__time32_t` — values before 1970 or after 2038 are out of range.</param>
+    /// <param name="from">Window start timestamp (UTC, ISO 8601). Snapshots with              `Ctm &gt;= from` are returned. Marshalled to the platform as              `__time32_t` — values before 1970 or after 2038 are out of range.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<IReadOnlyList<MT4Performance>> PerformanceRequestAsync(DateTimeOffset? @from = null, CallOptions? options = null)
@@ -2710,7 +2717,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Get a single plugin's parameters by position in the `PluginsGet` list.
     /// 
-    /// Manager-pump call to the wrapper's `PluginParamGet(pos, out ConPluginParam)`.
+    /// Manager-pump call to the platform's `PluginParamGet(pos, out ConPluginParam)`.
     /// The `ConPluginParam.Params` auto-dereferences a 32-bit pointer —
     /// safe on x86, sign-extension hazard on x64. Sidecar-only.
     /// 
@@ -2729,9 +2736,9 @@ public sealed partial class MT4Endpoints
 
     /// <summary>Update plugin parameter</summary>
     /// <remarks>
-    /// Apply a plugin parameter update via the pump-side wrapper. Requires admin rights.
+    /// Apply a plugin parameter update via the pump-side platform. Requires admin rights.
     /// 
-    /// Manager-live call to the wrapper's `PluginUpdate(ConPluginParam cpp)`.
+    /// Manager-live call to the platform's `PluginUpdate(ConPluginParam cpp)`.
     /// Body is `MT4PluginParam` (the same shape `PluginParamGet` returns).
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
@@ -2751,8 +2758,8 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// List MT4 server plugins currently configured (pump-side cache).
     /// 
-    /// Manager-pump call to the wrapper's `PluginsGet()`. The
-    /// wrapper marks this `[Obsolete]` on x64 (mtmanapi64.dll has
+    /// Manager-pump call to the platform's `PluginsGet()`. The
+    /// platform marks this `[Obsolete]` on x64 (mtmanapi64.dll has
     /// silently-changing plugin layouts); the x86 sidecar process loads
     /// mtmanapi.dll where the layout is stable, so the call is safe.
     /// 
@@ -2777,14 +2784,14 @@ public sealed partial class MT4Endpoints
     /// Server-side billing counts this as one Manager request regardless of
     /// batch size — prefer one batched call over a per-login loop.
     /// 
-    /// The wrapper returns a dictionary keyed by order ticket; the v2 envelope
+    /// The platform returns a dictionary keyed by order ticket; the v2 envelope
     /// flattens it to a list. Missing logins are silently omitted (no error
     /// envelope). The optional name parameter selects a
     /// server-defined report template — leave it null/empty to use the
     /// default `"RTL_report"` template (closed trades within the window).
     /// 
     /// Pump cache is NOT consulted — data reflects authoritative server
-    /// history. Note: the wrapper comment warns that asking for a window
+    /// history. Note: the platform comment warns that asking for a window
     /// where the manager account lacks the `Reports` permission may
     /// cause MT4 to drop the manager connection; this endpoint guards that
     /// indirectly via the API-side `ResourceAccess` check, but a broker
@@ -2836,7 +2843,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Force chart-history resync across the plugin set. Destructive — requires `?confirm=true`.
     /// 
-    /// Manager (live) call to the wrapper's `SrvChartsSync()`. Forces
+    /// Manager (live) call to the platform's `SrvChartsSync()`. Forces
     /// the MT4 server to walk every plugin's chart-history feed and bring
     /// the local cache in sync. Idempotent — running twice is a no-op
     /// against an already-synced state.
@@ -2861,10 +2868,10 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Server log for a single feeder by name (admin-only read).
     /// 
-    /// Manager (live) call to the wrapper's `SrvFeederLog(name)`. Returns
+    /// Manager (live) call to the platform's `SrvFeederLog(name)`. Returns
     /// the feeder's log buffer as a string (empty when the feeder is unknown
     /// or has no recent log activity). Payload is the raw log text — not an
-    /// array of lines — to preserve formatting at the wrapper boundary.
+    /// array of lines — to preserve formatting at the platform boundary.
     /// 
     /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
@@ -2883,7 +2890,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// List of running data feeders on the MT4 server (admin-only read).
     /// 
-    /// Manager (live) call to the wrapper's `SrvFeeders`. Returns the
+    /// Manager (live) call to the platform's `SrvFeeders`. Returns the
     /// current set of running feeder configurations as opposed to
     /// `CfgRequestFeeder` which returns the static configuration. The
     /// data shape is the same as `CfgRequestFeeder` — `MT4Feeder`
@@ -2915,7 +2922,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Restart all running data feeders. Destructive — requires `?confirm=true`.
     /// 
-    /// Manager (live) call to the wrapper's `SrvFeedsRestart()`.
+    /// Manager (live) call to the platform's `SrvFeedsRestart()`.
     /// Cycles all running quote/news feeders. May cause a brief gap in
     /// the tick stream — typically a second or two. Idempotent.
     /// 
@@ -2939,7 +2946,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Kick the LiveUpdate distributor. Destructive — requires `?confirm=true`.
     /// 
-    /// Manager (live) call to the wrapper's `SrvLiveUpdateStart()`.
+    /// Manager (live) call to the platform's `SrvLiveUpdateStart()`.
     /// Starts (or restarts) the server's outbound LiveUpdate broadcast.
     /// Affects connected client terminals — they may receive an update prompt.
     /// 
@@ -2963,10 +2970,10 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Soft-restart of the MT4 server process. Destructive — requires `?confirm=true`.
     /// 
-    /// Manager (live) call to the wrapper's `SrvRestart()`. The current
+    /// Manager (live) call to the platform's `SrvRestart()`. The current
     /// manager connection is dropped during the restart cycle — clients
     /// should expect the next request to surface a fresh login. Audit lines
-    /// are emitted on both sides of the wrapper call (independently of the
+    /// are emitted on both sides of the platform call (independently of the
     /// HTTP response).
     /// &lt;br&gt;
     /// The `?confirm=true` guard rejects calls without the literal
@@ -3000,8 +3007,8 @@ public sealed partial class MT4Endpoints
     /// 
     /// v1 exposes this as `GET /api/MT4/{tp}/SymbolAdd/{symbol}` — that
     /// is a historical REST violation (GET should be safe/idempotent). v2
-    /// corrects the verb to POST without changing the wrapper behaviour. The
-    /// path stays the same to keep traceability with the underlying wrapper
+    /// corrects the verb to POST without changing the platform behaviour. The
+    /// path stays the same to keep traceability with the underlying platform
     /// method name; only the HTTP verb changes.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
@@ -3021,11 +3028,10 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Adjusts the per-symbol trading attributes that dealers manage from the MT4 Manager UI — spread, stops-level, smoothing, quote color, execution mode.
     /// 
-    /// Manager-live POST. Maps 1:1 to the wrapper's `SymbolChange`
+    /// Manager-live POST. Maps 1:1 to the platform's `SymbolChange`
     /// call which marshals an entire `SymbolProperties` struct down
     /// to the native server. Only the seven editable fields are exposed
-    /// on the v2 contract — the wrapper's 8-int reserved padding is
-    /// filled with zeros by Mapperly automatically.
+    /// on the v2 contract; the reserved fields are sent as zeros.
     /// 
     /// This is intentionally separate from the heavier `CfgUpdateSymbol`
     /// Type 1 mutator: `SymbolChange` is the dealer-tier adjustment
@@ -3091,7 +3097,7 @@ public sealed partial class MT4Endpoints
     /// 
     /// Pump-cached read — Bid/Ask/High/Low/Spread/Digits and last-tick time
     /// for the requested instrument. Returns NotFound-shaped envelope (the
-    /// wrapper-level result code surfaces in ManagerAPICode / ErrorCode)
+    /// platform-level result code surfaces in ManagerAPICode / ErrorCode)
     /// when the symbol is not loaded on the connected server.
     /// 
     /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
@@ -3140,7 +3146,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Injects a synthetic tick into the MT4 server for the given symbol — used to keep the feed alive on instruments where the upstream datafeed is paused, or to drive simulator tooling.
     /// 
-    /// Manager-live POST. The wrapper requires the manager account to hold
+    /// Manager-live POST. The platform requires the manager account to hold
     /// the `Market Watch` permission; without it the server typically
     /// drops the connection rather than returning an error. The API-side
     /// `ResourceAccessAuthorize` on this endpoint guards against API
@@ -3176,13 +3182,11 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Trading session windows for a symbol, per weekday.
     /// 
-    /// Returns the wrapper's `ConSymbol.Sessions[7]` array (one entry
+    /// Returns the platform's `ConSymbol.Sessions[7]` array (one entry
     /// per weekday, 0=Sunday). Each weekday entry carries up to three Quote
     /// (price) windows and up to three Trade (order acceptance) windows
-    /// plus overnight flags. Closes the TODO documented in
-    /// `MT4SymbolConfig`: the parent `CfgRequestSymbol` endpoint
-    /// drops the nested Sessions array to keep the DTO manageable; this
-    /// dedicated endpoint exposes it.
+    /// plus overnight flags. `CfgRequestSymbol` leaves the sessions out
+    /// to keep its response compact; this endpoint returns them.
     /// 
     /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
@@ -3222,9 +3226,9 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Refresh the symbol catalog from MT4 server — Type 1 mutator (no body).
     /// 
-    /// Forces the wrapper to reload its symbol catalog. Useful after admin
+    /// Forces the platform to reload its symbol catalog. Useful after admin
     /// tooling has added/edited symbols on the MT4 server side. v1 exposes
-    /// this as GET — v2 fixes to POST (mutation of the wrapper's local state).
+    /// this as GET — v2 fixes to POST (mutation of the platform's local state).
     /// 
     /// **Timeout:** 60 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -3320,7 +3324,7 @@ public sealed partial class MT4Endpoints
     /// (and, for pending orders, the open price) sit at least
     /// `stops_level` away from the current market and that pending
     /// expiration is at least ten minutes in the future. Returns a bare
-    /// boolean envelope: `true` when the wrapper's `ResultCode`
+    /// boolean envelope: `true` when the platform's `ResultCode`
     /// is `Ok`.
     /// 
     /// Useful for client-side pre-flight before submitting a real
@@ -3352,7 +3356,7 @@ public sealed partial class MT4Endpoints
     /// MT4 server is still holding in the rollback buffer (e.g. an
     /// instant-execution requote that has not yet been confirmed). Has
     /// no effect once the transaction has been committed; returns the
-    /// wrapper's `ResultCode` as part of the envelope on failure.
+    /// the platform's `ResultCode` as part of the envelope on failure.
     /// 
     /// Idempotent on already-committed/already-rolled-back tickets.
     /// 
@@ -3373,7 +3377,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Single trade record by order ticket from the pump cache.
     /// 
-    /// Pump-cached lookup of one order. Wrapper-level failures (unknown
+    /// Pump-cached lookup of one order. Platform-level failures (unknown
     /// ticket, cache miss) surface in the envelope's ManagerAPICode /
     /// ErrorCode pair — clients must branch on isError before dereferencing
     /// payload.
@@ -3451,7 +3455,7 @@ public sealed partial class MT4Endpoints
     /// Submit a trade transaction — open / modify / close / balance op.
     /// 
     /// &lt;br&gt;
-    /// POST mutator covering every wrapper trade operation through the single
+    /// POST mutator covering every platform trade operation through the single
     /// `TradeTransaction` entry point. The request body's
     /// `tradeTransactionType` + `tradeCommand` combination selects
     /// the actual operation — `OpenMarket`+`Buy`, `PendingOpen`+`BuyLimit`,
@@ -3465,7 +3469,7 @@ public sealed partial class MT4Endpoints
     /// and the list of valid values; nothing is sent to the trading platform.
     /// Names are case-insensitive; the numeric value of a member is accepted too.
     /// &lt;br&gt;
-    /// On success the response echoes the wrapper's mutated structure — most
+    /// On success the response echoes the platform's mutated structure — most
     /// importantly the `Order` field, which the server assigns on Open
     /// operations and clients use to track the ticket afterwards.
     /// &lt;br&gt;&lt;b&gt;Idempotency-Key is essentially mandatory.&lt;/b&gt; A retried trade
@@ -3514,7 +3518,7 @@ public sealed partial class MT4Endpoints
     /// Open trade by ticket from the pump cache (dictionary lookup variant).
     /// 
     /// Counterpart to `TradeRecordGet/{order}` — both are pump reads,
-    /// but the wrapper exposes two distinct call paths: `TradeRecordGet`
+    /// but the platform exposes two distinct call paths: `TradeRecordGet`
     /// uses a dedicated single-record method, while this endpoint looks the
     /// trade up in the open-trades dictionary. Behaviourally equivalent for
     /// open trades; `TradeRecordGet` can also resolve recently closed
@@ -3538,7 +3542,7 @@ public sealed partial class MT4Endpoints
     /// Open trades for a single account from the pump cache.
     /// 
     /// Pump-cached lookup, keyed by login + group. The group parameter is
-    /// required because the wrapper organises trades by group internally —
+    /// required because the platform organises trades by group internally —
     /// callers can fetch the group via `UserRecordGet/{login}` first.
     /// Empty list when the account has no open trades.
     /// 
@@ -3636,7 +3640,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Atomic snapshot of all open/pending trades on the MT4 server.
     /// 
-    /// Manager (live) call to the wrapper's `TradesSnapshot()`.
+    /// Manager (live) call to the platform's `TradesSnapshot()`.
     /// Same UnpackObject-loop hazard as the user batch reads. Sidecar-only.
     /// 
     /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
@@ -3659,7 +3663,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Read trade records buffered by a prior `TradesSyncStart` call.
     /// 
-    /// Manager (live) call to the wrapper's `TradesSyncRead()`.
+    /// Manager (live) call to the platform's `TradesSyncRead()`.
     /// Must be preceded by `POST TradesSyncStart` on the main x64
     /// API. Same UnpackObject hazard — sidecar-only.
     /// 
@@ -3683,9 +3687,8 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Opens a server-side incremental sync session for trade records modified at or after timestamp.
     /// 
-    /// Manager-live POST (modifies server-side session state). The
-    /// follow-up `TradesSyncRead` drain is deferred under wine x64
-    /// (see deferral note in the Users section above). Pass
+    /// Manager-live POST (modifies server-side session state). The API does
+    /// not offer the follow-up read of the session yet. Pass
     /// `timestamp=0` to request all trades. The timestamp is Unix
     /// epoch seconds (int32) in MT4 server-local time, not UTC.
     /// 
@@ -3740,7 +3743,7 @@ public sealed partial class MT4Endpoints
     /// 
     /// POST body: the candidate password as a JSON string (e.g. `"secret123"`).
     /// Returns envelope with bool payload — `true` if MT4 server accepts
-    /// the password, `false` when wrapper returns InvalidLoginOrPassword
+    /// the password, `false` when platform returns InvalidLoginOrPassword
     /// (envelope marked as MT4Error with the underlying ResultCode in
     /// managerAPICode).
     /// 
@@ -3772,7 +3775,7 @@ public sealed partial class MT4Endpoints
     /// the password (caller's RSA-protected secondary auth).
     /// 
     /// &lt;br&gt;
-    /// This is a Type 1 mutator — full-replace semantics. The wrapper accepts
+    /// This is a Type 1 mutator — full-replace semantics. The platform accepts
     /// the new password directly without a read-modify-write loop. There is no
     /// Type 2 ("set only this field, leave the rest alone") variant of password
     /// change because the password is itself a single field — the read step
@@ -3833,7 +3836,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Account record for a single login from the pump cache.
     /// 
-    /// Pump-cached read of the wrapper's `UserRecord`, mapped to the v2
+    /// Pump-cached read of the platform's `UserRecord`, mapped to the v2
     /// `MT4User` DTO. Secrets (passwords, OTP secret, API blob) are
     /// stripped at the mapper level — they cannot be exposed via this endpoint
     /// regardless of caller permissions. Returns NotFound envelope when the
@@ -3861,7 +3864,7 @@ public sealed partial class MT4Endpoints
     /// request a specific id by setting `Login &gt; 0` (the server
     /// rejects collisions with an MT4 error envelope).
     /// 
-    /// The wrapper accepts the account with empty password bytes; clients
+    /// The platform accepts the account with empty password bytes; clients
     /// MUST follow up with `POST UserPasswordSet/{login}` before the
     /// account is usable.
     /// 
@@ -3912,7 +3915,7 @@ public sealed partial class MT4Endpoints
     /// &lt;br&gt;
     /// Surface-level Type 1 semantics: client submits the full `MT4UserUpdate`
     /// DTO and the server writes it back. Implementation requires an extra
-    /// read step because the wrapper `UserRecord` struct contains
+    /// read step because the platform `UserRecord` struct contains
     /// secret/computed/read-only fields the v2 input DTO deliberately omits
     /// (Password, OTPSecret, LastDate, etc.). Without the read step those
     /// would be zeroed out by the write.
@@ -3953,7 +3956,7 @@ public sealed partial class MT4Endpoints
     /// prefer batch over a loop of single-login calls.
     /// 
     /// Order in the response is **not** guaranteed to match the request — the
-    /// wrapper returns a dictionary. Missing logins are silently omitted; the
+    /// platform returns a dictionary. Missing logins are silently omitted; the
     /// envelope is not an error envelope in that case.
     /// 
     /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
@@ -3979,16 +3982,12 @@ public sealed partial class MT4Endpoints
     /// Manager (live) call. Wraps `UsersGroupOp(GroupCommandInfo, ICollection&lt;int&gt;)`.
     /// The body specifies the command and its parameter (NewGroup for
     /// SetGroup, Leverage for Leverage; both ignored for Delete/Enable/
-    /// Disable) plus the list of target logins. The wrapper auto-fills
+    /// Disable) plus the list of target logins. The platform auto-fills
     /// the internal `Len` field from the logins array — clients do
     /// not set it.
     /// 
-    /// Wine x64 safe: the wrapper uses `AllocArraySafe` on the int
-    /// login array (single contiguous pack, no UnpackObject loop) and
-    /// `AllocSafe` on the GroupCommandInfo struct.
-    /// 
     /// Requires Manager or Administrator access rights on the manager
-    /// account; the wrapper enforces this server-side. Idempotency-Key
+    /// account; the platform enforces this server-side. Idempotency-Key
     /// strongly recommended — bulk Delete / SetGroup operations are
     /// destructive on customer-visible state.
     /// 
@@ -4009,7 +4008,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Manager (live) call returning a paged list of every account on the platform. When `?limit=` is omitted the response contains all users in one page (back-compat). Set `?limit=N` to bound page size; the response's `paging.nextCursor` drives the next call.
     /// 
-    /// Wrapper-side this still fetches the full users dictionary — paging
+    /// Platform-side this still fetches the full users dictionary — paging
     /// reduces only the wire payload, not MT4 server load. Items are sorted
     /// by login ascending; pages are stable across concurrent inserts as
     /// long as the new login is greater than the previous page's last login.
@@ -4036,7 +4035,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Atomic snapshot of all registered users on the MT4 server.
     /// 
-    /// Manager (live) call to the wrapper's `UsersSnapshot()`.
+    /// Manager (live) call to the platform's `UsersSnapshot()`.
     /// Iterates `UnpackObject&lt;UserRecord&gt;(i)` over the native
     /// array — on mtmanapi64.dll the per-struct cost combined with
     /// ASLR alignment triggers access violations after some iterations,
@@ -4062,7 +4061,7 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Read user records buffered by a prior `UsersSyncStart` call.
     /// 
-    /// Manager (live) call to the wrapper's `UsersSyncRead()`.
+    /// Manager (live) call to the platform's `UsersSyncRead()`.
     /// Must be preceded by `POST UsersSyncStart` on the main x64
     /// API to seed the server-side snapshot. Same UnpackObject hazard
     /// as `UsersSnapshot` — sidecar-only.
@@ -4087,10 +4086,8 @@ public sealed partial class MT4Endpoints
     /// <remarks>
     /// Opens a server-side incremental sync session for user records modified at or after timestamp.
     /// 
-    /// Manager-live POST (modifies server-side session state). The wrapper
-    /// supports a follow-up `UsersSyncRead` call that drains the
-    /// snapshot, but the read-side endpoint is currently deferred under
-    /// wine x64 (see deferral note above this method). Pass
+    /// Manager-live POST (modifies server-side session state). The API does
+    /// not offer the follow-up read of the session yet. Pass
     /// `timestamp=0` to request all user records.
     /// 
     /// `timestamp` is Unix epoch seconds (int32) in MT4 server-local
