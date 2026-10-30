@@ -19,8 +19,12 @@ namespace CPlugin.SaaSWebApi.Client;
 /// before the handshake) → <see cref="StartAsync"/> → consume → <see cref="StopAsync"/> /
 /// <see cref="DisposeAsync"/>.</para>
 /// <para>Server contract (<c>WebAPI/Hubs/MT5/v2/MT5V2Hub.cs</c>): callbacks
-/// <c>OnConnectionStatus</c> and <c>OnMarginCall</c>; stream <c>StreamMarginCallUpdates</c>.
-/// Further streams (ticks, trades, user/symbol updates) are deferred server-side.</para>
+/// <c>OnConnectionStatus</c>, <c>OnTick</c> and <c>OnTicksBatch</c>; streams <c>StreamTicks</c>
+/// and <c>StreamMarginCallUpdates</c>; hub methods <c>SubscribeToTicks</c>,
+/// <c>UnsubscribeFromTicks</c>, <c>SubscribeToTicksBatch</c> and
+/// <c>UnsubscribeFromTicksBatch</c>. The trade platform is bound by the connection's
+/// <c>tradePlatform</c> query parameter. Further feeds (trades, user/symbol updates)
+/// are deferred server-side.</para>
 /// </remarks>
 public sealed class MT5V2SignalRClient : IAsyncDisposable
 {
@@ -195,7 +199,66 @@ public sealed class MT5V2SignalRClient : IAsyncDisposable
     public IDisposable OnMarginCall(Action<MT5MarginCallPayload> handler) =>
         Register(c => c.On("OnMarginCall", handler));
 
+    /// <summary>Register a handler for server-pushed <c>OnTick</c> callbacks — ticks of the
+    /// symbols subscribed with <see cref="SubscribeToTicksAsync"/>. The server pushes them
+    /// only for the callback model; use <see cref="StreamTicksAsync"/> for the stream model.
+    /// May be called before <see cref="StartAsync"/>, like the other handlers.</summary>
+    public IDisposable OnTick(Action<MT5TickPayload> handler) =>
+        Register(c => c.On("OnTick", handler));
+
+    /// <summary>Register a handler for server-pushed <c>OnTicksBatch</c> callbacks — ticks of
+    /// the symbols subscribed with <see cref="SubscribeToTicksBatchAsync"/>, collected into
+    /// batches. A batched subscription receives no per-tick <see cref="OnTick"/> events.
+    /// May be called before <see cref="StartAsync"/>, like the other handlers.</summary>
+    public IDisposable OnTicksBatch(Action<MT5TicksBatchPayload> handler) =>
+        Register(c => c.On("OnTicksBatch", handler));
+
+    // ===== Hub methods =====
+
+    /// <summary>Subscribe to ticks of one symbol for the callback model (see
+    /// <see cref="OnTick"/>). Requires a started connection.</summary>
+    public Task SubscribeToTicksAsync(string symbol, CancellationToken ct = default) =>
+        GetConnection().InvokeAsync("SubscribeToTicks", symbol, ct);
+
+    /// <summary>Cancel a subscription made with <see cref="SubscribeToTicksAsync"/>.
+    /// Requires a started connection.</summary>
+    public Task UnsubscribeFromTicksAsync(string symbol, CancellationToken ct = default) =>
+        GetConnection().InvokeAsync("UnsubscribeFromTicks", symbol, ct);
+
+    /// <summary>Subscribe to ticks of one symbol as batches for the callback model (see
+    /// <see cref="OnTicksBatch"/>). The server sends a batch when its oldest tick has waited
+    /// <paramref name="intervalMs"/> milliseconds or as soon as <paramref name="maxBatchSize"/>
+    /// ticks are buffered. A batched subscription receives no per-tick
+    /// <see cref="OnTick"/> events; subscribing twice to the same symbol keeps the first
+    /// subscription and its policy. Subscriptions live until the connection closes.
+    /// Requires a started connection.</summary>
+    /// <param name="symbol">Instrument name as reported by the trade server.</param>
+    /// <param name="intervalMs">Upper bound on how long a tick waits for its batch, in
+    /// milliseconds: 20..60000, default 200. The server rejects any other value.</param>
+    /// <param name="maxBatchSize">Upper bound on ticks per event: 1..10000, default 200.
+    /// Reaching it sends the batch at once. The server rejects any other value.</param>
+    public Task SubscribeToTicksBatchAsync(
+        string symbol,
+        int intervalMs = 200,
+        int maxBatchSize = 200,
+        CancellationToken ct = default) =>
+        GetConnection().InvokeAsync("SubscribeToTicksBatch", symbol, intervalMs, maxBatchSize, ct);
+
+    /// <summary>Cancel a batched subscription made with
+    /// <see cref="SubscribeToTicksBatchAsync"/>. Unsubscribing a symbol that is not
+    /// subscribed does nothing. Requires a started connection.</summary>
+    /// <param name="symbol">Symbol passed to <see cref="SubscribeToTicksBatchAsync"/>.</param>
+    public Task UnsubscribeFromTicksBatchAsync(string symbol, CancellationToken ct = default) =>
+        GetConnection().InvokeAsync("UnsubscribeFromTicksBatch", symbol, ct);
+
     // ===== Stream-style helpers =====
+
+    /// <summary>Ticks of the bound trade platform as an <see cref="IAsyncEnumerable{T}"/>.
+    /// When <paramref name="symbol"/> is <c>null</c>, every symbol's ticks flow through.</summary>
+    public IAsyncEnumerable<MT5TickPayload> StreamTicksAsync(string? symbol = null, CancellationToken ct = default) =>
+        symbol is null
+            ? GetConnection().StreamAsync<MT5TickPayload>("StreamTicks", ct)
+            : GetConnection().StreamAsync<MT5TickPayload>("StreamTicks", symbol, ct);
 
     /// <summary>Margin-call updates for the bound trade platform as an
     /// <see cref="IAsyncEnumerable{T}"/>.</summary>

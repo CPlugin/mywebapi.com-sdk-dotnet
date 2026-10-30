@@ -24,6 +24,60 @@ public sealed partial class MT5Endpoints
         _connection = connection;
         _tradePlatform = tradePlatform;
     }
+    /// <summary>Get chart bars</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// OHLC bars of a symbol for a time window, ordered by time ascending. The trade
+    /// server keeps history as minutes; bars of a coarser `period` are aggregated
+    /// from those minutes on the boundaries of the server's trading time, so a day
+    /// starts at 00:00 of the server clock. A bar opens with the first minute of the
+    /// bucket and closes with the last one, its high and low are the extremes of the
+    /// bucket, tick volume and real volume are summed, and spread is the lowest of the
+    /// bucket. Buckets without minutes are not produced.
+    /// 
+    /// &lt;br&gt;
+    /// Times are the trading times of the trade server, not UTC: `time` repeats the
+    /// seconds-from-1970 value the platform uses, `dateTime` is the same moment
+    /// without an offset. Prices are returned as the platform holds them, without
+    /// rescaling.
+    /// 
+    /// &lt;br&gt;
+    /// `from` and `to` are optional: without `from` the window starts at
+    /// the beginning of the history, without `to` it ends at the current server
+    /// time. `limit` is 0 by default and returns the whole window; a positive value
+    /// caps the returned bars and sets `truncated`. There is no pagination: to read
+    /// further, repeat the request with `from` moved past the last returned bar.
+    /// 
+    /// &lt;br&gt;
+    /// The call only reads and changes nothing. When the platform has not received the
+    /// requested history yet, the call fails with the platform code `MT_RET_OK_NONE`
+    /// and a message saying the history is not synchronized — such a request may be
+    /// repeated later. `W1` and `MN1` are rejected: such bars are not built.
+    /// 
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="symbol">Symbol name the chart data is requested for.</param>
+    /// <param name="period">Bar period: M1, M5, M15, M30, H1, H4 or D1. Defaults to M1.</param>
+    /// <param name="from">Window start, as a trading time of the trade server. Optional — the beginning of the history when omitted.</param>
+    /// <param name="to">Window end, as a trading time of the trade server. Optional — the current server time when omitted.</param>
+    /// <param name="limit">Maximum number of bars returned; 0 means no limit. Defaults to 0.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5ChartBarPage?> ChartRequestAsync(string symbol, MT5ChartPeriod? period = null, DateTimeOffset? @from = null, DateTimeOffset? @to = null, int? limit = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ChartRequest/{Uri.EscapeDataString(symbol)}";
+        var qs = new List<string>();
+        if (period is not null) qs.Add("period=" + Uri.EscapeDataString(period.Value.ToString()));
+        if (@from is not null) qs.Add("from=" + Uri.EscapeDataString(@from.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (@to is not null) qs.Add("to=" + Uri.EscapeDataString(@to.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5ChartBarPageApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
     /// <summary>List deals by group</summary>
     /// <remarks>
     /// Returns deals for all logins in groups matching the mask, ordered by Deal ID ascending.
@@ -188,6 +242,54 @@ public sealed partial class MT5Endpoints
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/SymbolRecord/{Uri.EscapeDataString(symbol)}";
         var result = await _connection.SendAsync<MT5SymbolApiResponse>(new HttpMethod("PATCH"), url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Get historical ticks</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Historical ticks of a symbol for a time window, filtered by the symbol's tick
+    /// filters, ordered by time ascending.
+    /// 
+    /// &lt;br&gt;
+    /// Times are the trading times of the trade server, not UTC: `timeMsc` and
+    /// `time` repeat the millisecond and second values the platform uses,
+    /// `dateTime` is the same moment without an offset. Prices are returned as the
+    /// platform holds them, without rescaling. `flags` names the set bits of the
+    /// tick kind, the same way the streaming events do.
+    /// 
+    /// &lt;br&gt;
+    /// `from` and `to` are optional: without `from` the window starts at
+    /// the beginning of the history, without `to` it ends at the current server
+    /// time. `limit` is 0 by default and returns the whole window; a positive value
+    /// caps the returned ticks and sets `truncated`. There is no pagination: to read
+    /// further, repeat the request with `from` moved past the last returned tick.
+    /// 
+    /// &lt;br&gt;
+    /// The call only reads and changes nothing. When the platform has not received the
+    /// requested history yet, the call fails with the platform code `MT_RET_OK_NONE`
+    /// and a message saying the history is not synchronized — such a request may be
+    /// repeated later.
+    /// 
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="symbol">Symbol name the tick data is requested for.</param>
+    /// <param name="from">Window start, as a trading time of the trade server. Optional — the beginning of the history when omitted.</param>
+    /// <param name="to">Window end, as a trading time of the trade server. Optional — the current server time when omitted.</param>
+    /// <param name="limit">Maximum number of ticks returned; 0 means no limit. Defaults to 0.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5TickPage?> TicksHistoryAsync(string symbol, DateTimeOffset? @from = null, DateTimeOffset? @to = null, int? limit = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TicksHistory/{Uri.EscapeDataString(symbol)}";
+        var qs = new List<string>();
+        if (@from is not null) qs.Add("from=" + Uri.EscapeDataString(@from.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (@to is not null) qs.Add("to=" + Uri.EscapeDataString(@to.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5TickPageApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }

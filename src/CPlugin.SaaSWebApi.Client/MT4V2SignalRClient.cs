@@ -217,6 +217,13 @@ public sealed class MT4V2SignalRClient : IAsyncDisposable
     public IDisposable OnTick(Action<TickPayload> handler) =>
         Register(c => c.On("OnTick", handler));
 
+    /// <summary>Register a handler for server-pushed <c>OnTicksBatch</c> callbacks — ticks of
+    /// the symbols subscribed with <see cref="SubscribeToTicksBatchAsync"/>, collected into
+    /// batches. A batched subscription receives no per-tick <see cref="OnTick"/> events.
+    /// May be called before <see cref="StartAsync"/>.</summary>
+    public IDisposable OnTicksBatch(Action<TicksBatchPayload> handler) =>
+        Register(c => c.On("OnTicksBatch", handler));
+
     /// <summary>Register a handler for the <c>OnConnectionStatus</c> callback the server
     /// pushes right after the handshake completes. Attach BEFORE <see cref="StartAsync"/>
     /// to be guaranteed the initial push.</summary>
@@ -228,6 +235,32 @@ public sealed class MT4V2SignalRClient : IAsyncDisposable
 
     public Task UnsubscribeFromTicksAsync(string symbol, CancellationToken ct = default) =>
         GetConnection().InvokeAsync("UnsubscribeFromTicks", symbol, ct);
+
+    /// <summary>Subscribe to ticks of one symbol as batches for the callback model (see
+    /// <see cref="OnTicksBatch"/>). The server sends a batch when its oldest tick has waited
+    /// <paramref name="intervalMs"/> milliseconds or as soon as <paramref name="maxBatchSize"/>
+    /// ticks are buffered. A batched subscription receives no per-tick
+    /// <see cref="OnTick"/> events; repeating the call for the same symbol replaces the
+    /// previous subscription, so the new interval and size take effect. Subscriptions live
+    /// until the connection closes. Requires a started connection.</summary>
+    /// <param name="symbol">Symbol to receive ticks for.</param>
+    /// <param name="intervalMs">Longest time a tick may wait for its batch, in milliseconds:
+    /// 20..60000, default 200. The server rejects any other value.</param>
+    /// <param name="maxBatchSize">Maximum ticks per message: 1..10000, default 200.
+    /// Reaching it sends the batch at once. The server rejects any other value.</param>
+    public Task SubscribeToTicksBatchAsync(
+        string symbol,
+        int intervalMs = 200,
+        int maxBatchSize = 200,
+        CancellationToken ct = default) =>
+        GetConnection().InvokeAsync("SubscribeToTicksBatch", symbol, intervalMs, maxBatchSize, ct);
+
+    /// <summary>Stop the batched subscription of this connection for the given symbol
+    /// made with <see cref="SubscribeToTicksBatchAsync"/>. Ticks of other symbols and the
+    /// per-tick subscriptions are not affected. Requires a started connection.</summary>
+    /// <param name="symbol">Symbol passed to <see cref="SubscribeToTicksBatchAsync"/>.</param>
+    public Task UnsubscribeFromTicksBatchAsync(string symbol, CancellationToken ct = default) =>
+        GetConnection().InvokeAsync("UnsubscribeFromTicksBatch", symbol, ct);
 
     // ===== Stream-style helpers =====
 

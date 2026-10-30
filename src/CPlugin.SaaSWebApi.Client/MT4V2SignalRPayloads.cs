@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace CPlugin.SaaSWebApi.Client;
 
@@ -19,6 +20,13 @@ public sealed record TickPayload
     public double  Ask      { get; init; }
     public DateTime? LastTime { get; init; }
 }
+
+/// <summary>Batch of ticks of one symbol, pushed by <c>OnTicksBatch</c> instead of one
+/// <c>OnTick</c> message per tick. The list is ordered oldest first and is never empty.</summary>
+/// <param name="Symbol">Instrument name the batch belongs to — the symbol given to
+/// <c>SubscribeToTicksBatch</c>.</param>
+/// <param name="Ticks">Ticks accumulated since the previous batch, oldest first.</param>
+public sealed record TicksBatchPayload(string Symbol, IReadOnlyList<TickPayload> Ticks);
 
 /// <summary>Margin call snapshot for one account.</summary>
 public sealed record MarginCallPayload
