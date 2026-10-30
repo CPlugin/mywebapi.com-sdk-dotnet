@@ -2,6 +2,27 @@
 
 Versions follow [semver](https://semver.org/); while the major version is 0, a minor release may contain breaking changes, listed under **Breaking**.
 
+## 0.3.4
+
+Market data of MT5 v2 — historical bars and ticks over REST, live ticks over the hub — and batched ticks on both hubs. Additive: existing methods and signatures are unchanged.
+
+### Added
+
+- **MT5 chart history.** `MT5Endpoints.ChartRequestAsync(symbol, period, from, to, limit)` returns `MT5ChartBarPage`: `Bars` ordered by time ascending (each with `Time`, `DateTime`, `Open`, `High`, `Low`, `Close`, `TickVolume`, `Spread`, `Volume`), `Total` and `Truncated`. `period` is `MT5ChartPeriod` — `M1`, `M5`, `M15`, `M30`, `H1`, `H4` or `D1`; the server rejects `W1` and `MN1`. Times are the trading times of the trade server, not UTC. Coarser bars are aggregated by the server from its minute history, on the boundaries of the server's trading time.
+- **MT5 tick history.** `MT5Endpoints.TicksHistoryAsync(symbol, from, to, limit)` returns `MT5TickPage`: `Ticks` ordered by time ascending (each with `TimeMsc`, `Time`, `DateTime`, `Bid`, `Ask`, `Last`, `Volume`, `VolumeExt`, `Flags`), `Total` and `Truncated`. Prices are returned as the platform holds them, without rescaling; `flags` names the set tick-kind bits, as in the streaming events. Without `from` the window starts at the beginning of the history, without `to` it ends at the current server time.
+- **Live MT5 ticks.** `MT5V2SignalRClient` covers the hub's tick feed: `OnTick` (callback payload `MT5TickPayload` — `Symbol`, `Bid`, `Ask`, `Last`, `LastTime`, `VolumeExt`, `Flags`), `SubscribeToTicksAsync(symbol)` / `UnsubscribeFromTicksAsync(symbol)` for the callback model, and `StreamTicksAsync(symbol?)` for the stream model (`null` = every symbol). The trade platform is bound at connection time through the `tradePlatform` query parameter.
+- **Batched ticks, MT5 v2 hub.** `MT5V2SignalRClient.OnTicksBatch` receives `MT5TicksBatchPayload` — `Symbol` plus `Ticks` (`MT5TickPayload`, oldest first, never empty). `SubscribeToTicksBatchAsync(symbol, intervalMs = 200, maxBatchSize = 200)` starts the feed; the server sends a batch when its oldest tick has waited `intervalMs` milliseconds or as soon as `maxBatchSize` ticks are buffered. `UnsubscribeFromTicksBatchAsync(symbol)` stops it.
+- **Batched ticks, MT4 v2 hub.** The same three members on `MT4V2SignalRClient` with `TicksBatchPayload` (`Symbol` plus `Ticks` of `TickPayload`). Repeating the subscribe call for a symbol replaces the previous subscription, so a new interval and size take effect.
+- `intervalMs` accepts 20..60000 and `maxBatchSize` 1..10000; any other value is refused with a `HubException`. A batched subscription receives no per-tick `OnTick` events, and it lives until the connection closes.
+
+### Changed
+
+- `spec/v2.json` refreshed from the live v2 document; the 13 MT4 operations of the x86 sidecar (plugins, mail, news, binary external commands, snapshots, sync) are carried over from the previous spec because that build does not compile them, so the facade keeps its full surface — 174 operations. The endpoint facade and the DTOs are regenerated from it.
+
+### Dependencies
+
+- `Microsoft.AspNetCore.SignalR.Client` 8.0.33, which clears GHSA-334f-vvp4-7g6p (High) in `Microsoft.AspNetCore.SignalR.Common` 8.0.10; the 8.0 line is patched in 8.0.32.
+
 ## 0.3.3
 
 Regenerated from the WebAPI v2 specification of 05.10.2026; no change to the API surface or to the DTO types.

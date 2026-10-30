@@ -7859,6 +7859,169 @@ namespace CPlugin.SaaSWebApi.Models
 
     }
 
+    /// <summary>
+    /// Bars of one chart history request, v2 read DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5ChartBarPage
+    {
+
+        /// <summary>
+        /// Bars of this page, ordered by time ascending.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("bars")]
+        public System.Collections.Generic.List<MT5ChartBarV2>? Bars { get; set; } = default!;
+
+        /// <summary>
+        /// Total number of bars in the requested window.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("total")]
+        public int? Total { get; set; } = default!;
+
+        /// <summary>
+        /// True when `Total` exceeds the page and more bars were available than returned.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("truncated")]
+        public bool? Truncated { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5ChartBarPageApiResponse
+    {
+
+        /// <summary>
+        /// Bars of one chart history request, v2 read DTO.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5ChartBarPage? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// One OHLC bar of a symbol's chart history, v2 read DTO. The trade server keeps
+    /// <br/>history as minutes; bars of a coarser period are aggregated from those minutes
+    /// <br/>on the boundaries of the server's trading time.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5ChartBarV2
+    {
+
+        /// <summary>
+        /// Bar opening time — seconds since 01.01.1970, in the trade server's trading time.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("time")]
+        public long? Time { get; set; } = default!;
+
+        /// <summary>
+        /// The same bar opening time as a date-time without offset, for direct display.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dateTime")]
+        public System.DateTimeOffset? DateTime { get; set; } = default!;
+
+        /// <summary>
+        /// Open price — the price at the beginning of the bar's minute.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("open")]
+        public double? Open { get; set; } = default!;
+
+        /// <summary>
+        /// Highest price reached inside the bar.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("high")]
+        public double? High { get; set; } = default!;
+
+        /// <summary>
+        /// Lowest price reached inside the bar.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("low")]
+        public double? Low { get; set; } = default!;
+
+        /// <summary>
+        /// Close price — the price at the end of the bar's minute.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("close")]
+        public double? Close { get; set; } = default!;
+
+        /// <summary>
+        /// Tick volume: the number of incoming ticks that moved the quote during the bar.
+        /// <br/>Consecutive ticks with the same price count once.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tickVolume")]
+        public long? TickVolume { get; set; } = default!;
+
+        /// <summary>
+        /// Lowest spread, in points, recorded while the bar was forming.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("spread")]
+        public int? Spread { get; set; } = default!;
+
+        /// <summary>
+        /// Real traded volume executed during the bar.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volume")]
+        public long? Volume { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Bar period of a chart history request. Coarser bars than a minute are built by the
+    /// <br/>service from the minute history of the trade server, on the boundaries of the trade
+    /// <br/>server's trading time — a day therefore starts at 00:00 of the server clock.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5ChartPeriod
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"M1")]
+        M1 = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"M5")]
+        M5 = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"M15")]
+        M15 = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"M30")]
+        M30 = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"H1")]
+        H1 = 4,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"H4")]
+        H4 = 5,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"D1")]
+        D1 = 6,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"W1")]
+        W1 = 7,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"MN1")]
+        MN1 = 8,
+
+    }
+
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT5ConCommTier
     {
@@ -9979,6 +10142,131 @@ namespace CPlugin.SaaSWebApi.Models
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("closeMinutes")]
         public int? CloseMinutes { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Ticks of one history request, v2 read DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5TickPage
+    {
+
+        /// <summary>
+        /// Ticks of this page, ordered by time ascending.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("ticks")]
+        public System.Collections.Generic.List<MT5TickV2>? Ticks { get; set; } = default!;
+
+        /// <summary>
+        /// Total number of ticks in the requested window.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("total")]
+        public int? Total { get; set; } = default!;
+
+        /// <summary>
+        /// True when `Total` exceeds the page and more ticks were available than returned.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("truncated")]
+        public bool? Truncated { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5TickPageApiResponse
+    {
+
+        /// <summary>
+        /// Ticks of one history request, v2 read DTO.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5TickPage? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// One historical tick of a symbol, v2 read DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5TickV2
+    {
+
+        /// <summary>
+        /// Tick time — milliseconds since 01.01.1970, in the trade server's trading time.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("timeMsc")]
+        public long? TimeMsc { get; set; } = default!;
+
+        /// <summary>
+        /// The same tick time in seconds since 01.01.1970.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("time")]
+        public long? Time { get; set; } = default!;
+
+        /// <summary>
+        /// The same tick time as a date-time without offset, for direct display.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dateTime")]
+        public System.DateTimeOffset? DateTime { get; set; } = default!;
+
+        /// <summary>
+        /// Bid price at the tick.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("bid")]
+        public double? Bid { get; set; } = default!;
+
+        /// <summary>
+        /// Ask price at the tick.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("ask")]
+        public double? Ask { get; set; } = default!;
+
+        /// <summary>
+        /// The price of the last committed transaction.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("last")]
+        public double? Last { get; set; } = default!;
+
+        /// <summary>
+        /// Volume as the data provider passed it. The platform fills both this and
+        /// <br/>`VolumeExt`; the extended value has the higher accuracy.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volume")]
+        public long? Volume { get; set; } = default!;
+
+        /// <summary>
+        /// Volume with extended accuracy, as the data provider passed it.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeExt")]
+        public long? VolumeExt { get; set; } = default!;
+
+        /// <summary>
+        /// Tick kind flags as a string: the names of the set bits, lowest bit first,
+        /// <br/>joined by a comma and a space — for example `"Bid, Volume"`. `None`
+        /// <br/>when no bit is set.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("flags")]
+        public string? Flags { get; set; } = default!;
 
     }
 

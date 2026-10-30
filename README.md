@@ -275,7 +275,17 @@ await foreach (var tick in hub.StreamTicksAsync("EURUSD", ct))
     Console.WriteLine($"{tick.Symbol} {tick.Bid}/{tick.Ask}");
 ```
 
-The `client.Realtime.MT4(...)` hub streams ticks, trades, margin-call events, user updates, and symbol config changes; the `client.Realtime.MT5(...)` hub streams connection status and margin-call updates (additional streams are deferred server-side).
+The `client.Realtime.MT4(...)` hub streams ticks, trades, margin-call events, user updates, and symbol config changes; the `client.Realtime.MT5(...)` hub streams ticks and margin-call updates (trades and user/symbol updates are deferred server-side).
+
+Both hubs also deliver ticks in batches — one event per batch instead of one per tick:
+
+```csharp
+hub.OnTicksBatch(b => Console.WriteLine($"{b.Symbol}: {b.Ticks.Count} ticks"));
+await hub.SubscribeToTicksBatchAsync("EURUSD", intervalMs: 200, maxBatchSize: 200);
+// ... hub.UnsubscribeFromTicksBatchAsync("EURUSD")
+```
+
+A batched subscription receives no per-tick `OnTick` events; a batch is sent when its oldest tick has waited `intervalMs` milliseconds or as soon as `maxBatchSize` ticks are buffered.
 
 ## Examples
 
