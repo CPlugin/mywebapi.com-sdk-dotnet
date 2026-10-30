@@ -17,8 +17,8 @@ public class ClientSurfaceTests
     [Fact]
     public void Generated_surface_covers_all_spec_operations()
     {
-        // ! 172 operations in clients/spec/v2.json — update alongside spec regeneration.
-        Assert.Equal(172, CountEndpointMethods(typeof(MT4Endpoints)) + CountEndpointMethods(typeof(MT5Endpoints)));
+        // ! 174 operations in clients/spec/v2.json — update alongside spec regeneration.
+        Assert.Equal(174, CountEndpointMethods(typeof(MT4Endpoints)) + CountEndpointMethods(typeof(MT5Endpoints)));
     }
 
     [Fact]
