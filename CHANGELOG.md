@@ -2,6 +2,21 @@
 
 Versions follow [semver](https://semver.org/); while the major version is 0, a minor release may contain breaking changes, listed under **Breaking**.
 
+## 0.5.1
+
+The models follow the v2 document of the stand: subscriptions are described by named enumerations instead of bare numbers, the tick statistics carry the option greeks, and the news time is spelled out as the wall-clock time of the trade server. The operation surface is unchanged — 456 operations (443 of the live v2 document plus the 13 MT4 x86-sidecar operations it does not compile).
+
+### Added
+
+- **`MT5MarketTickStat` grows the option greeks**: `PriceGreeksDelta`, `PriceGreeksTheta`, `PriceGreeksGamma`, `PriceGreeksVega`, `PriceGreeksRho`, `PriceGreeksOmega` and `PriceSensitivity` (`double?` each). The other fields are unchanged.
+
+### Changed
+
+- **Subscription enumerations are named, not numeric** — the new types are `MT5SubscriptionStatus` (`status`), `MT5SubscriptionAction` (`action`, including `Deleted`), `MT5SubscriptionType` (`type`), `MT5SubscriptionControlMode` (`controlMode`), `MT5SubscriptionPeriod` (`periodMode`), `MT5SubscriptionFreePeriod` (`periodFreeMode`), `MT5SubscriptionSymbolLevel` (`level`) and `MT5SubscriptionTickHistory` (`tickHistory`). The properties are typed with them and travel by name on the wire; the server still accepts a numeric value on input, but the SDK now reads and writes names.
+- **Subscription flags are one string of names.** `MT5Subscription.Flags` and `MT5ConSubscription.Flags` are `string?` — the names of the set bits joined by `", "` (`"Enable, AutoProlong"`), `"None"` when nothing is set, `"Bit<n>"` for a bit the server has no name for.
+- **`MT5News.Time` and `MT5NewsSendRequest.Time`** are documented as the trade-server wall-clock time without a zone, matching the server description; the type stays `DateTimeOffset?`.
+- `spec/v2.json` regenerated from the stand document (443 operations) with the 13 MT4 x86-sidecar paths merged in; the DTOs and endpoint facades are regenerated from it. Method documentation and the per-operation default timeouts follow the refreshed document (the online-list reads default to 30 s, the rest as before).
+
 ## 0.5.0
 
 The whole expanded v2 surface: the SDK exposes the Manager API back-office areas the server added in this round. MT5 grows from 59 to 281 operations and MT4 from 165 to 175; the v2 document has 456 operations — the 443 of the live x64 v2 document plus the 13 MT4 operations of the x86 sidecar, which that document does not compile. Additive: existing methods, signatures and DTOs are unchanged.

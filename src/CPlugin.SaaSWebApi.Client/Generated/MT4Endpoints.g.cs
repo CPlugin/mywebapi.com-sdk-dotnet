@@ -2790,7 +2790,7 @@ public sealed partial class MT4Endpoints
     /// error with a retry hint, not an empty list — empty list means
     /// "warmed but currently no online sessions".
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
@@ -2803,7 +2803,7 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4OnlineListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4OnlineListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -2818,7 +2818,7 @@ public sealed partial class MT4Endpoints
     /// `OnlineGet`: every call hits the MT4 server. Paged the same way
     /// for caller symmetry — cursor is the trailing login (ascending).
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
     /// <param name="cursor">Opaque continuation token. Pass the value from the previous response's `meta.paging.nextCursor` to fetch the next page; omit for the first page.</param>
@@ -2831,7 +2831,7 @@ public sealed partial class MT4Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT4OnlineListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT4OnlineListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }

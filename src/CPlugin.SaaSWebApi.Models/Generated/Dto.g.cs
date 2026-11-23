@@ -11324,13 +11324,14 @@ namespace CPlugin.SaaSWebApi.Models
         public string? Name { get; set; } = default!;
 
         /// <summary>
-        /// Subscription type code.
+        /// Subscription type.&lt;br/&gt;One of: Subscription, Folder. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("type")]
-        public int? Type { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5SubscriptionType>))]
+        public MT5SubscriptionType? Type { get; set; } = default!;
 
         /// <summary>
-        /// Logo identifier shown for the subscription.
+        /// Logo shown for the subscription.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("image")]
         public int? Image { get; set; } = default!;
@@ -11354,16 +11355,18 @@ namespace CPlugin.SaaSWebApi.Models
         public string? UrlAgreement { get; set; } = default!;
 
         /// <summary>
-        /// Code of the actions the client terminals are allowed to perform with the subscription.
+        /// Actions the client terminals are allowed to perform with the subscription.&lt;br/&gt;One of: Full, Unsubscribe, View, Hidden. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("controlMode")]
-        public int? ControlMode { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5SubscriptionControlMode>))]
+        public MT5SubscriptionControlMode? ControlMode { get; set; } = default!;
 
         /// <summary>
-        /// Subscription period code.
+        /// Subscription period.&lt;br/&gt;One of: Once, Daily, Weekly, Monthly, Quarterly, Annual, Custom. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("periodMode")]
-        public int? PeriodMode { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5SubscriptionPeriod>))]
+        public MT5SubscriptionPeriod? PeriodMode { get; set; } = default!;
 
         /// <summary>
         /// Custom subscription period in days, used when `periodMode` selects a custom period.
@@ -11372,10 +11375,11 @@ namespace CPlugin.SaaSWebApi.Models
         public int? PeriodCustom { get; set; } = default!;
 
         /// <summary>
-        /// Trial (free) period code.
+        /// Trial (free) period.&lt;br/&gt;One of: None, Day, Week, Month, Quarter, Year, Custom. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("periodFreeMode")]
-        public int? PeriodFreeMode { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5SubscriptionFreePeriod>))]
+        public MT5SubscriptionFreePeriod? PeriodFreeMode { get; set; } = default!;
 
         /// <summary>
         /// Custom trial period value, used when `periodFreeMode` selects a custom trial period.
@@ -11387,7 +11391,7 @@ namespace CPlugin.SaaSWebApi.Models
         /// Additional subscription property flags.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("flags")]
-        public int? Flags { get; set; } = default!;
+        public string? Flags { get; set; } = default!;
 
         /// <summary>
         /// Subscription price for non-professional traders.
@@ -11473,16 +11477,18 @@ namespace CPlugin.SaaSWebApi.Models
         public string? Symbol { get; set; } = default!;
 
         /// <summary>
-        /// Depth of the price history available by the subscription.
+        /// Depth of the price history available by the subscription.&lt;br/&gt;One of: Delayed, RealtimeLevel1, RealtimeLevel2. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("level")]
-        public int? Level { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5SubscriptionSymbolLevel>))]
+        public MT5SubscriptionSymbolLevel? Level { get; set; } = default!;
 
         /// <summary>
-        /// Depth of the tick history available by the subscription.
+        /// Depth of the tick history available by the subscription.&lt;br/&gt;One of: None, LastDay, LastWeek, LastMonth, Last3Months, Last6Months, LastYear, Last2Years, Last3Years, Last5Years, All. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("tickHistory")]
-        public int? TickHistory { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5SubscriptionTickHistory>))]
+        public MT5SubscriptionTickHistory? TickHistory { get; set; } = default!;
 
     }
 
@@ -13906,6 +13912,48 @@ namespace CPlugin.SaaSWebApi.Models
         [System.Text.Json.Serialization.JsonPropertyName("priceTheoretical")]
         public double? PriceTheoretical { get; set; } = default!;
 
+        /// <summary>
+        /// Option delta — sensitivity of the theoretical price to the underlying price.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceGreeksDelta")]
+        public double? PriceGreeksDelta { get; set; } = default!;
+
+        /// <summary>
+        /// Option theta — sensitivity of the theoretical price to the time to expiry.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceGreeksTheta")]
+        public double? PriceGreeksTheta { get; set; } = default!;
+
+        /// <summary>
+        /// Option gamma — sensitivity of delta to the underlying price.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceGreeksGamma")]
+        public double? PriceGreeksGamma { get; set; } = default!;
+
+        /// <summary>
+        /// Option vega — sensitivity of the theoretical price to volatility.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceGreeksVega")]
+        public double? PriceGreeksVega { get; set; } = default!;
+
+        /// <summary>
+        /// Option rho — sensitivity of the theoretical price to the interest rate.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceGreeksRho")]
+        public double? PriceGreeksRho { get; set; } = default!;
+
+        /// <summary>
+        /// Option omega — elasticity of the theoretical price to the underlying price.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceGreeksOmega")]
+        public double? PriceGreeksOmega { get; set; } = default!;
+
+        /// <summary>
+        /// Sensitivity of the theoretical price used by the pricing model of the server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceSensitivity")]
+        public double? PriceSensitivity { get; set; } = default!;
+
     }
 
     /// <summary>
@@ -14014,7 +14062,8 @@ namespace CPlugin.SaaSWebApi.Models
         public string? Category { get; set; } = default!;
 
         /// <summary>
-        /// Time the news item was sent, in UTC.
+        /// Time the news item was sent, in the time zone of the trade server. The platform stores the
+        /// <br/>value without a zone, so it is returned as a wall-clock time.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("time")]
         public System.DateTimeOffset? Time { get; set; } = default!;
@@ -14127,7 +14176,8 @@ namespace CPlugin.SaaSWebApi.Models
         public string? Category { get; set; } = default!;
 
         /// <summary>
-        /// Publication time, in UTC. Omitted uses the current time of the trade server.
+        /// Publication time, in the time zone of the trade server. Omitted uses the current time of
+        /// <br/>the trade server.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("time")]
         public System.DateTimeOffset? Time { get; set; } = default!;
@@ -16444,16 +16494,17 @@ namespace CPlugin.SaaSWebApi.Models
         public long? Subscription { get; set; } = default!;
 
         /// <summary>
-        /// Subscription state code.
+        /// Subscription state.&lt;br/&gt;One of: Active, Suspended, Canceled. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("status")]
-        public int? Status { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5SubscriptionStatus>))]
+        public MT5SubscriptionStatus? Status { get; set; } = default!;
 
         /// <summary>
         /// Additional subscription property flags.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("flags")]
-        public int? Flags { get; set; } = default!;
+        public string? Flags { get; set; } = default!;
 
         /// <summary>
         /// Start of the subscription, in seconds since 1970-01-01.
@@ -16472,6 +16523,30 @@ namespace CPlugin.SaaSWebApi.Models
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("timeExpire")]
         public long? TimeExpire { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// An action performed with a subscription.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5SubscriptionAction
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Subscribe")]
+        Subscribe = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Renewal")]
+        Renewal = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Suspend")]
+        Suspend = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Cancel")]
+        Cancel = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Deleted")]
+        Deleted = 4,
 
     }
 
@@ -16621,6 +16696,57 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
+    /// What a client is allowed to do with a subscription.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5SubscriptionControlMode
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Full")]
+        Full = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Unsubscribe")]
+        Unsubscribe = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"View")]
+        View = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Hidden")]
+        Hidden = 3,
+
+    }
+
+    /// <summary>
+    /// Free period granted before the first charge.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5SubscriptionFreePeriod
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"None")]
+        None = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Day")]
+        Day = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Week")]
+        Week = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Month")]
+        Month = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Quarter")]
+        Quarter = 4,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Year")]
+        Year = 5,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Custom")]
+        Custom = 6,
+
+    }
+
+    /// <summary>
     /// An action performed with a subscription of a trading account.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -16652,10 +16778,11 @@ namespace CPlugin.SaaSWebApi.Models
         public long? Record { get; set; } = default!;
 
         /// <summary>
-        /// Action type code.
+        /// Action performed with the subscription.&lt;br/&gt;One of: Subscribe, Renewal, Suspend, Cancel, Deleted. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("action")]
-        public int? Action { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5SubscriptionAction>))]
+        public MT5SubscriptionAction? Action { get; set; } = default!;
 
         /// <summary>
         /// Amount charged or returned by the action.
@@ -16768,6 +16895,72 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
+    /// Billing period of a subscription.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5SubscriptionPeriod
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Once")]
+        Once = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Daily")]
+        Daily = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Weekly")]
+        Weekly = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Monthly")]
+        Monthly = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Quarterly")]
+        Quarterly = 4,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Annual")]
+        Annual = 5,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Custom")]
+        Custom = 6,
+
+    }
+
+    /// <summary>
+    /// State of a subscription.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5SubscriptionStatus
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Active")]
+        Active = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Suspended")]
+        Suspended = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Canceled")]
+        Canceled = 2,
+
+    }
+
+    /// <summary>
+    /// Depth of the market data a subscription delivers for one symbol.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5SubscriptionSymbolLevel
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Delayed")]
+        Delayed = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RealtimeLevel1")]
+        RealtimeLevel1 = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RealtimeLevel2")]
+        RealtimeLevel2 = 2,
+
+    }
+
+    /// <summary>
     /// An account and a subscription configuration to act on.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -16785,6 +16978,63 @@ namespace CPlugin.SaaSWebApi.Models
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("subscription")]
         public long? Subscription { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// How much tick history a subscription delivers for one symbol.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5SubscriptionTickHistory
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"None")]
+        None = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"LastDay")]
+        LastDay = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"LastWeek")]
+        LastWeek = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"LastMonth")]
+        LastMonth = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Last3Months")]
+        Last3Months = 4,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Last6Months")]
+        Last6Months = 5,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"LastYear")]
+        LastYear = 6,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Last2Years")]
+        Last2Years = 7,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Last3Years")]
+        Last3Years = 8,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Last5Years")]
+        Last5Years = 9,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"All")]
+        All = 10,
+
+    }
+
+    /// <summary>
+    /// Kind of a subscription configuration record.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5SubscriptionType
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Subscription")]
+        Subscription = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Folder")]
+        Folder = 1,
 
     }
 
@@ -20492,35 +20742,127 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// v2 DTO for binary `ExternalCommand` roundtrips (sidecar-only).
-    /// <br/>The MT4 server's plugin API has no enforced wire-format — clients
-    /// <br/>agree with their plugin on the binary layout and pass arbitrary
-    /// <br/>bytes through this endpoint.
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4ExternalCommandBinaryRequest
+    public partial class MT4PluginListApiResponse
     {
 
-        /// <summary>
-        /// Binary payload to send to the plugin (base64-encoded)
-        /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
-        public byte[]? Data { get; set; } = default!;
+        public System.Collections.Generic.List<MT4Plugin>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
 
     }
 
     /// <summary>
-    /// v2 DTO for the response of `ExternalCommandBinary` (sidecar-only).
+    /// v2 DTO for MT4 plugin metadata (sidecar-only). Mirrors the platform's
+    /// <br/>`ConPlugin` with its embedded `PluginInfo` flattened.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4ExternalCommandBinaryResponse
+    public partial class MT4Plugin
     {
 
         /// <summary>
-        /// Binary payload received from the first plugin that returned RET_OK (base64-encoded)
+        /// Plugin DLL filename (max 256 chars on the platform side)
         /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("data")]
-        public byte[]? Data { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonPropertyName("file")]
+        public string? File { get; set; } = default!;
+
+        /// <summary>
+        /// Plugin display name (from `PluginInfo.Name`)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string? Name { get; set; } = default!;
+
+        /// <summary>
+        /// Plugin version (from `PluginInfo.Version`)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("version")]
+        public int? Version { get; set; } = default!;
+
+        /// <summary>
+        /// Plugin copyright string
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("copyright")]
+        public string? Copyright { get; set; } = default!;
+
+        /// <summary>
+        /// Enabled flag (raw int — 0 = disabled, non-zero = enabled)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("enabled")]
+        public int? Enabled { get; set; } = default!;
+
+        /// <summary>
+        /// Configurable flag (plugin exposes editable parameters)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("configurable")]
+        public int? Configurable { get; set; } = default!;
+
+        /// <summary>
+        /// Manager-terminal-accessible flag
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("managerAccess")]
+        public int? ManagerAccess { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// v2 DTO for an MT4 plugin together with its parameter set (sidecar-only).
+    /// <br/>Mirrors the platform's `ConPluginParam`.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT4PluginParam
+    {
+
+        /// <summary>
+        /// Plugin metadata
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("plugin")]
+        public MT4Plugin? Plugin { get; set; } = default!;
+
+        /// <summary>
+        /// Plugin parameter array (name/value pairs)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("params")]
+        public System.Collections.Generic.List<MT4PluginConfig>? Params { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// v2 DTO for a single plugin parameter pair (sidecar-only).
+    /// <br/>Mirrors the platform's `PluginCfg`.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT4PluginConfig
+    {
+
+        /// <summary>
+        /// Parameter name
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string? Name { get; set; } = default!;
+
+        /// <summary>
+        /// Parameter value (free-form string)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("value")]
+        public string? Value { get; set; } = default!;
 
     }
 
@@ -20530,14 +20872,79 @@ namespace CPlugin.SaaSWebApi.Models
     /// <br/>(activityId and optional paging). HTTP status is always 200.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4ExternalCommandBinaryResponseApiResponse
+    public partial class MT4PluginParamApiResponse
     {
 
         /// <summary>
-        /// v2 DTO for the response of `ExternalCommandBinary` (sidecar-only).
+        /// v2 DTO for an MT4 plugin together with its parameter set (sidecar-only).
+        /// <br/>Mirrors the platform's `ConPluginParam`.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
-        public MT4ExternalCommandBinaryResponse? Data { get; set; } = default!;
+        public MT4PluginParam? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// v2 request DTO for `POST NewsSend` — pushes a single news item
+    /// <br/>to the MT4 server, which fans it out to all connected client
+    /// <br/>terminals. Platform signature: `ResultCode NewsSend(NewsTopic news)`.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT4NewsSendRequest
+    {
+
+        /// <summary>
+        /// News headline (required, up to 256 chars)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("topic")]
+        public string? Topic { get; set; } = default!;
+
+        /// <summary>
+        /// News category (optional, up to 64 chars)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("category")]
+        public string? Category { get; set; } = default!;
+
+        /// <summary>
+        /// News body text (required)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("body")]
+        public string? Body { get; set; } = default!;
+
+        /// <summary>
+        /// High-priority flag (`true` = priority 1, `false` = priority 0)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("highPriority")]
+        public bool? HighPriority { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT4MailBoxListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT4MailBox>? Data { get; set; } = default!;
 
         /// <summary>
         /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
@@ -20599,35 +21006,6 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// Unified v2 response envelope: data is the payload (null on error); error is the
-    /// <br/>error object (null on success, always serialised); meta contains response metadata
-    /// <br/>(activityId and optional paging). HTTP status is always 200.
-    /// </summary>
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4MailBoxListApiResponse
-    {
-
-        [System.Text.Json.Serialization.JsonPropertyName("data")]
-        public System.Collections.Generic.List<MT4MailBox>? Data { get; set; } = default!;
-
-        /// <summary>
-        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
-        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
-        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("error")]
-        public ApiError? Error { get; set; } = default!;
-
-        /// <summary>
-        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("meta")]
-        public ApiMeta? Meta { get; set; } = default!;
-
-    }
-
-    /// <summary>
     /// v2 request DTO for `POST MailSend` (sidecar-only). Sends an
     /// <br/>email to one or more client logins. Platform signature:
     /// <br/>`ResultCode MailSend(MailBox mail, ICollection&lt;int&gt; logins)`.
@@ -20669,125 +21047,19 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// v2 request DTO for `POST NewsSend` — pushes a single news item
-    /// <br/>to the MT4 server, which fans it out to all connected client
-    /// <br/>terminals. Platform signature: `ResultCode NewsSend(NewsTopic news)`.
-    /// </summary>
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4NewsSendRequest
-    {
-
-        /// <summary>
-        /// News headline (required, up to 256 chars)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("topic")]
-        public string? Topic { get; set; } = default!;
-
-        /// <summary>
-        /// News category (optional, up to 64 chars)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("category")]
-        public string? Category { get; set; } = default!;
-
-        /// <summary>
-        /// News body text (required)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("body")]
-        public string? Body { get; set; } = default!;
-
-        /// <summary>
-        /// High-priority flag (`true` = priority 1, `false` = priority 0)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("highPriority")]
-        public bool? HighPriority { get; set; } = default!;
-
-    }
-
-    /// <summary>
-    /// v2 DTO for MT4 plugin metadata (sidecar-only). Mirrors the platform's
-    /// <br/>`ConPlugin` with its embedded `PluginInfo` flattened.
-    /// </summary>
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4Plugin
-    {
-
-        /// <summary>
-        /// Plugin DLL filename (max 256 chars on the platform side)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("file")]
-        public string? File { get; set; } = default!;
-
-        /// <summary>
-        /// Plugin display name (from `PluginInfo.Name`)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("name")]
-        public string? Name { get; set; } = default!;
-
-        /// <summary>
-        /// Plugin version (from `PluginInfo.Version`)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("version")]
-        public int? Version { get; set; } = default!;
-
-        /// <summary>
-        /// Plugin copyright string
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("copyright")]
-        public string? Copyright { get; set; } = default!;
-
-        /// <summary>
-        /// Enabled flag (raw int — 0 = disabled, non-zero = enabled)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("enabled")]
-        public int? Enabled { get; set; } = default!;
-
-        /// <summary>
-        /// Configurable flag (plugin exposes editable parameters)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("configurable")]
-        public int? Configurable { get; set; } = default!;
-
-        /// <summary>
-        /// Manager-terminal-accessible flag
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("managerAccess")]
-        public int? ManagerAccess { get; set; } = default!;
-
-    }
-
-    /// <summary>
-    /// v2 DTO for a single plugin parameter pair (sidecar-only).
-    /// <br/>Mirrors the platform's `PluginCfg`.
-    /// </summary>
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4PluginConfig
-    {
-
-        /// <summary>
-        /// Parameter name
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("name")]
-        public string? Name { get; set; } = default!;
-
-        /// <summary>
-        /// Parameter value (free-form string)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("value")]
-        public string? Value { get; set; } = default!;
-
-    }
-
-    /// <summary>
     /// Unified v2 response envelope: data is the payload (null on error); error is the
     /// <br/>error object (null on success, always serialised); meta contains response metadata
     /// <br/>(activityId and optional paging). HTTP status is always 200.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4PluginListApiResponse
+    public partial class MT4ExternalCommandBinaryResponseApiResponse
     {
 
+        /// <summary>
+        /// v2 DTO for the response of `ExternalCommandBinary` (sidecar-only).
+        /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
-        public System.Collections.Generic.List<MT4Plugin>? Data { get; set; } = default!;
+        public MT4ExternalCommandBinaryResponse? Data { get; set; } = default!;
 
         /// <summary>
         /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
@@ -20807,57 +21079,35 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// v2 DTO for an MT4 plugin together with its parameter set (sidecar-only).
-    /// <br/>Mirrors the platform's `ConPluginParam`.
+    /// v2 DTO for the response of `ExternalCommandBinary` (sidecar-only).
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4PluginParam
+    public partial class MT4ExternalCommandBinaryResponse
     {
 
         /// <summary>
-        /// Plugin metadata
+        /// Binary payload received from the first plugin that returned RET_OK (base64-encoded)
         /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("plugin")]
-        public MT4Plugin? Plugin { get; set; } = default!;
-
-        /// <summary>
-        /// Plugin parameter array (name/value pairs)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("params")]
-        public System.Collections.Generic.List<MT4PluginConfig>? Params { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public byte[]? Data { get; set; } = default!;
 
     }
 
     /// <summary>
-    /// Unified v2 response envelope: data is the payload (null on error); error is the
-    /// <br/>error object (null on success, always serialised); meta contains response metadata
-    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// v2 DTO for binary `ExternalCommand` roundtrips (sidecar-only).
+    /// <br/>The MT4 server's plugin API has no enforced wire-format — clients
+    /// <br/>agree with their plugin on the binary layout and pass arbitrary
+    /// <br/>bytes through this endpoint.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4PluginParamApiResponse
+    public partial class MT4ExternalCommandBinaryRequest
     {
 
         /// <summary>
-        /// v2 DTO for an MT4 plugin together with its parameter set (sidecar-only).
-        /// <br/>Mirrors the platform's `ConPluginParam`.
+        /// Binary payload to send to the plugin (base64-encoded)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
-        public MT4PluginParam? Data { get; set; } = default!;
-
-        /// <summary>
-        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
-        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
-        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("error")]
-        public ApiError? Error { get; set; } = default!;
-
-        /// <summary>
-        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("meta")]
-        public ApiMeta? Meta { get; set; } = default!;
+        public byte[]? Data { get; set; } = default!;
 
     }
 

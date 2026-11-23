@@ -37,6 +37,9 @@ public sealed partial class MT5Endpoints
     /// without an owner and cannot be removed through the API — check the document or comment identifier
     /// before sending large files.
     /// 
+    /// &lt;br&gt;
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
+    /// 
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -57,6 +60,7 @@ public sealed partial class MT5Endpoints
     /// entry. Every entry follows the rules of the single store: one owner client, at most one link
     /// target, and the file content in the body. One entry per file is returned with the identifier the
     /// server assigned; a failure of the link is reported in the entry of that file.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -75,6 +79,7 @@ public sealed partial class MT5Endpoints
     /// <remarks>
     /// Same operation as `AttachmentAddBatch` with the same rules: each file carries its own owner
     /// and link target, and one entry per file is returned with the identifier the server assigned.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -124,7 +129,7 @@ public sealed partial class MT5Endpoints
     /// server answers a platform error instead of an empty book.
     /// 
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="symbol">Symbol name exactly as the trade server holds it.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -132,7 +137,7 @@ public sealed partial class MT5Endpoints
     public async Task<MT5Book?> BookGetAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/BookGet/{Uri.EscapeDataString(symbol)}";
-        var result = await _connection.SendAsync<MT5BookApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5BookApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -361,6 +366,7 @@ public sealed partial class MT5Endpoints
     /// validation as the single add. Every record receives the identifier the server assigned to it,
     /// which is returned per entry together with its result code. A partial failure answers one entry
     /// per client, so inspect each result instead of trusting the batch as a whole.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -379,6 +385,7 @@ public sealed partial class MT5Endpoints
     /// <remarks>
     /// Same operation as `ClientAddBatch` with the same rules: the batch is validated per record and
     /// one entry per client is returned, together with the identifier the server assigned.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -438,7 +445,7 @@ public sealed partial class MT5Endpoints
     /// reads and changes nothing. An identifier that does not exist is answered with a platform
     /// error rather than an empty record.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="clientId">Client identifier.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -446,7 +453,7 @@ public sealed partial class MT5Endpoints
     public async Task<MT5Client?> ClientRequestAsync(long clientId, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/ClientRequest/{clientId.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT5ClientApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5ClientApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -458,7 +465,7 @@ public sealed partial class MT5Endpoints
     /// several comma-separated groups or wildcards: `*` matches any value and `!` excludes,
     /// for example `demo*,!demoforex`. Reading changes nothing.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="groups">Group mask, several groups or a negation list.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -469,7 +476,7 @@ public sealed partial class MT5Endpoints
         var qs = new List<string>();
         if (groups is not null) qs.Add("groups=" + Uri.EscapeDataString(groups));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5ClientListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5ClientListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Client>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Client>();
     }
@@ -481,7 +488,7 @@ public sealed partial class MT5Endpoints
     /// author is given, only the changes made by that manager account are returned. Reading changes
     /// nothing.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="clientId">Client identifier.</param>
     /// <param name="author">Login of the manager account that made the changes; omitted means any author.</param>
@@ -497,7 +504,7 @@ public sealed partial class MT5Endpoints
         if (@from is not null) qs.Add("from=" + Uri.EscapeDataString(@from.Value.ToString("O", CultureInfo.InvariantCulture)));
         if (@to is not null) qs.Add("to=" + Uri.EscapeDataString(@to.Value.ToString("O", CultureInfo.InvariantCulture)));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5ClientListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5ClientListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Client>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Client>();
     }
@@ -664,6 +671,7 @@ public sealed partial class MT5Endpoints
     /// The client must be identified; a document identifier is optional and, when given, makes the
     /// comment belong to that document instead of the client. A comment can only be added from the
     /// server that holds the client. Files are attached to the comment separately.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -682,6 +690,7 @@ public sealed partial class MT5Endpoints
     /// <remarks>
     /// Stores the listed comments in one call with the same rules as the single add. One entry per
     /// comment is returned with the identifier the server assigned.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -700,6 +709,7 @@ public sealed partial class MT5Endpoints
     /// <remarks>
     /// Same operation as `CommentAddBatch` with the same rules: one entry per comment is returned
     /// together with the identifier the server assigned.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -757,7 +767,7 @@ public sealed partial class MT5Endpoints
     /// (identifier, name and size — not the content). Reading changes nothing. An identifier that does
     /// not exist is answered with a platform error rather than an empty record.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="commentId">Comment identifier.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -765,7 +775,7 @@ public sealed partial class MT5Endpoints
     public async Task<MT5Comment?> CommentRequestAsync(long commentId, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/CommentRequest/{commentId.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT5CommentApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5CommentApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -776,7 +786,7 @@ public sealed partial class MT5Endpoints
     /// The slice is set by `position` (zero-based index of the first comment) and `total`
     /// (number of comments to return), so a long thread is read page by page. Reading changes nothing.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="clientId">Client identifier.</param>
     /// <param name="position">Zero-based index of the first comment to return; 0 means the beginning.</param>
@@ -790,7 +800,7 @@ public sealed partial class MT5Endpoints
         if (position is not null) qs.Add("position=" + position.Value.ToString(CultureInfo.InvariantCulture));
         if (total is not null) qs.Add("total=" + total.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5CommentListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5CommentListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Comment>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Comment>();
     }
@@ -801,7 +811,7 @@ public sealed partial class MT5Endpoints
     /// slice is set by `position` (zero-based index of the first comment) and `total` (number
     /// of comments to return), so a long thread is read page by page. Reading changes nothing.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="documentId">Document identifier.</param>
     /// <param name="position">Zero-based index of the first comment to return; 0 means the beginning.</param>
@@ -815,7 +825,7 @@ public sealed partial class MT5Endpoints
         if (position is not null) qs.Add("position=" + position.Value.ToString(CultureInfo.InvariantCulture));
         if (total is not null) qs.Add("total=" + total.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5CommentListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5CommentListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Comment>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Comment>();
     }
@@ -1518,7 +1528,7 @@ public sealed partial class MT5Endpoints
     /// for the platform to expire.
     /// 
     /// 
-    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="body">Answer to the trade request.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -1526,7 +1536,7 @@ public sealed partial class MT5Endpoints
     public async Task<bool> DealerAnswerAsync(MT5Confirm body, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/DealerAnswer";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
@@ -1719,6 +1729,7 @@ public sealed partial class MT5Endpoints
     /// identifier it was assigned. The client must be identified; otherwise the record is refused.
     /// A document can only be added from the server that holds the client. Files are attached to the
     /// document separately, by the attachment routes.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -1738,6 +1749,7 @@ public sealed partial class MT5Endpoints
     /// Stores the listed documents in one call with the same rules as the single add. One entry per
     /// document is returned with the identifier the server assigned, so a partial failure names the
     /// documents that were refused.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -1756,6 +1768,7 @@ public sealed partial class MT5Endpoints
     /// <remarks>
     /// Same operation as `DocumentAddBatch` with the same rules: one entry per document is
     /// returned together with the identifier the server assigned.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -1813,7 +1826,7 @@ public sealed partial class MT5Endpoints
     /// (identifier, name and size — not the content). Reading changes nothing. An identifier that does
     /// not exist is answered with a platform error rather than an empty record.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="documentId">Document identifier.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -1821,7 +1834,7 @@ public sealed partial class MT5Endpoints
     public async Task<MT5Document?> DocumentRequestAsync(long documentId, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/DocumentRequest/{documentId.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT5DocumentApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5DocumentApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -1832,7 +1845,7 @@ public sealed partial class MT5Endpoints
     /// (identifier, name and size — not the content). Reading changes nothing; a client without
     /// documents answers an empty list.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="clientId">Client identifier.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -1840,7 +1853,7 @@ public sealed partial class MT5Endpoints
     public async Task<IReadOnlyList<MT5Document>> DocumentRequestByClientAsync(long clientId, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/DocumentRequestByClient/{clientId.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT5DocumentListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5DocumentListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Document>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Document>();
     }
@@ -1851,7 +1864,7 @@ public sealed partial class MT5Endpoints
     /// every change. Both bounds are optional: without them the whole history is read. When an author is
     /// given, only the changes made by that manager account are returned. Reading changes nothing.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="documentId">Document identifier.</param>
     /// <param name="author">Login of the manager account that made the changes; omitted means any author.</param>
@@ -1867,7 +1880,7 @@ public sealed partial class MT5Endpoints
         if (@from is not null) qs.Add("from=" + Uri.EscapeDataString(@from.Value.ToString("O", CultureInfo.InvariantCulture)));
         if (@to is not null) qs.Add("to=" + Uri.EscapeDataString(@to.Value.ToString("O", CultureInfo.InvariantCulture)));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5DocumentListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5DocumentListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Document>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Document>();
     }
@@ -1938,6 +1951,9 @@ public sealed partial class MT5Endpoints
     /// The answer carries the platform result code: success means the server accepted the message
     /// for sending, not that it was delivered. The subject and the body are not stored or logged by
     /// the service.
+    /// 
+    /// &lt;br&gt;
+    /// The operation is not idempotent — a repeat after an unclear outcome delivers a second message.
     /// 
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
@@ -2587,11 +2603,15 @@ public sealed partial class MT5Endpoints
     /// The window is given in seconds elapsed since 01.01.1970; the optional keyword narrows the
     /// entries the way the journal search of the platform does.
     /// 
-    /// The request mode and the event type are platform values: an unknown combination is answered
-    /// by the server with the error that explains it. The whole window is returned in one answer,
-    /// so a wide window over a busy server is a large response.
+    /// &lt;br&gt;`mode` accepts 0 (standard entries), 1 (errors only) or 2 (full journal); `type`
+    /// accepts 0 (all events), 1–8 (configuration, system, network, history, users, trades, API
+    /// calls, notifications) or 16–17 (live update, outgoing mail). Any other value is refused.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// 
+    /// The whole window is returned in one answer, so a wide window over a busy server is a large
+    /// response.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="mode">Platform request mode of the journal.</param>
     /// <param name="type">Platform event type to request.</param>
@@ -2610,7 +2630,7 @@ public sealed partial class MT5Endpoints
         if (@to is not null) qs.Add("to=" + @to.Value.ToString(CultureInfo.InvariantCulture));
         if (filter is not null) qs.Add("filter=" + Uri.EscapeDataString(filter));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5LogRecordListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5LogRecordListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5LogRecord>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5LogRecord>();
     }
@@ -2691,7 +2711,7 @@ public sealed partial class MT5Endpoints
     /// page is capped at `count` entries and a call that asks for more than 1000 is refused
     /// as invalid.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="from">Zero-based position of the first message; entries before it are skipped.</param>
     /// <param name="count">Number of messages to return, 1 to 1000. Default 100.</param>
@@ -2704,7 +2724,7 @@ public sealed partial class MT5Endpoints
         if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
         if (count is not null) qs.Add("count=" + count.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5MailListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5MailListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Mail>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Mail>();
     }
@@ -2759,6 +2779,9 @@ public sealed partial class MT5Endpoints
     /// Success means the message was accepted for sending, not that it was delivered. An invalid
     /// or non-mobile number is answered with its own platform error, which names the reason. The
     /// message text is not stored or logged by the service.
+    /// 
+    /// &lt;br&gt;
+    /// The operation is not idempotent — a repeat after an unclear outcome delivers a second message.
     /// 
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
@@ -2929,7 +2952,7 @@ public sealed partial class MT5Endpoints
     /// page is capped at `count` entries and a call that asks for more than 1000 is refused as
     /// invalid.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="from">Zero-based position of the first news item; entries before it are skipped.</param>
     /// <param name="count">Number of news items to return, 1 to 1000. Default 100.</param>
@@ -2942,7 +2965,7 @@ public sealed partial class MT5Endpoints
         if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
         if (count is not null) qs.Add("count=" + count.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5NewsListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5NewsListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5News>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5News>();
     }
@@ -2982,6 +3005,9 @@ public sealed partial class MT5Endpoints
     /// delivery needs the mobile terminal of the platform to be installed and registered. The
     /// message is limited by the platform to 1024 characters and is not stored or logged by the
     /// service.
+    /// 
+    /// &lt;br&gt;
+    /// The operation is not idempotent — a repeat after an unclear outcome delivers a second message.
     /// 
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
@@ -3061,7 +3087,7 @@ public sealed partial class MT5Endpoints
     /// An account that is not connected answers an empty list. The call changes nothing.
     /// 
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="login">User login (account number).</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -3069,7 +3095,7 @@ public sealed partial class MT5Endpoints
     public async Task<IReadOnlyList<MT5Online>> OnlineGetAsync(long login, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/OnlineGet/{login.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT5OnlineListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5OnlineListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Online>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Online>();
     }
@@ -3090,7 +3116,7 @@ public sealed partial class MT5Endpoints
     /// remaining positions are empty.
     /// 
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="from">Position the window starts at; the first connection when omitted.</param>
     /// <param name="count">Window size; 100 when omitted, at most 1000.</param>
@@ -3103,7 +3129,7 @@ public sealed partial class MT5Endpoints
         if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
         if (count is not null) qs.Add("count=" + count.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5OnlinePageApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5OnlinePageApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -3280,7 +3306,7 @@ public sealed partial class MT5Endpoints
     /// Returns active and pending orders for all logins in groups matching the mask,
     /// ordered by Order ID ascending. Use the cursor for the next page.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="mask">Group mask — exact group name or a wildcard like "real\*".</param>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
@@ -3294,7 +3320,7 @@ public sealed partial class MT5Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -3407,7 +3433,7 @@ public sealed partial class MT5Endpoints
     /// belonging to the trade platform are scanned. The result is not paginated: the
     /// whole set is returned at once, in the order the trade server reports it.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="mask">Group mask — one group, several comma-separated groups, or a mask with `*` (any value) and `!` (exception), for example `demo*,!demoforex`.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -3415,7 +3441,7 @@ public sealed partial class MT5Endpoints
     public async Task<IReadOnlyList<MT5Order>> OrderRequestByGroupAsync(string mask, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/OrderRequestByGroup/{Uri.EscapeDataString(mask)}";
-        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
     }
@@ -3426,7 +3452,7 @@ public sealed partial class MT5Endpoints
     /// mask. The result is not paginated: the whole set is returned at once, in the order
     /// the trade server reports it.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="mask">Group mask — one group, several comma-separated groups, or a mask with `*` (any value) and `!` (exception), for example `demo*,!demoforex`.</param>
     /// <param name="symbol">Symbol name — one symbol or several comma-separated symbols.</param>
@@ -3435,7 +3461,7 @@ public sealed partial class MT5Endpoints
     public async Task<IReadOnlyList<MT5Order>> OrderRequestByGroupSymbolAsync(string mask, string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/OrderRequestByGroupSymbol/{Uri.EscapeDataString(mask)}/{Uri.EscapeDataString(symbol)}";
-        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
     }
@@ -3446,7 +3472,7 @@ public sealed partial class MT5Endpoints
     /// not paginated: the whole set is returned at once. Use the ticket-based form for a longer
     /// list than fits in the query string.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="logins">Account logins, repeated as `logins=…&amp;logins=…` query parameters.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -3457,7 +3483,7 @@ public sealed partial class MT5Endpoints
         var qs = new List<string>();
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
     }
@@ -3467,7 +3493,7 @@ public sealed partial class MT5Endpoints
     /// Returns the orders of the given symbol for the given accounts as the trade server holds
     /// them now. The result is not paginated: the whole set is returned at once.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="symbol">Symbol name.</param>
     /// <param name="logins">Account logins, repeated as `logins=…&amp;logins=…` query parameters.</param>
@@ -3479,7 +3505,7 @@ public sealed partial class MT5Endpoints
         var qs = new List<string>();
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
     }
@@ -3590,7 +3616,8 @@ public sealed partial class MT5Endpoints
     /// <summary>Change the password of the manager account used by the connection</summary>
     /// <remarks>
     /// Replaces the stored password of the account the API uses to connect to the trade server. The
-    /// change is made by the account itself and applies to the password type given in the route.
+    /// change is made by the account itself and applies to the password type given in the route:
+    /// `Main`, `Investor`, `API` or `Trader`. Any other value is refused.
     /// 
     /// &lt;br&gt;
     /// The connection settings kept by this API are not updated by this call: the next connection
@@ -3742,7 +3769,7 @@ public sealed partial class MT5Endpoints
     /// Returns the open positions of every login in the groups matching the mask. The result is
     /// not paginated: the whole set is returned at once.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="mask">Group mask — one group, several comma-separated groups, or a mask with `*` (any value) and `!` (exception), for example `demo*,!demoforex`.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -3750,7 +3777,7 @@ public sealed partial class MT5Endpoints
     public async Task<IReadOnlyList<MT5Position>> PositionGetByGroupAsync(string mask, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/PositionGetByGroup/{Uri.EscapeDataString(mask)}";
-        var result = await _connection.SendAsync<MT5PositionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5PositionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Position>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Position>();
     }
@@ -3858,7 +3885,7 @@ public sealed partial class MT5Endpoints
     /// Returns open positions for all logins in groups matching the mask,
     /// ordered by Position ID ascending. Use the cursor for the next page.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="mask">Group mask — exact group name or a wildcard like "real\*".</param>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
@@ -3872,7 +3899,7 @@ public sealed partial class MT5Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5PositionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5PositionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -3883,7 +3910,7 @@ public sealed partial class MT5Endpoints
     /// mask, read from the trade server. The result is not paginated: the whole set is returned
     /// at once.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="mask">Group mask — one group, several comma-separated groups, or a mask with `*` (any value) and `!` (exception), for example `demo*,!demoforex`.</param>
     /// <param name="symbol">Symbol name.</param>
@@ -3892,7 +3919,7 @@ public sealed partial class MT5Endpoints
     public async Task<IReadOnlyList<MT5Position>> PositionRequestByGroupSymbolAsync(string mask, string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/PositionRequestByGroupSymbol/{Uri.EscapeDataString(mask)}/{Uri.EscapeDataString(symbol)}";
-        var result = await _connection.SendAsync<MT5PositionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5PositionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Position>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Position>();
     }
@@ -4079,7 +4106,7 @@ public sealed partial class MT5Endpoints
     /// queue is answered with the platform code that states it.
     /// 
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="id">Identifier of the trade request.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -4087,7 +4114,7 @@ public sealed partial class MT5Endpoints
     public async Task<MT5Request?> RequestGetAsync(int id, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/RequestGet/{id.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT5RequestApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5RequestApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -4106,7 +4133,7 @@ public sealed partial class MT5Endpoints
     /// different set. The queue must be opened with `DealerStart` first.
     /// 
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="from">Number of requests to skip from the head of the queue; 0 by default.</param>
     /// <param name="count">Maximum number of requests to return; 0 returns the whole queue.</param>
@@ -4119,7 +4146,7 @@ public sealed partial class MT5Endpoints
         if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
         if (count is not null) qs.Add("count=" + count.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5RequestListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5RequestListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Request>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Request>();
     }
@@ -4388,7 +4415,7 @@ public sealed partial class MT5Endpoints
     /// already cancelled subscription fails with the platform error.
     /// 
     /// 
-    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="body">Account login and subscription configuration identifier.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -4396,7 +4423,7 @@ public sealed partial class MT5Endpoints
     public async Task<MT5SubscriptionActionResult?> SubscriptionCancelAsync(MT5SubscriptionTarget body, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionCancel";
-        var result = await _connection.SendAsync<MT5SubscriptionActionResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5SubscriptionActionResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -4414,7 +4441,7 @@ public sealed partial class MT5Endpoints
     /// The operation is not idempotent.
     /// 
     /// 
-    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="body">Account logins and subscription configuration identifiers.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -4422,7 +4449,7 @@ public sealed partial class MT5Endpoints
     public async Task<MT5SubscriptionBatchResult?> SubscriptionCancelBatchAsync(IReadOnlyList<MT5SubscriptionTarget> body, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionCancelBatch";
-        var result = await _connection.SendAsync<MT5SubscriptionBatchResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5SubscriptionBatchResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -4484,7 +4511,7 @@ public sealed partial class MT5Endpoints
     /// instruments and news categories it covers, not only its general settings.
     /// 
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="name">Name of the subscription configuration.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -4492,7 +4519,7 @@ public sealed partial class MT5Endpoints
     public async Task<MT5ConSubscription?> SubscriptionCfgRequestAsync(string name, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionCfgRequest/{Uri.EscapeDataString(name)}";
-        var result = await _connection.SendAsync<MT5ConSubscriptionApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5ConSubscriptionApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -4503,7 +4530,7 @@ public sealed partial class MT5Endpoints
     /// answer is read from the trade server at the moment of the call and carries the whole
     /// content of the configuration.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="id">Identifier of the subscription configuration.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -4511,7 +4538,7 @@ public sealed partial class MT5Endpoints
     public async Task<MT5ConSubscription?> SubscriptionCfgRequestByIDAsync(long id, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionCfgRequestByID/{id.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT5ConSubscriptionApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5ConSubscriptionApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -4617,7 +4644,7 @@ public sealed partial class MT5Endpoints
     /// Both bounds are seconds since 1970-01-01 and are inclusive; the range is required.
     /// The result is not paginated.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="login">Login of the account.</param>
     /// <param name="from">Start of the period, in seconds since 1970-01-01.</param>
@@ -4631,7 +4658,7 @@ public sealed partial class MT5Endpoints
         if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
         if (@to is not null) qs.Add("to=" + @to.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5SubscriptionHistoryListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5SubscriptionHistoryListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5SubscriptionHistory>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5SubscriptionHistory>();
     }
@@ -4644,7 +4671,7 @@ public sealed partial class MT5Endpoints
     /// value) and `!` (exclude). Both bounds are seconds since 1970-01-01 and are
     /// inclusive; the range is required.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="mask">Group mask: one or more comma-separated names with optional wildcards.</param>
     /// <param name="from">Start of the period, in seconds since 1970-01-01.</param>
@@ -4658,7 +4685,7 @@ public sealed partial class MT5Endpoints
         if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
         if (@to is not null) qs.Add("to=" + @to.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5SubscriptionHistoryListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5SubscriptionHistoryListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5SubscriptionHistory>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5SubscriptionHistory>();
     }
@@ -4668,7 +4695,7 @@ public sealed partial class MT5Endpoints
     /// Returns the action record with the given identifier. An unknown identifier is answered
     /// with the platform error `MT_RET_ERR_NOTFOUND` rather than with an empty record.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="id">Identifier of the action record.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -4676,7 +4703,7 @@ public sealed partial class MT5Endpoints
     public async Task<MT5SubscriptionHistory?> SubscriptionHistoryRequestByIDAsync(long id, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionHistoryRequestByID/{id.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT5SubscriptionHistoryApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5SubscriptionHistoryApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -4686,7 +4713,7 @@ public sealed partial class MT5Endpoints
     /// Returns the action records with the given identifiers. Identifiers that do not exist are
     /// simply absent from the result.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="ids">Identifiers of the action records, repeated as `ids=…&amp;ids=…` query parameters.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -4697,7 +4724,7 @@ public sealed partial class MT5Endpoints
         var qs = new List<string>();
         if (ids is not null) foreach (var v in ids) qs.Add("ids=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5SubscriptionHistoryListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5SubscriptionHistoryListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5SubscriptionHistory>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5SubscriptionHistory>();
     }
@@ -4708,7 +4735,7 @@ public sealed partial class MT5Endpoints
     /// given time range. Both bounds are seconds since 1970-01-01 and are inclusive; the range
     /// is required. The result is not paginated.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="logins">Account logins, repeated as `logins=…&amp;logins=…` query parameters.</param>
     /// <param name="from">Start of the period, in seconds since 1970-01-01.</param>
@@ -4723,7 +4750,7 @@ public sealed partial class MT5Endpoints
         if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
         if (@to is not null) qs.Add("to=" + @to.Value.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5SubscriptionHistoryListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5SubscriptionHistoryListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5SubscriptionHistory>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5SubscriptionHistory>();
     }
@@ -4809,7 +4836,7 @@ public sealed partial class MT5Endpoints
     /// succeeded but whose answer was lost subscribes the account again and charges it again.
     /// 
     /// 
-    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="body">Account login and subscription configuration identifier.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -4817,7 +4844,7 @@ public sealed partial class MT5Endpoints
     public async Task<MT5SubscriptionActionResult?> SubscriptionJoinAsync(MT5SubscriptionTarget body, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionJoin";
-        var result = await _connection.SendAsync<MT5SubscriptionActionResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5SubscriptionActionResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -4835,7 +4862,7 @@ public sealed partial class MT5Endpoints
     /// The operation is not idempotent.
     /// 
     /// 
-    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="body">Account logins and subscription configuration identifiers.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -4843,7 +4870,7 @@ public sealed partial class MT5Endpoints
     public async Task<MT5SubscriptionBatchResult?> SubscriptionJoinBatchAsync(IReadOnlyList<MT5SubscriptionTarget> body, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionJoinBatch";
-        var result = await _connection.SendAsync<MT5SubscriptionBatchResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5SubscriptionBatchResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -4854,7 +4881,7 @@ public sealed partial class MT5Endpoints
     /// that the server still keeps. The result is not paginated. An unknown login is answered
     /// with the platform error rather than with an empty list.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="login">Login of the account.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -4862,7 +4889,7 @@ public sealed partial class MT5Endpoints
     public async Task<IReadOnlyList<MT5Subscription>> SubscriptionRequestAsync(long login, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionRequest/{login.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT5SubscriptionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5SubscriptionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Subscription>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Subscription>();
     }
@@ -4874,7 +4901,7 @@ public sealed partial class MT5Endpoints
     /// names separated by commas, and the wildcards `*` (any value) and `!`
     /// (exclude), for example `demo*,!demoforex`.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="mask">Group mask: one or more comma-separated names with optional wildcards.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -4882,7 +4909,7 @@ public sealed partial class MT5Endpoints
     public async Task<IReadOnlyList<MT5Subscription>> SubscriptionRequestByGroupAsync(string mask, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionRequestByGroup/{Uri.EscapeDataString(mask)}";
-        var result = await _connection.SendAsync<MT5SubscriptionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5SubscriptionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Subscription>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Subscription>();
     }
@@ -4893,7 +4920,7 @@ public sealed partial class MT5Endpoints
     /// answered with the platform error `MT_RET_ERR_NOTFOUND` rather than with an empty
     /// record.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="id">Identifier of the subscription record.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -4901,7 +4928,7 @@ public sealed partial class MT5Endpoints
     public async Task<MT5Subscription?> SubscriptionRequestByIDAsync(long id, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionRequestByID/{id.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT5SubscriptionApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5SubscriptionApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -4912,7 +4939,7 @@ public sealed partial class MT5Endpoints
     /// exist are simply absent from the result. For a list longer than fits in the query
     /// string, request the records one by one or by account.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="ids">Identifiers of the subscription records, repeated as `ids=…&amp;ids=…` query parameters.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -4923,7 +4950,7 @@ public sealed partial class MT5Endpoints
         var qs = new List<string>();
         if (ids is not null) foreach (var v in ids) qs.Add("ids=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5SubscriptionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5SubscriptionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Subscription>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Subscription>();
     }
@@ -4934,7 +4961,7 @@ public sealed partial class MT5Endpoints
     /// exist are simply absent from the result. For a list longer than fits in the query
     /// string, request the accounts one by one or by group.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="logins">Account logins, repeated as `logins=…&amp;logins=…` query parameters.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -4945,7 +4972,7 @@ public sealed partial class MT5Endpoints
         var qs = new List<string>();
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5SubscriptionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5SubscriptionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Subscription>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Subscription>();
     }
@@ -5505,7 +5532,7 @@ public sealed partial class MT5Endpoints
     /// the quotes the connection receives, otherwise the trade server answers with an error.
     /// 
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="symbol">Symbol name, e.g. "EURUSD".</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -5513,7 +5540,7 @@ public sealed partial class MT5Endpoints
     public async Task<MT5MarketTickShort?> TickLastAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/TickLast/{Uri.EscapeDataString(symbol)}";
-        var result = await _connection.SendAsync<MT5MarketTickShortApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5MarketTickShortApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -5556,7 +5583,7 @@ public sealed partial class MT5Endpoints
     /// and the symbol must be part of the quotes the connection receives.
     /// 
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="symbol">Symbol name, e.g. "EURUSD".</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -5564,7 +5591,7 @@ public sealed partial class MT5Endpoints
     public async Task<MT5MarketTickStat?> TickStatAsync(string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/TickStat/{Uri.EscapeDataString(symbol)}";
-        var result = await _connection.SendAsync<MT5MarketTickStatApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5MarketTickStatApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -5691,7 +5718,7 @@ public sealed partial class MT5Endpoints
     /// resulting state of the account is reported to the platform journal.
     /// 
     /// 
-    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="body">Account state to apply.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -5699,7 +5726,7 @@ public sealed partial class MT5Endpoints
     public async Task<bool> TradeAccountSetAsync(TradeAccountSetRequest body, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/TradeAccountSet";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
@@ -5872,7 +5899,7 @@ public sealed partial class MT5Endpoints
     /// positions.
     /// 
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="mask">Group, comma-separated groups or a group mask.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -5880,7 +5907,7 @@ public sealed partial class MT5Endpoints
     public async Task<IReadOnlyList<MT5Account>> UserAccountGetByGroupAsync(string mask, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/UserAccountGetByGroup/{Uri.EscapeDataString(mask)}";
-        var result = await _connection.SendAsync<MT5AccountListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5AccountListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Account>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Account>();
     }
@@ -5938,7 +5965,7 @@ public sealed partial class MT5Endpoints
     /// orders and positions.
     /// 
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="group">Group name, or several groups separated by commas.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -5946,7 +5973,7 @@ public sealed partial class MT5Endpoints
     public async Task<IReadOnlyList<MT5Account>> UserAccountRequestArrayAsync(string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/UserAccountRequestArray/{Uri.EscapeDataString(group)}";
-        var result = await _connection.SendAsync<MT5AccountListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5AccountListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Account>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Account>();
     }
@@ -5957,7 +5984,7 @@ public sealed partial class MT5Endpoints
     /// of the local cache. Logins that do not exist make the call fail as a whole. The call only
     /// reads and changes nothing.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="logins">Logins to read.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -5968,7 +5995,7 @@ public sealed partial class MT5Endpoints
         var qs = new List<string>();
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5AccountListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5AccountListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Account>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Account>();
     }
@@ -6028,7 +6055,7 @@ public sealed partial class MT5Endpoints
     /// account or a failed check.
     /// 
     /// 
-    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="login">User login (account number).</param>
     /// <param name="fix">Whether the account is corrected to match its deals history.</param>
@@ -6040,7 +6067,7 @@ public sealed partial class MT5Endpoints
         var qs = new List<string>();
         if (fix is not null) qs.Add("fix=" + (fix.Value ? "true" : "false"));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5BalanceCheckResultApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5BalanceCheckResultApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -6059,7 +6086,7 @@ public sealed partial class MT5Endpoints
     /// complete one. Without the correction flag no account is written to.
     /// 
     /// 
-    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
     /// <param name="body">Logins to check and the correction flag.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -6067,7 +6094,7 @@ public sealed partial class MT5Endpoints
     public async Task<IReadOnlyList<MT5BalanceCheckResult>> UserBalanceCheckBatchAsync(MT5BalanceCheckBatchRequest body, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/UserBalanceCheckBatch";
-        var result = await _connection.SendAsync<MT5BalanceCheckResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5BalanceCheckResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5BalanceCheckResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BalanceCheckResult>();
     }
@@ -6198,6 +6225,10 @@ public sealed partial class MT5Endpoints
     /// platform does not hand the individual results back to the caller in that case. Accounts
     /// that do not exist make the call fail as a whole.
     /// 
+    /// &lt;br&gt;
+    /// The operation is not idempotent — a repeated delete reports the record as absent instead of
+    /// deleting twice.
+    /// 
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -6282,6 +6313,10 @@ public sealed partial class MT5Endpoints
     /// the open positions or the pending orders. The call works only when the gateway in use
     /// provides trading-state synchronization and the account is linked to the external system;
     /// otherwise the platform error is returned and nothing changes.
+    /// 
+    /// &lt;br&gt;
+    /// The operation is not idempotent — a repeat after an unclear outcome may create the
+    /// correcting operations a second time.
     /// 
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
@@ -6385,7 +6420,7 @@ public sealed partial class MT5Endpoints
     /// group name is given in full, including the path. The call only reads and changes nothing,
     /// and requires the pumping connection of users.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="group">Group name.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -6393,7 +6428,7 @@ public sealed partial class MT5Endpoints
     public async Task<IReadOnlyList<long>> UserLoginsAsync(string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/UserLogins/{Uri.EscapeDataString(group)}";
-        var result = await _connection.SendAsync<UInt64ListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<UInt64ListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<long>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<long>();
     }
@@ -6491,7 +6526,7 @@ public sealed partial class MT5Endpoints
     /// cached read when the freshness of the server is not required.
     /// 
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="group">Group, comma-separated groups or a group mask.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -6499,7 +6534,7 @@ public sealed partial class MT5Endpoints
     public async Task<IReadOnlyList<MT5User>> UserRequestArrayAsync(string group, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/UserRequestArray/{Uri.EscapeDataString(group)}";
-        var result = await _connection.SendAsync<MT5UserListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5UserListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5User>();
     }
@@ -6510,7 +6545,7 @@ public sealed partial class MT5Endpoints
     /// reflect changes made on the server immediately. Logins that do not exist make the call fail
     /// as a whole. The call only reads and changes nothing.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="logins">Logins to read.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -6521,7 +6556,7 @@ public sealed partial class MT5Endpoints
         var qs = new List<string>();
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5UserListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5UserListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5User>();
     }
