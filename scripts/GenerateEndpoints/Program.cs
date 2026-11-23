@@ -56,6 +56,18 @@ foreach (var (platform, ops) in byPlatform)
                 + "Async";
     }
 
+    // * Same path served by several HTTP methods (e.g. GET and POST
+    //   /DealRequestByTickets, the long-list body variant): both keep the path's
+    //   operation name, so the verb is appended to tell them apart.
+    foreach (var group in ops.GroupBy(o => o.MethodName).Where(g => g.Count() > 1))
+    {
+        if (group.Select(o => o.Path).Distinct().Count() > 1) continue;
+        foreach (var op in group)
+            op.MethodName = op.MethodName[..^"Async".Length]
+                + char.ToUpperInvariant(op.HttpMethod[0]) + op.HttpMethod[1..]
+                + "Async";
+    }
+
     // ! Loud failure on remaining collisions — silent overloads would hide spec drift.
     var dup = ops.GroupBy(o => o.MethodName).FirstOrDefault(g => g.Count() > 1);
     if (dup is not null)
@@ -266,7 +278,10 @@ internal sealed class Operation
                 {
                     "string" => $"{{Uri.EscapeDataString({p.CsName})}}",
                     "Guid" => $"{{{p.CsName}.ToString(\"D\")}}",
-                    _ => $"{{{p.CsName}.ToString(CultureInfo.InvariantCulture)}}",
+                    // * Enum path values (e.g. the password type): ToString() only —
+                    //   the IFormatProvider overload is obsolete and its argument ignored.
+                    "int" or "long" or "double" or "bool" => $"{{{p.CsName}.ToString(CultureInfo.InvariantCulture)}}",
+                    _ => $"{{{p.CsName}}}",
                 });
             }
             else
@@ -392,8 +407,13 @@ internal sealed class Operation
             return "object";
         if (type == "array")
         {
-            TryRef(schema.GetProperty("items"), out var inner);
-            return $"IReadOnlyList<{inner ?? "object"}>";
+            // * Items are either a $ref to a schema or an inline primitive
+            //   (ticket lists: array of int64 → IReadOnlyList<long>).
+            var items = schema.GetProperty("items");
+            if (TryRef(items, out var inner)) return $"IReadOnlyList<{inner}>";
+            return items.TryGetProperty("type", out var itemType)
+                ? $"IReadOnlyList<{MapPrimitive(items, itemType.GetString()!)}>"
+                : "IReadOnlyList<object>";
         }
         return MapPrimitive(schema, type!);
     }

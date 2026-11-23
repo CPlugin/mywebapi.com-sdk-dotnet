@@ -46,7 +46,7 @@ public sealed class LoopbackHub : Hub
 {
     public override async Task OnConnectedAsync()
     {
-        await Clients.Caller.SendAsync("OnConnectionStatus", new { connected = true }).ConfigureAwait(false);
+        await Clients.Caller.SendAsync("OnMT4ConnectionStatus", new { connected = true }).ConfigureAwait(false);
         await base.OnConnectedAsync().ConfigureAwait(false);
     }
 

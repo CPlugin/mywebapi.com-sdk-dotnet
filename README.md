@@ -17,11 +17,11 @@ The WebAPI works with MetaTrader 4 and MetaTrader 5 servers, so a .NET service â
 
 Typical back-office tasks, each with the SDK call that performs it. `client` is created as in [Quick start](#quick-start), `mt4` is `client.MT4(tradePlatform)` and `mt5` is `client.MT5(tradePlatform)`; DTOs live in `CPlugin.SaaSWebApi.Models`.
 
-**List open positions of a group** (MT4 `AdmTradesRequest`, MT5 `PositionByGroup`):
+**List open positions of a group** (MT4 `AdmTradesRequest`, MT5 `PositionRequestByGroup`):
 
 ```csharp
 var mt4Trades = await mt4.AdmTradesRequestAsync("real-usd", openOnly: true);
-var mt5Positions = await mt5.PositionByGroupAsync(@"real\*");
+var mt5Positions = await mt5.PositionRequestByGroupAsync(@"real\*");
 foreach (var p in mt5Positions.Items)
     Console.WriteLine($"{p.Login} {p.Symbol} {p.Volume} {p.Profit}");
 ```
@@ -59,13 +59,13 @@ await mt4.UserRecordAsync(1001, new { group = "real-vip", leverage = 200 });
 await mt5.UserRecordAsync(50001, new { leverage = 200 });
 ```
 
-**Read trade history for reports and statements** (`TradesUserHistory`, MT5 `DealByGroup`):
+**Read trade history for reports and statements** (`TradesUserHistory`, MT5 `DealRequestByGroup`):
 
 ```csharp
 var closed = await mt4.TradesUserHistoryAsync(1001,
     fromTime: new DateTimeOffset(2026, 9, 1, 0, 0, 0, TimeSpan.Zero),
     toTime: new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero));
-var mt5Deals = await mt5.DealByGroupAsync(@"real\*", limit: 1000);
+var mt5Deals = await mt5.DealRequestByGroupAsync(@"real\*", limit: 1000);
 ```
 
 **Watch margin levels** (cached snapshot of every account, then the live margin-call stream):
@@ -265,8 +265,8 @@ Both v2 hubs are first-class (`Microsoft.AspNetCore.SignalR.Client`, auto-reconn
 await using var hub = client.Realtime.MT4(tradePlatform); // or client.Realtime.MT5(...)
 
 // ! Attach handlers BEFORE StartAsync â€” the server pushes the first
-// ! OnConnectionStatus right after the handshake.
-hub.OnConnectionStatus(s => Console.WriteLine($"connected: {s.Connected}"));
+// ! OnMT4ConnectionStatus (MT5 hub: OnMT5ConnectionStatus) right after the handshake.
+hub.OnMT4ConnectionStatus(s => Console.WriteLine($"connected: {s.Connected}"));
 
 await hub.StartAsync();
 await hub.SubscribeToTicksAsync("EURUSD");

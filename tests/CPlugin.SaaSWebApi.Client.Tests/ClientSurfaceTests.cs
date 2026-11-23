@@ -17,8 +17,8 @@ public class ClientSurfaceTests
     [Fact]
     public void Generated_surface_covers_all_spec_operations()
     {
-        // ! 174 operations in clients/spec/v2.json — update alongside spec regeneration.
-        Assert.Equal(174, CountEndpointMethods(typeof(MT4Endpoints)) + CountEndpointMethods(typeof(MT5Endpoints)));
+        // ! 224 operations in clients/spec/v2.json — update alongside spec regeneration.
+        Assert.Equal(224, CountEndpointMethods(typeof(MT4Endpoints)) + CountEndpointMethods(typeof(MT5Endpoints)));
     }
 
     [Fact]
@@ -33,8 +33,12 @@ public class ClientSurfaceTests
     [Fact]
     public void MT5_surface_exposes_trade_reads()
     {
-        Assert.NotNull(typeof(MT5Endpoints).GetMethod("PositionByGroupAsync"));
-        Assert.NotNull(typeof(MT5Endpoints).GetMethod("ServerTimeAsync"));
+        Assert.NotNull(typeof(MT5Endpoints).GetMethod("PositionRequestByGroupAsync"));
+        Assert.NotNull(typeof(MT5Endpoints).GetMethod("DealRequestByGroupAsync"));
+        Assert.NotNull(typeof(MT5Endpoints).GetMethod("TimeServerAsync"));
+        // * GroupGet answers from the cache next to GroupRequest (both are part of the surface).
+        Assert.NotNull(typeof(MT5Endpoints).GetMethod("GroupGetAsync"));
+        Assert.NotNull(typeof(MT5Endpoints).GetMethod("GroupRequestAsync"));
     }
 
     [Fact]

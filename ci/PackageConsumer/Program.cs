@@ -145,7 +145,7 @@ static async Task<object> RunSignalRScenario(SignalRLoopbackServer server, Guid 
     await using var hub = new MT4V2SignalRClient(options);
     var status = new TaskCompletionSource<ConnectionStatusPayload>(TaskCreationOptions.RunContinuationsAsynchronously);
     var tick = new TaskCompletionSource<TickPayload>(TaskCreationOptions.RunContinuationsAsynchronously);
-    using var statusRegistration = hub.OnConnectionStatus(value => status.TrySetResult(value));
+    using var statusRegistration = hub.OnMT4ConnectionStatus(value => status.TrySetResult(value));
     using var tickRegistration = hub.OnTick(value => tick.TrySetResult(value));
 
     await hub.StartAsync().ConfigureAwait(false);

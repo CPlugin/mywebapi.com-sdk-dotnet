@@ -35,8 +35,8 @@ Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
 await using var hub = client.Realtime.MT4(tradePlatform);
 
 // ! Attach the status handler BEFORE StartAsync — the server pushes the first
-// ! OnConnectionStatus right after the handshake.
-hub.OnConnectionStatus(s => Console.WriteLine($"[status] platform connected: {s.Connected}"));
+// ! OnMT4ConnectionStatus right after the handshake.
+hub.OnMT4ConnectionStatus(s => Console.WriteLine($"[status] platform connected: {s.Connected}"));
 
 await hub.StartAsync(cts.Token);
 await hub.SubscribeToTicksAsync(symbol, cts.Token);

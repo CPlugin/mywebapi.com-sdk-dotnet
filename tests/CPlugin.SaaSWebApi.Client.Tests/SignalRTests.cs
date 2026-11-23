@@ -125,13 +125,15 @@ public class SignalRTests
     public void Handlers_RegistrableBeforeStart()
     {
         // ! Regression guard for the callback-before-start race (post-handshake
-        //   OnConnectionStatus push must not require a started connection to attach).
+        //   OnMT4ConnectionStatus / OnMT5ConnectionStatus push must not require a started
+        //   connection to attach).
         var mt4 = new MT4V2SignalRClient(StaticOpts());
-        using var r1 = mt4.OnConnectionStatus(_ => { });
+        using var r1 = mt4.OnMT4ConnectionStatus(_ => { });
         using var r2 = mt4.OnTick(_ => { });
+        using var r2b = mt4.OnSymbolUpdate(_ => { });
 
         var mt5 = new MT5V2SignalRClient(StaticOpts());
-        using var r3 = mt5.OnConnectionStatus(_ => { });
+        using var r3 = mt5.OnMT5ConnectionStatus(_ => { });
         using var r4 = mt5.OnMarginCall(_ => { });
     }
 

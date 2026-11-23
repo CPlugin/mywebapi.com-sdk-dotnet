@@ -2,6 +2,43 @@
 
 Versions follow [semver](https://semver.org/); while the major version is 0, a minor release may contain breaking changes, listed under **Breaking**.
 
+## 0.4.0
+
+Parity of the v2 surface: the SDK exposes the v2 contract as it stands after the server-side rework — every MT5 back-office area, the MT4 configuration operations that came back, and one naming scheme for both platforms. MT5 grows from 14 to 59 operations, MT4 from 160 to 165; the v2 document has 224 operations.
+
+### Breaking
+
+- **MT5 method names now follow the platform's own names**, as they do on MT4: `ServerTimeAsync` → `TimeServerAsync`, `OrderByGroupAsync` → `OrderGetByGroupAsync`, `DealByGroupAsync` → `DealRequestByGroupAsync`, `PositionByGroupAsync` → `PositionRequestByGroupAsync`. Pages, arguments and return types are unchanged.
+- **MT4 `GroupRecordUpdateAsync(group, body)` is gone.** Group configuration is changed with `CfgUpdateGroupAsync(MT4GroupUpdate body)`, which takes the group name in the body (`Group`) and answers `bool`. `UserRecordUpdateAsync` keeps its name but no longer takes a `login` argument — the login is in the body (`MT4UserUpdate.Login`) — and answers `bool`. Both request bodies carry only the fields that are set; an empty body is refused by the server with `ApiError.Code` = `Validation`.
+- **MT4 `SymbolsGroupsGetAsync` is gone**: the full symbol list is `SymbolsGetAllAsync()` and one symbol is `SymbolsGetAllBySymbolAsync(symbol)`; both return `MT4SymbolConfig`. The old group records are `CfgRequestSymbolGroupAsync()`.
+- **`MT4Endpoints.ManagerCommonAsync()` now returns `MT4CommonShort`** (the compact server description); the full record moved to the new `ManagerCommonExAsync()`. The old full-record behaviour is therefore a rename: call `ManagerCommonExAsync()` where the full `MT4Common` is needed.
+- **`MT5Endpoints.TicksHistoryAsync` requires `from`.** The window has no implicit start any more; pass the earliest timestamp of interest.
+- **SignalR connection-status handler renamed by platform**: `OnConnectionStatus` → `OnMT4ConnectionStatus` on `MT4V2SignalRClient` and `OnMT5ConnectionStatus` on `MT5V2SignalRClient`. The payloads (`ConnectionStatusPayload`, `MT5ConnectionStatusPayload`) are unchanged; the hubs push `OnMT4ConnectionStatus` / `OnMT5ConnectionStatus`, and there is no shared `OnConnectionStatus` event.
+
+### Added
+
+- **MT5 back-office surface** — 45 new operations, all on `MT5Endpoints`:
+  - clients: `ClientAddAsync`, `ClientRequestAsync`, `ClientDeleteAsync`, `ClientUserAddAsync`;
+  - deals: `DealRequestAsync(login, from, to)`, `DealRequestByGroupSymbolAsync(mask, symbol)`, `DealRequestByLoginsAsync(logins)`, `DealRequestByTicketsGetAsync(tickets)` (query) and `DealRequestByTicketsPostAsync(tickets)` (body, for long lists), `DealRequestByTicketAsync(ticket)`, `DealUpdateAsync`, `DealDeleteBatchAsync(tickets)`;
+  - dealer: `DealerBalanceAsync`, `DealerBalanceRawAsync`, `DealerSendAsync`;
+  - orders: `OrderRequestByGroupAsync`, `OrderRequestByGroupSymbolAsync`, `OrderRequestByTicketsAsync`, `OrderGetAsync(ticket)`, `OrderGetByLoginsAsync`, `OrderGetBySymbolAsync`, `OrderGetByTicketsAsync`, `OrderDeleteBatchAsync(tickets)`;
+  - positions: `PositionGetAsync(login)`, `PositionGetByLoginsAsync`, `PositionGetBySymbolAsync`, `PositionGetByTicketsAsync`, `PositionDeleteBatchAsync(tickets)`;
+  - history: `HistoryRequestAsync(login, from, to)`, `HistoryRequestByGroupAsync(mask)`, `HistoryRequestByTicketsAsync(tickets)`;
+  - groups: `GroupRequestAsync(group)` next to `GroupGetAsync(group)` (the cached variant), `GroupRequestArrayAsync(mask)`; `GroupRecordAsync(group, body)` remains the JSON Merge Patch update;
+  - users: `UserRequestAsync`, `UserGetByGroupAsync`, `UserGetByLoginsAsync`, `UserUpdateAsync(MT5UserUpdate body, login)`, `UserAddAsync`, `UserDeleteAsync`, `UserAccountGetAsync` / `UserAccountRequestAsync` (cached and live account state), `UserPasswordChangeAsync`, `UserPasswordCheckAsync`;
+  - symbols: `SymbolRequestArrayAsync(mask)`, `SymbolUpdateAsync(symbol, MT5SymbolUpdate body)`.
+- **MT5 `GroupGetAsync`** answers from the platform cache next to the live `GroupRequestAsync` — the same split as MT4.
+- **MT4 configuration operations that came back**: `CfgRequestCommonAsync()`, `CfgRequestGroupAsync()`, `CfgRequestSymbolGroupAsync()`, `CfgUpdateGroupAsync`, `UsersGetAsync()`.
+- **MT4 symbol subscription in the callback model**: `MT4V2SignalRClient.OnSymbolUpdate`, `SubscribeToSymbolsAsync()` and `UnsubscribeFromSymbolsAsync()` alongside the existing `StreamSymbolUpdatesAsync`. Subscriptions live until the connection closes.
+- Ticket-list request bodies (batch deletes, `HistoryRequestByTickets`, `OrderRequestByTickets`, `DealRequestByTickets` POST) are now typed `IReadOnlyList<long>` instead of an untyped list.
+
+### Changed
+
+- `spec/v2.json` regenerated from the v2 document of the branch that carries the parity work (224 operations); the endpoint facades and the DTOs are regenerated from it. The MT4 operations of the x86 sidecar (plugins, mail, news, binary external commands, snapshots, sync) are still part of the spec, so the facade keeps its full surface.
+- Every update body of MT4 (`MT4GroupUpdate`, `MT4UserUpdate`, `MT4CommonUpdate`, `MT4SymbolConfigUpdate`) uses nullable fields: the SDK sends only the fields that are set, so a change touches nothing else.
+- The generator names a method after its path as before; when one path serves several HTTP methods, the verb is appended (`DealRequestByTicketsGetAsync` / `DealRequestByTicketsPostAsync`).
+- Access rights of the changed MT4 and MT5 operations are checked by effect on the server (balance fix and symbol maintenance require update rights, `TradeTransaction` requires update, `DealRequestByTicket` requires order rights). No SDK change is needed, but a client whose role had only the old narrower right receives `Forbidden`.
+
 ## 0.3.4
 
 Market data of MT5 v2 — historical bars and ticks over REST, live ticks over the hub — and batched ticks on both hubs. Additive: existing methods and signatures are unchanged.
