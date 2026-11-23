@@ -20,9 +20,9 @@ namespace CPlugin.SaaSWebApi.Client;
 ///   <item><description>Construct — synchronous; resolves the auth path and pre-computes
 ///   the hub URL but does NOT open the connection.</description></item>
 ///   <item><description>Attach callback handlers (<see cref="OnTick"/> /
-///   <see cref="OnConnectionStatus"/>) — allowed BEFORE <see cref="StartAsync"/>; queued
+///   <see cref="OnMT4ConnectionStatus"/>) — allowed BEFORE <see cref="StartAsync"/>; queued
 ///   handlers are drained onto the connection before the handshake, so the server's
-///   immediate post-handshake <c>OnConnectionStatus</c> push is never missed.</description></item>
+///   immediate post-handshake <c>OnMT4ConnectionStatus</c> push is never missed.</description></item>
 ///   <item><description><see cref="StartAsync"/> — opens the connection. The access token
 ///   is fetched via the provider on every (re)connect.</description></item>
 ///   <item><description>Consume streams with <c>await foreach</c>.</description></item>
@@ -169,11 +169,11 @@ public sealed class MT4V2SignalRClient : IAsyncDisposable
         var conn = builder.Build();
 
         // * Default sink so stream-only consumers don't trigger the "no handler for
-        //   OnConnectionStatus" warning (the server always pushes one after handshake).
-        conn.On("OnConnectionStatus", (ConnectionStatusPayload _) => { });
+        //   OnMT4ConnectionStatus" warning (the server always pushes one after handshake).
+        conn.On("OnMT4ConnectionStatus", (ConnectionStatusPayload _) => { });
 
         // ! Drain queued handlers BEFORE conn.StartAsync() so the post-handshake
-        // ! OnConnectionStatus push cannot race past them.
+        // ! OnMT4ConnectionStatus push cannot race past them.
         lock (_gate)
         {
             _connection = conn;
@@ -224,11 +224,18 @@ public sealed class MT4V2SignalRClient : IAsyncDisposable
     public IDisposable OnTicksBatch(Action<TicksBatchPayload> handler) =>
         Register(c => c.On("OnTicksBatch", handler));
 
-    /// <summary>Register a handler for the <c>OnConnectionStatus</c> callback the server
+    /// <summary>Register a handler for the <c>OnMT4ConnectionStatus</c> callback the server
     /// pushes right after the handshake completes. Attach BEFORE <see cref="StartAsync"/>
     /// to be guaranteed the initial push.</summary>
-    public IDisposable OnConnectionStatus(Action<ConnectionStatusPayload> handler) =>
-        Register(c => c.On("OnConnectionStatus", handler));
+    public IDisposable OnMT4ConnectionStatus(Action<ConnectionStatusPayload> handler) =>
+        Register(c => c.On("OnMT4ConnectionStatus", handler));
+
+    /// <summary>Register a handler for server-pushed <c>OnSymbolUpdate</c> callbacks — symbol
+    /// configuration of the bound platform added, changed or removed, for subscriptions made
+    /// with <see cref="SubscribeToSymbolsAsync"/>. For the stream model use
+    /// <see cref="StreamSymbolUpdatesAsync"/>. May be called before <see cref="StartAsync"/>.</summary>
+    public IDisposable OnSymbolUpdate(Action<SymbolUpdatePayload> handler) =>
+        Register(c => c.On("OnSymbolUpdate", handler));
 
     public Task SubscribeToTicksAsync(string symbol, CancellationToken ct = default) =>
         GetConnection().InvokeAsync("SubscribeToTicks", symbol, ct);
@@ -248,6 +255,7 @@ public sealed class MT4V2SignalRClient : IAsyncDisposable
     /// 20..60000, default 200. The server rejects any other value.</param>
     /// <param name="maxBatchSize">Maximum ticks per message: 1..10000, default 200.
     /// Reaching it sends the batch at once. The server rejects any other value.</param>
+    /// <param name="ct">Cancellation token.</param>
     public Task SubscribeToTicksBatchAsync(
         string symbol,
         int intervalMs = 200,
@@ -255,10 +263,25 @@ public sealed class MT4V2SignalRClient : IAsyncDisposable
         CancellationToken ct = default) =>
         GetConnection().InvokeAsync("SubscribeToTicksBatch", symbol, intervalMs, maxBatchSize, ct);
 
+    /// <summary>Subscribe to symbol-configuration changes of the bound platform for the
+    /// callback model (see <see cref="OnSymbolUpdate"/>); every change arrives as one
+    /// <c>OnSymbolUpdate</c> event. Subscriptions live until the connection closes.
+    /// Use <see cref="StreamSymbolUpdatesAsync"/> for the stream model. Requires a started
+    /// connection.</summary>
+    public Task SubscribeToSymbolsAsync(CancellationToken ct = default) =>
+        GetConnection().InvokeAsync("SubscribeToSymbols", ct);
+
+    /// <summary>Stop the symbol-configuration subscription made with
+    /// <see cref="SubscribeToSymbolsAsync"/>. Tick subscriptions are not affected.
+    /// Requires a started connection.</summary>
+    public Task UnsubscribeFromSymbolsAsync(CancellationToken ct = default) =>
+        GetConnection().InvokeAsync("UnsubscribeFromSymbols", ct);
+
     /// <summary>Stop the batched subscription of this connection for the given symbol
     /// made with <see cref="SubscribeToTicksBatchAsync"/>. Ticks of other symbols and the
     /// per-tick subscriptions are not affected. Requires a started connection.</summary>
     /// <param name="symbol">Symbol passed to <see cref="SubscribeToTicksBatchAsync"/>.</param>
+    /// <param name="ct">Cancellation token.</param>
     public Task UnsubscribeFromTicksBatchAsync(string symbol, CancellationToken ct = default) =>
         GetConnection().InvokeAsync("UnsubscribeFromTicksBatch", symbol, ct);
 

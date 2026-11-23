@@ -6,10 +6,10 @@ namespace CPlugin.SaaSWebApi.Client;
 /// <summary>Registration handle for hub callbacks attached <b>before</b> the connection
 /// is built. The attach action runs when the connection materialises (inside
 /// <c>StartAsync</c>, before the WebSocket handshake), so early server pushes — e.g. the
-/// post-handshake <c>OnConnectionStatus</c> — are never missed.</summary>
+/// post-handshake <c>OnMT4ConnectionStatus</c> / <c>OnMT5ConnectionStatus</c> — are never missed.</summary>
 /// <remarks>
 /// // ! This mirrors the pending-handlers fix from the TypeScript SDK (race-free
-/// //   OnConnectionStatus): handlers queued pre-start are drained onto the
+/// //   OnMT4ConnectionStatus): handlers queued pre-start are drained onto the
 /// //   HubConnection BEFORE conn.StartAsync().
 /// </remarks>
 internal sealed class DeferredRegistration : IDisposable

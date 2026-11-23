@@ -19,7 +19,7 @@ namespace CPlugin.SaaSWebApi.Client;
 /// before the handshake) → <see cref="StartAsync"/> → consume → <see cref="StopAsync"/> /
 /// <see cref="DisposeAsync"/>.</para>
 /// <para>Server contract (<c>WebAPI/Hubs/MT5/v2/MT5V2Hub.cs</c>): callbacks
-/// <c>OnConnectionStatus</c>, <c>OnTick</c> and <c>OnTicksBatch</c>; streams <c>StreamTicks</c>
+/// <c>OnMT5ConnectionStatus</c>, <c>OnTick</c> and <c>OnTicksBatch</c>; streams <c>StreamTicks</c>
 /// and <c>StreamMarginCallUpdates</c>; hub methods <c>SubscribeToTicks</c>,
 /// <c>UnsubscribeFromTicks</c>, <c>SubscribeToTicksBatch</c> and
 /// <c>UnsubscribeFromTicksBatch</c>. The trade platform is bound by the connection's
@@ -148,11 +148,11 @@ public sealed class MT5V2SignalRClient : IAsyncDisposable
         var conn = builder.Build();
 
         // * Default sink so stream-only consumers don't trigger the "no handler for
-        //   OnConnectionStatus" warning (the server always pushes one after handshake).
-        conn.On("OnConnectionStatus", (MT5ConnectionStatusPayload _) => { });
+        //   OnMT5ConnectionStatus" warning (the server always pushes one after handshake).
+        conn.On("OnMT5ConnectionStatus", (MT5ConnectionStatusPayload _) => { });
 
         // ! Drain queued handlers BEFORE conn.StartAsync() so the post-handshake
-        // ! OnConnectionStatus push cannot race past them.
+        // ! OnMT5ConnectionStatus push cannot race past them.
         lock (_gate)
         {
             _connection = conn;
@@ -189,11 +189,11 @@ public sealed class MT5V2SignalRClient : IAsyncDisposable
 
     // ===== Callback-style handlers (registrable before StartAsync) =====
 
-    /// <summary>Register a handler for the <c>OnConnectionStatus</c> callback — the server
+    /// <summary>Register a handler for the <c>OnMT5ConnectionStatus</c> callback — the server
     /// pushes one right after the handshake and on every platform connection state change.
     /// Attach BEFORE <see cref="StartAsync"/> to be guaranteed the initial push.</summary>
-    public IDisposable OnConnectionStatus(Action<MT5ConnectionStatusPayload> handler) =>
-        Register(c => c.On("OnConnectionStatus", handler));
+    public IDisposable OnMT5ConnectionStatus(Action<MT5ConnectionStatusPayload> handler) =>
+        Register(c => c.On("OnMT5ConnectionStatus", handler));
 
     /// <summary>Register a handler for server-pushed <c>OnMarginCall</c> callbacks.</summary>
     public IDisposable OnMarginCall(Action<MT5MarginCallPayload> handler) =>
@@ -237,6 +237,7 @@ public sealed class MT5V2SignalRClient : IAsyncDisposable
     /// milliseconds: 20..60000, default 200. The server rejects any other value.</param>
     /// <param name="maxBatchSize">Upper bound on ticks per event: 1..10000, default 200.
     /// Reaching it sends the batch at once. The server rejects any other value.</param>
+    /// <param name="ct">Cancellation token.</param>
     public Task SubscribeToTicksBatchAsync(
         string symbol,
         int intervalMs = 200,
@@ -248,6 +249,7 @@ public sealed class MT5V2SignalRClient : IAsyncDisposable
     /// <see cref="SubscribeToTicksBatchAsync"/>. Unsubscribing a symbol that is not
     /// subscribed does nothing. Requires a started connection.</summary>
     /// <param name="symbol">Symbol passed to <see cref="SubscribeToTicksBatchAsync"/>.</param>
+    /// <param name="ct">Cancellation token.</param>
     public Task UnsubscribeFromTicksBatchAsync(string symbol, CancellationToken ct = default) =>
         GetConnection().InvokeAsync("UnsubscribeFromTicksBatch", symbol, ct);
 

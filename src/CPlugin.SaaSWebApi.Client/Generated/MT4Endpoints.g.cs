@@ -657,15 +657,17 @@ public sealed partial class MT4Endpoints
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
-    /// <summary>Get common config (live)</summary>
+    /// <summary>Get common server configuration</summary>
     /// <remarks>
-    /// Server-wide MT4 common configuration via the platform's `CfgRequestCommon` Manager-live read.
+    /// The common server record as the configuration system returns it, read live from
+    /// the trade server on every call.
     /// 
-    /// Manager-live read (round-trip to MT4 server) — sibling of
-    /// `ManagerCommon`. Returns the same curated `MT4Common` DTO
-    /// (Name/Owner/Build/Version/TimeZone), but sourced via the
-    /// configuration-system entry point rather than the manager-context one.
-    /// Pump cache is NOT consulted; data reflects the live server state.
+    /// Same fields as `ManagerCommonEx`; the difference is the source: this call
+    /// goes through the configuration interface rather than the manager connection, and
+    /// is the read that `CfgUpdateCommon` writes back.
+    /// 
+    /// Requires the settings permission, not the sensitive one — a client that may
+    /// change common settings but not read the server's infrastructure can still use it.
     /// 
     /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
@@ -823,6 +825,29 @@ public sealed partial class MT4Endpoints
         return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
 
+    /// <summary>List trading groups (live configuration)</summary>
+    /// <remarks>
+    /// Manager (live) call returning the group configuration set as stored on
+    /// the MT4 server — the same data the platform persists for
+    /// `CfgUpdateGroup`, unlike the pump-cached `GroupsGet`.
+    /// 
+    /// Curated DTO: SMTP credentials and template paths are dropped, and the
+    /// nested security/margin arrays are served by their own endpoints. Order
+    /// follows the server response. Typical group counts are small, so no
+    /// pagination is needed.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT4Group>> CfgRequestGroupAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT4/{_tradePlatform:D}/CfgRequestGroup";
+        var result = await _connection.SendAsync<MT4GroupListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4Group>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4Group>();
+    }
+
     /// <summary>List holiday config</summary>
     /// <remarks>
     /// All holiday-calendar entries configured on the MT4 server, paginated.
@@ -973,6 +998,29 @@ public sealed partial class MT4Endpoints
         var result = await _connection.SendAsync<MT4SymbolConfigApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>List symbol groups (live configuration)</summary>
+    /// <remarks>
+    /// Configured security (symbol) groups — the set that
+    /// `CfgUpdateSymbolGroup` edits by position. The server's
+    /// configuration store is read directly, so the answer reflects a
+    /// just-saved change.
+    /// 
+    /// Each entry carries only the group name and description. The response
+    /// order is the platform's own list order and is what the position-based
+    /// mutator expects.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT4SymbolGroup>> CfgRequestSymbolGroupAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT4/{_tradePlatform:D}/CfgRequestSymbolGroup";
+        var result = await _connection.SendAsync<MT4SymbolGroupListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4SymbolGroup>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4SymbolGroup>();
     }
 
     /// <summary>List sync rules</summary>
@@ -1360,13 +1408,11 @@ public sealed partial class MT4Endpoints
 
     /// <summary>Update common config</summary>
     /// <remarks>
-    /// Update server-wide common settings — Type 1 mutator.
-    /// 
-    /// Manager (live) call. Reads the current `ConCommon` from the
-    /// MT4 server, overlays the fields in `MT4CommonUpdate` onto it
-    /// (secret-preservation: fields not in the DTO keep their server
-    /// value), and writes the merged struct back via
-    /// `CfgUpdateCommon`.
+    /// Change server-wide common settings. Only the fields present in the body are written: the
+    /// current record is read from the trade server, the body is applied over it, and the merged
+    /// record is written back. A field that is left out keeps its server value; for the string
+    /// fields, omitting the key keeps the value while sending `""` clears it. A body without
+    /// any field is rejected.
     /// 
     /// Preserved fields the DTO does not touch:
     /// &lt;list type="bullet"&gt;&lt;item&gt;Runtime counters (LastOrder, LastLogin, LostLogin,
@@ -1379,7 +1425,7 @@ public sealed partial class MT4Endpoints
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="body">Replacement fields. Omitted fields keep their server value.</param>
+    /// <param name="body">Fields to change. Omitted fields keep their server value.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT4Common?> CfgUpdateCommonAsync(MT4CommonUpdate body, CallOptions? options = null)
@@ -1510,6 +1556,34 @@ public sealed partial class MT4Endpoints
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
+    /// <summary>Update trading group</summary>
+    /// <remarks>
+    /// Change a trading group. The `group` field of the body names the target group and is
+    /// never changed; the response is a boolean.
+    /// 
+    /// Only the fields present in the body are written: the group is read live from the trade
+    /// server, the body is applied over it, and the merged record is written back. A field that
+    /// is left out keeps its server value; for the string fields, omitting the key keeps the
+    /// value while sending `""` clears it. Fields the body cannot carry (SMTP credentials,
+    /// templates, the securities hash, reserved and nested arrays) keep their server values. A
+    /// body with the group name but no field to change is rejected.
+    /// 
+    /// Idempotency-Key strongly recommended: the change applies to every
+    /// account in the group at once.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Group name plus the fields to change; omitted fields keep their server value</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> CfgUpdateGroupAsync(MT4GroupUpdate body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT4/{_tradePlatform:D}/CfgUpdateGroup";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
     /// <summary>Update holiday entry</summary>
     /// <remarks>
     /// Update a holiday-calendar entry at a given list position — Type 1 mutator.
@@ -1615,7 +1689,7 @@ public sealed partial class MT4Endpoints
     /// Update a symbol's full configuration — Type 1 mutator with secret-preservation read.
     /// 
     /// Completes the User/Group/Symbol Type 1 mutator triad. Same flow as
-    /// `UserRecordUpdate` and `GroupRecordUpdate`: read the existing
+    /// `UserRecordUpdate` and `CfgUpdateGroup`: read the existing
     /// `ConSymbol` from MT4 server, overlay the
     /// `MT4SymbolConfigUpdate` DTO over it, write the merged structure
     /// back. Preserves the `Sessions` nested array, reserved/unused
@@ -2116,41 +2190,6 @@ public sealed partial class MT4Endpoints
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
-    /// <summary>Update trading group</summary>
-    /// <remarks>
-    /// Update a group configuration — Type 1 mutator with secret-preservation read.
-    /// 
-    /// &lt;br&gt;
-    /// Same flow as `UserRecordUpdate`: read the existing
-    /// `ConGroup` from the MT4 server, overlay the
-    /// `MT4GroupUpdate` DTO over the in-memory record, write the
-    /// merged structure back. Preserves SMTP credentials, template paths,
-    /// SecuritiesHash, reserved arrays, the nested SecGroups/SecMargins
-    /// arrays, and NewsLanguages — none of those are on the input DTO so
-    /// they survive untouched.
-    /// &lt;br&gt;
-    /// Wraps the platform's `CfgUpdateGroup` — v2 renames to
-    /// `GroupRecordUpdate` for consistency with
-    /// `UserRecordUpdate`; the underlying platform call is the same as
-    /// v1's `POST CfgUpdateGroup` endpoint.
-    /// &lt;br&gt;
-    /// Idempotency-Key strongly recommended for safe retries.
-    /// 
-    /// 
-    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
-    /// </remarks>
-    /// <param name="group">Group name (path parameter, max 16 chars, immutable identity)</param>
-    /// <param name="body">Replacement fields. Omitted-from-DTO fields are preserved server-side.</param>
-    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
-    /// <exception cref="ApiError">The response envelope carried an error.</exception>
-    public async Task<MT4Group?> GroupRecordUpdateAsync(string group, MT4GroupUpdate body, CallOptions? options = null)
-    {
-        var url = $"api/v2/MT4/{_tradePlatform:D}/GroupRecordUpdate/{Uri.EscapeDataString(group)}";
-        var result = await _connection.SendAsync<MT4GroupApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
-        var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
-    }
-
     /// <summary>Get group security entries</summary>
     /// <remarks>
     /// Security-group entries (`SecGroups[32]`) for one trading group.
@@ -2386,21 +2425,45 @@ public sealed partial class MT4Endpoints
         return (IReadOnlyList<MT4MailBox>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4MailBox>();
     }
 
-    /// <summary>Get manager common settings</summary>
+    /// <summary>Get server common settings</summary>
     /// <remarks>
-    /// Server-wide MT4 trade server settings (curated subset).
+    /// Server name, protocol version and build, time zone, and the state of
+    /// the operational subsystems — the part of the server record that does
+    /// not describe the server's infrastructure.
     /// 
-    /// Returns MT4Common DTO — server name, broker, server version/build,
-    /// time zone. Schema is decoupled from the platform's ConCommon: v2
-    /// clients are protected from MetaQuotes schema changes.
+    /// The administrative fields (storage paths, bind and web addresses,
+    /// adapter list, reserved block) are not included; use
+    /// `ManagerCommonEx` when they are needed.
     /// 
     /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
-    public async Task<MT4Common?> ManagerCommonAsync(CallOptions? options = null)
+    public async Task<MT4CommonShort?> ManagerCommonAsync(CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/ManagerCommon";
+        var result = await _connection.SendAsync<MT4CommonShortApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Get full server common settings</summary>
+    /// <remarks>
+    /// The complete server record: identity, protocol version, socket and
+    /// feed timeouts, bind and web address lists, storage paths, runtime
+    /// counters, and the operational subsystems (demo accounts, rollover,
+    /// statements, live update).
+    /// 
+    /// Requires the sensitive-settings permission: the record describes the
+    /// server's infrastructure, not only its public identity.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT4Common?> ManagerCommonExAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT4/{_tradePlatform:D}/ManagerCommonEx";
         var result = await _connection.SendAsync<MT4CommonApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
@@ -2501,7 +2564,7 @@ public sealed partial class MT4Endpoints
     /// see the body once the pump has retrieved it. The payload is a sentinel
     /// `true` meaning "request dispatched".
     /// 
-    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="key">News item key (from NewsGet/NewsTopicGet)</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -2509,7 +2572,7 @@ public sealed partial class MT4Endpoints
     public async Task<bool> NewsBodyRequestAsync(int key, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/NewsBodyRequest/{key.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
@@ -2999,17 +3062,12 @@ public sealed partial class MT4Endpoints
 
     /// <summary>Add symbol</summary>
     /// <remarks>
-    /// Add a symbol to the platform's active set — Type 1 mutator.
+    /// Add a symbol to the platform's active set.
     /// 
     /// Promotes a configured symbol into the platform's currently-pumping
     /// set so it starts receiving ticks and accepting orders. Reversible via
-    /// `SymbolHide`.
-    /// 
-    /// v1 exposes this as `GET /api/MT4/{tp}/SymbolAdd/{symbol}` — that
-    /// is a historical REST violation (GET should be safe/idempotent). v2
-    /// corrects the verb to POST without changing the platform behaviour. The
-    /// path stays the same to keep traceability with the underlying platform
-    /// method name; only the HTTP verb changes.
+    /// `SymbolHide`. The call changes server state, so it is a POST and
+    /// is safe to retry only with an `Idempotency-Key`.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -3072,11 +3130,11 @@ public sealed partial class MT4Endpoints
 
     /// <summary>Hide symbol</summary>
     /// <remarks>
-    /// Hide a symbol from the platform's active set — Type 1 mutator.
+    /// Hide a symbol from the platform's active set.
     /// 
     /// Removes the symbol from the active subscription set; ticks stop flowing
     /// and orders are no longer accepted for that symbol. Reversible via
-    /// `SymbolAdd`. v1 exposes this as a GET — v2 fixes to POST.
+    /// `SymbolAdd`.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -3201,34 +3259,57 @@ public sealed partial class MT4Endpoints
         return (IReadOnlyList<MT4SymbolDaySessions>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4SymbolDaySessions>();
     }
 
-    /// <summary>List symbol groups (cached)</summary>
+    /// <summary>List symbols (pumping)</summary>
     /// <remarks>
-    /// All configured symbol groups (security categories) from the pump cache.
+    /// Every symbol configured on the MT4 server, read through the pumping
+    /// connection and mapped to the same configuration shape as
+    /// `CfgRequestSymbol`.
     /// 
-    /// Pump-cached read — returns the broker-configured security groups
-    /// (e.g. "Forex", "CFD", "Metals"). Each entry only carries Name and
-    /// Description; ConSymbolGroup has no additional fields on the
-    /// MT4-side struct.
+    /// Uses the streaming (pumping) manager object rather than the request
+    /// manager, so it works while the platform is streamed by this instance.
+    /// The data itself is a full server-side read — typical platforms have
+    /// dozens to hundreds of symbols with 50+ fields each.
     /// 
     /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
-    public async Task<IReadOnlyList<MT4SymbolGroup>> SymbolsGroupsGetAsync(CallOptions? options = null)
+    public async Task<IReadOnlyList<MT4SymbolConfig>> SymbolsGetAllAsync(CallOptions? options = null)
     {
-        var url = $"api/v2/MT4/{_tradePlatform:D}/SymbolsGroupsGet";
-        var result = await _connection.SendAsync<MT4SymbolGroupListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var url = $"api/v2/MT4/{_tradePlatform:D}/SymbolsGetAll";
+        var result = await _connection.SendAsync<MT4SymbolConfigListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
-        return (IReadOnlyList<MT4SymbolGroup>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4SymbolGroup>();
+        return (IReadOnlyList<MT4SymbolConfig>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4SymbolConfig>();
+    }
+
+    /// <summary>Get symbol (pumping)</summary>
+    /// <remarks>
+    /// Single symbol configuration by name, read through the pumping
+    /// connection. Same shape as one element of `SymbolsGetAll`.
+    /// 
+    /// Returns NotFound envelope when no symbol with the given name is
+    /// configured on the server. Symbol names are case-sensitive.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="symbol">Symbol name (max 12 chars, e.g. EURUSD)</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT4SymbolConfig?> SymbolsGetAllBySymbolAsync(string symbol, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT4/{_tradePlatform:D}/SymbolsGetAll/{Uri.EscapeDataString(symbol)}";
+        var result = await _connection.SendAsync<MT4SymbolConfigApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Refresh symbol catalog</summary>
     /// <remarks>
-    /// Refresh the symbol catalog from MT4 server — Type 1 mutator (no body).
+    /// Reload the platform's symbol catalog from the MT4 server.
     /// 
-    /// Forces the platform to reload its symbol catalog. Useful after admin
-    /// tooling has added/edited symbols on the MT4 server side. v1 exposes
-    /// this as GET — v2 fixes to POST (mutation of the platform's local state).
+    /// Useful after administrative tooling has added or edited symbols on the
+    /// trade server itself. The call changes the platform's local state, so it
+    /// is a POST.
     /// 
     /// **Timeout:** 60 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
@@ -3751,7 +3832,7 @@ public sealed partial class MT4Endpoints
     /// is supported but rarely useful — pin if your retry policy expects the
     /// same answer across attempts.
     /// 
-    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="login">Account login (positive integer)</param>
     /// <param name="body">Candidate password (JSON-encoded string body)</param>
@@ -3760,7 +3841,7 @@ public sealed partial class MT4Endpoints
     public async Task<bool> UserPasswordCheckAsync(int login, string body, CallOptions? options = null)
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/UserPasswordCheck/{login.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
@@ -3910,40 +3991,30 @@ public sealed partial class MT4Endpoints
 
     /// <summary>Update account</summary>
     /// <remarks>
-    /// Update an account record — Type 1 mutator with secret-preservation read.
+    /// Change an account. The `login` field of the body identifies the account and is never
+    /// changed; the response is a boolean.
     /// 
-    /// &lt;br&gt;
-    /// Surface-level Type 1 semantics: client submits the full `MT4UserUpdate`
-    /// DTO and the server writes it back. Implementation requires an extra
-    /// read step because the platform `UserRecord` struct contains
-    /// secret/computed/read-only fields the v2 input DTO deliberately omits
-    /// (Password, OTPSecret, LastDate, etc.). Without the read step those
-    /// would be zeroed out by the write.
-    /// &lt;br&gt;
-    /// Flow:
-    /// &lt;list type="number"&gt;&lt;item&gt;Fetch the existing record via `UserRecordsRequest` (live, not pump cache).&lt;/item&gt;&lt;item&gt;Apply the DTO over the in-memory record using `ApplyTo`. Secrets and read-only fields are `[MapperIgnoreTarget]`'d so they survive.&lt;/item&gt;&lt;item&gt;Write the modified record back via `UserRecordUpdate`.&lt;/item&gt;&lt;/list&gt;&lt;br&gt;&lt;b&gt;This is NOT Type 2.&lt;/b&gt; Type 2 mutators (single-field) are deferred
-    /// to a later release and will accept just the field name + value, doing
-    /// the read-modify-write entirely server-side. Both flows happen to use
-    /// the same read-modify-write structure on the implementation side — the
-    /// difference is what the client submits.
-    /// &lt;br&gt;
-    /// Idempotency-Key is strongly recommended; without it a retried update
-    /// risks silently overwriting concurrent edits that happened between
-    /// the original send and the retry.
+    /// Only the fields present in the body are written: the record is read live from the trade
+    /// server, the body is applied over it, and the merged record is written back. A field that
+    /// is left out keeps its server value; for the string fields, omitting the key keeps the
+    /// value while sending `""` clears it. Server-assigned and secret values (passwords, OTP
+    /// secret, registration date, last login, previous-period balances) always keep their server
+    /// values. A body with the login but no field to change is rejected.
     /// 
+    /// Idempotency-Key strongly recommended: a change to the account affects
+    /// trading immediately, and a blind retry can overwrite concurrent edits.
     /// 
     /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
     /// </remarks>
-    /// <param name="login">Account login (positive integer)</param>
-    /// <param name="body">Replacement fields. Omitted-from-DTO fields are preserved server-side.</param>
+    /// <param name="body">Account login plus the fields to change; omitted fields keep their server value</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
-    public async Task<MT4User?> UserRecordUpdateAsync(int login, MT4UserUpdate body, CallOptions? options = null)
+    public async Task<bool> UserRecordUpdateAsync(MT4UserUpdate body, CallOptions? options = null)
     {
-        var url = $"api/v2/MT4/{_tradePlatform:D}/UserRecordUpdate/{login.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT4UserApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var url = $"api/v2/MT4/{_tradePlatform:D}/UserRecordUpdate";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
-        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Get accounts batch (live)</summary>
@@ -3970,6 +4041,31 @@ public sealed partial class MT4Endpoints
         var qs = new List<string>();
         if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4User>();
+    }
+
+    /// <summary>List accounts (cached)</summary>
+    /// <remarks>
+    /// Every account stored in the pump cache of the connected trade platform.
+    /// 
+    /// Pump-cached read — instant local lookup, no MT4 round-trip. Accounts are
+    /// keyed by login; the response is the values-only list of the cache. Same
+    /// curated DTO as the single-account endpoints: passwords, OTP secret and
+    /// the API blob never cross the boundary.
+    /// 
+    /// A cold cache (fresh connection) answers with an empty list until the
+    /// pump has flushed its first snapshot — use `UsersRequest` when a
+    /// guaranteed live answer is required.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT4User>> UsersGetAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT4/{_tradePlatform:D}/UsersGet";
         var result = await _connection.SendAsync<MT4UserListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT4User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4User>();
