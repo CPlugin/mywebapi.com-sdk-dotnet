@@ -2076,6 +2076,48 @@ public sealed partial class MT4Endpoints
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
+    /// <summary>Get the exposure of every currency</summary>
+    /// <remarks>
+    /// Net broker exposure per currency: the client volume the broker holds
+    /// and the coverage volume it carries, both in the currency of the record.
+    /// 
+    /// Calculated over the orders open at the moment of the call. Only
+    /// currencies with outstanding orders appear in the answer; an empty list
+    /// means the broker holds no open position at all.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT4ExposureValue>> ExposureGetAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT4/{_tradePlatform:D}/ExposureGet";
+        var result = await _connection.SendAsync<MT4ExposureValueListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4ExposureValue>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4ExposureValue>();
+    }
+
+    /// <summary>Get the exposure of one currency</summary>
+    /// <remarks>
+    /// The broker exposure record of a single currency — the same figures the
+    /// full list carries, for a currency named in the request.
+    /// 
+    /// A currency with no outstanding exposure answers with the platform's
+    /// not-found code in the error envelope rather than a zeroed record.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="currency">Currency code to report (e.g. USD)</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT4ExposureValue?> ExposureValueGetAsync(string currency, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT4/{_tradePlatform:D}/ExposureValueGet/{Uri.EscapeDataString(currency)}";
+        var result = await _connection.SendAsync<MT4ExposureValueApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
     /// <summary>Send plugin command (binary)</summary>
     /// <remarks>
     /// Pass arbitrary binary payload to the MT4 server's plugin pipeline.
@@ -2359,6 +2401,54 @@ public sealed partial class MT4Endpoints
     {
         var url = $"api/v2/MT4/{_tradePlatform:D}/LicenseCheck/{Uri.EscapeDataString(licenseName)}";
         var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Set the logging mode of the Manager API connection</summary>
+    /// <remarks>
+    /// Switches the Manager API log of the connection that serves this request
+    /// on or off.
+    /// 
+    /// The setting belongs to the connection, not to the trade server: it
+    /// affects only the traffic of the connection pool that answered this
+    /// call, it is not persisted, and it returns to the enabled default when
+    /// that connection is re-established. Other connections of the same trade
+    /// platform, and other trade platforms, are not affected.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="body">Mode to apply</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> LogsModeAsync(MT4LogsModeRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT4/{_tradePlatform:D}/LogsMode";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Write a record to the Manager API log</summary>
+    /// <remarks>
+    /// Files one entry in the trade server's Manager API log under the
+    /// connection that serves this request: the result code, the source and
+    /// the message supplied in the body.
+    /// 
+    /// The call has no return value of its own — the platform reports
+    /// success by returning at all — so the answer is a bare `true` once
+    /// the entry is filed. Logging must be enabled on the connection (see
+    /// `LogsMode`) for the entry to be kept.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="body">Entry to file</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> LogsOutAsync(MT4LogsOutRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT4/{_tradePlatform:D}/LogsOut";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
@@ -3060,6 +3150,122 @@ public sealed partial class MT4Endpoints
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
+    /// <summary>Get the summary currency</summary>
+    /// <remarks>
+    /// Currency the trade server reports its summary in — the deposit currency
+    /// of the server, which is also the currency the summary profit is
+    /// expressed in.
+    /// 
+    /// The value is a short code (three letters in practice). A server that
+    /// has none configured answers with an empty string.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="maxChars">Buffer size for the currency code, in characters (4–256, default 64)</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<string?> SummaryCurrencyAsync(int? maxChars = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT4/{_tradePlatform:D}/SummaryCurrency";
+        var qs = new List<string>();
+        if (maxChars is not null) qs.Add("maxChars=" + maxChars.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Get the summary of one symbol</summary>
+    /// <remarks>
+    /// Position of all client and coverage orders in one symbol: order counts,
+    /// buy and sell volumes, average prices and the profit carried at the
+    /// moment of the call.
+    /// 
+    /// The figures are calculated by the trade server over the orders it holds
+    /// now, not over the trade history. A symbol with no open orders answers
+    /// with zero volumes. A symbol that does not exist on the server answers
+    /// with the platform's not-found code in the error envelope.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="symbol">Symbol name (e.g. EURUSD)</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT4SymbolSummary?> SummaryGetAsync(string symbol, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT4/{_tradePlatform:D}/SummaryGet/{Uri.EscapeDataString(symbol)}";
+        var result = await _connection.SendAsync<MT4SymbolSummaryApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Get the summary of every symbol</summary>
+    /// <remarks>
+    /// One summary record per symbol the trade server holds — the same shape
+    /// as the single-symbol read, for the whole symbol list at once.
+    /// 
+    /// The figures are a live calculation over the orders open at the moment
+    /// of the call, so two calls in a row usually differ. Symbols with no open
+    /// orders are included with zero volumes.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT4SymbolSummary>> SummaryGetAllAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT4/{_tradePlatform:D}/SummaryGetAll";
+        var result = await _connection.SendAsync<MT4SymbolSummaryListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT4SymbolSummary>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4SymbolSummary>();
+    }
+
+    /// <summary>Get the summary of a symbol by its position in the symbol list</summary>
+    /// <remarks>
+    /// The same summary record as the single-symbol read, addressed by the
+    /// symbol's position in the server's symbol list instead of by name —
+    /// useful for walking the whole list without naming every symbol.
+    /// 
+    /// A position outside the list answers with the platform's invalid-data
+    /// code in the error envelope. Positions are not stable across a symbol
+    /// list change (a symbol added or removed shifts the ones after it).
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="count">Zero-based position of the symbol in the server's symbol list</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT4SymbolSummary?> SummaryGetByCountAsync(int count, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT4/{_tradePlatform:D}/SummaryGetByCount/{count.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT4SymbolSummaryApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Get the summary of a symbol by its group</summary>
+    /// <remarks>
+    /// The same summary record as the single-symbol read, addressed by the
+    /// index of the symbol group the symbol belongs to. When the group holds
+    /// more than one symbol, the record describes the first of them; use the
+    /// single-symbol or position read for a specific one.
+    /// 
+    /// A group index that does not exist answers with the platform's
+    /// invalid-data code in the error envelope.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="secType">Symbol group index</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT4SymbolSummary?> SummaryGetByTypeAsync(int secType, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT4/{_tradePlatform:D}/SummaryGetByType/{secType.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT4SymbolSummaryApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
     /// <summary>Add symbol</summary>
     /// <remarks>
     /// Add a symbol to the platform's active set.
@@ -3395,6 +3601,30 @@ public sealed partial class MT4Endpoints
         var result = await _connection.SendAsync<MT4TickRecordListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT4TickRecord>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT4TickRecord>();
+    }
+
+    /// <summary>Recalculate the profit of a trade</summary>
+    /// <remarks>
+    /// Calculates the profit the supplied trade would carry at the prices
+    /// given in the body, using the symbol's current conversion rates.
+    /// 
+    /// Nothing is written anywhere: this is a calculation over a trade that
+    /// exists only in the request, and it is safe to repeat. The result is the
+    /// profit in the server's summary currency. An unknown symbol or an
+    /// unknown direction answers with a validation or platform error in the
+    /// error envelope.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="body">Trade fields to price</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<double> TradeCalcProfitAsync(MT4TradeCalcProfitRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT4/{_tradePlatform:D}/TradeCalcProfit";
+        var result = await _connection.SendAsync<DoubleApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Validate order stops</summary>

@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <Version>0.4.0</Version>
+    <Version>0.5.0</Version>
     <Authors>CPlugin</Authors>
     <Company>CPlugin</Company>
     <!-- * Project URL is the product site; the source repository is RepositoryUrl (shown on nuget.org as "Source repository"). -->
@@ -9,7 +9,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <!-- * Platform names only as nominative compatibility wording (owner decision 03.10.2026); package IDs stay neutral. -->
-    <PackageReleaseNotes>0.4.0: v2 surface parity — 45 new MT5 operations (clients, deals, orders, positions, history, users, symbols, dealer balance) and the returned MT4 configuration operations (CfgRequestCommon, CfgRequestGroup, CfgRequestSymbolGroup, CfgUpdateGroup, UsersGet), MT5 names aligned with the platform (TimeServer, OrderGetByGroup, DealRequestByGroup, PositionRequestByGroup), update bodies send only the fields that are set, per-platform SignalR connection-status handlers (OnMT4ConnectionStatus / OnMT5ConnectionStatus); specification refreshed — 224 operations. Breaking changes are listed in the changelog. Full notes: https://github.com/CPlugin/mywebapi.com-sdk-dotnet/blob/v0.4.0/CHANGELOG.md</PackageReleaseNotes>
+    <PackageReleaseNotes>0.5.0: the whole expanded v2 surface — 232 new operations. MT5 grows from 59 to 281 operations: clients, subscriptions, trading, trade operations, reports, communications, market data, market insight, users, configuration. MT4 gains the dealer and reporting operations (summary, exposure, logs, trade profit calculation). The v2 document has 456 operations (the 443 of the live v2 document plus the 13 MT4 x86-sidecar operations it does not compile); additive — existing methods, signatures and DTOs are unchanged. Full notes: https://github.com/CPlugin/mywebapi.com-sdk-dotnet/blob/v0.5.0/CHANGELOG.md</PackageReleaseNotes>
     <PackageTags>mt4;mt5;metatrader;metatrader4;metatrader5;mt4-api;mt5-api;broker;forex;trading;trading-platform;rest-api;websocket;signalr;real-time;sdk;openapi;cplugin;mywebapi;webapi</PackageTags>
     <!-- * SourceLink (built into the .NET 8+ SDK) + debug symbols for nuget.org. -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
