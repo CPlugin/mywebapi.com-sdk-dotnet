@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <Version>0.4.0</Version>
+    <Version>0.6.0</Version>
     <Authors>CPlugin</Authors>
     <Company>CPlugin</Company>
     <!-- * Project URL is the product site; the source repository is RepositoryUrl (shown on nuget.org as "Source repository"). -->
@@ -9,7 +9,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <!-- * Platform names only as nominative compatibility wording (owner decision 03.10.2026); package IDs stay neutral. -->
-    <PackageReleaseNotes>0.4.0: v2 surface parity — 45 new MT5 operations (clients, deals, orders, positions, history, users, symbols, dealer balance) and the returned MT4 configuration operations (CfgRequestCommon, CfgRequestGroup, CfgRequestSymbolGroup, CfgUpdateGroup, UsersGet), MT5 names aligned with the platform (TimeServer, OrderGetByGroup, DealRequestByGroup, PositionRequestByGroup), update bodies send only the fields that are set, per-platform SignalR connection-status handlers (OnMT4ConnectionStatus / OnMT5ConnectionStatus); specification refreshed — 224 operations. Breaking changes are listed in the changelog. Full notes: https://github.com/CPlugin/mywebapi.com-sdk-dotnet/blob/v0.4.0/CHANGELOG.md</PackageReleaseNotes>
+    <PackageReleaseNotes>0.6.0: the models are refreshed from the v2 document of the stand. The subscription configuration carries the real cost the client is charged (priceCost), the subscription history carries the time of the action (time, seconds since 1970-01-01), and the raw tick-history description states the one-day window and one-million-tick limit. The operation surface is unchanged: 456 operations. Full notes: https://github.com/CPlugin/mywebapi.com-sdk-dotnet/blob/v0.6.0/CHANGELOG.md</PackageReleaseNotes>
     <PackageTags>mt4;mt5;metatrader;metatrader4;metatrader5;mt4-api;mt5-api;broker;forex;trading;trading-platform;rest-api;websocket;signalr;real-time;sdk;openapi;cplugin;mywebapi;webapi</PackageTags>
     <!-- * SourceLink (built into the .NET 8+ SDK) + debug symbols for nuget.org. -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

@@ -24,6 +24,194 @@ public sealed partial class MT5Endpoints
         _connection = connection;
         _tradePlatform = tradePlatform;
     }
+    /// <summary>Store a file and link it to a document or a comment</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Sends the file to the server, which stores it and assigns an identifier, and then links it to the
+    /// document named by `documentID` or to the comment named by `commentID`. At most one of the
+    /// two may be given; with neither, the file is stored on the client record without a link.
+    /// The client must be identified, as the file belongs to it.
+    /// 
+    /// &lt;br&gt;
+    /// The file is stored before the link is written. When the link fails, the file stays on the server
+    /// without an owner and cannot be removed through the API — check the document or comment identifier
+    /// before sending large files.
+    /// 
+    /// &lt;br&gt;
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">File to store, with its owner and the link target.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Attachment?> AttachmentAddAsync(MT5Attachment body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/AttachmentAdd";
+        var result = await _connection.SendAsync<MT5AttachmentApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Store files and link them in bulk</summary>
+    /// <remarks>
+    /// Stores the listed files in one call and links each one to the document or comment named in its own
+    /// entry. Every entry follows the rules of the single store: one owner client, at most one link
+    /// target, and the file content in the body. One entry per file is returned with the identifier the
+    /// server assigned; a failure of the link is reported in the entry of that file.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Files to store, each with its owner and link target.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> AttachmentAddBatchAsync(IReadOnlyList<MT5Attachment> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/AttachmentAddBatch";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
+    }
+
+    /// <summary>Store files and link them in bulk (plain array)</summary>
+    /// <remarks>
+    /// Same operation as `AttachmentAddBatch` with the same rules: each file carries its own owner
+    /// and link target, and one entry per file is returned with the identifier the server assigned.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Files to store, each with its owner and link target.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> AttachmentAddBatchArrayAsync(IReadOnlyList<MT5Attachment> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/AttachmentAddBatchArray";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
+    }
+
+    /// <summary>Read attachments by identifiers</summary>
+    /// <remarks>
+    /// Returns the listed files together with their content. An identifier that does not exist is
+    /// answered with a platform error. Reading changes nothing.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="ids">Attachment identifiers; repeat the parameter for several files.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Attachment>> AttachmentRequestAsync(IReadOnlyList<long>? ids = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/AttachmentRequest";
+        var qs = new List<string>();
+        if (ids is not null) foreach (var v in ids) qs.Add("ids=" + v.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5AttachmentListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Attachment>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Attachment>();
+    }
+
+    /// <summary>Read the Depth of Market of a symbol</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Returns the whole Depth of Market of the symbol — every entry, not the difference from the
+    /// previous state — ordered by price from the highest to the lowest. Volumes are given as the
+    /// data provider supplies them, together with the extended-precision value.
+    /// 
+    /// &lt;br&gt;
+    /// The trade server delivers the Depth of Market only after the manager application has
+    /// subscribed to the symbol, so the first call for a symbol subscribes to it and the
+    /// subscription is kept for later calls. A symbol with the Depth of Market disabled on the
+    /// server answers a platform error instead of an empty book.
+    /// 
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="symbol">Symbol name exactly as the trade server holds it.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Book?> BookGetAsync(string symbol, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/BookGet/{Uri.EscapeDataString(symbol)}";
+        var result = await _connection.SendAsync<MT5BookApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Delete minute bars of a symbol</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Removes the stored minute bars with the given opening times from the chart history of the
+    /// symbol. Times are the trading times of the trade server, in seconds since 01.01.1970 — the
+    /// same values the chart read returns.
+    /// 
+    /// &lt;br&gt;
+    /// The call changes the history of the trade server and is not reversible: a deleted bar is not
+    /// kept anywhere, so keep a backup of the trade server before writing. A time that has no
+    /// stored bar is ignored, so repeating the call with the same times is harmless. The response
+    /// confirms the trade server accepted the times, not that terminals have already reloaded the
+    /// history.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="symbol">Symbol name whose bars are deleted, e.g. "EURUSD".</param>
+    /// <param name="body">Opening times of the bars to delete.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> ChartDeleteAsync(string symbol, MT5MarketChartDeleteRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ChartDelete/{Uri.EscapeDataString(symbol)}";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Replace the stored minute bars of a period</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Replaces the whole chart history of the symbol inside the given window with the bars sent:
+    /// every stored bar whose time falls into the window is removed, and the sent ones are written
+    /// instead. A bar of the window left out is therefore lost, which is what makes the call
+    /// different from `ChartUpdate`.
+    /// 
+    /// &lt;br&gt;
+    /// The window is given in the trading time of the trade server and is inclusive of its bounds.
+    /// Both bounds and at least one bar are required: without a window the call would erase the
+    /// whole chart history of the symbol, and an empty list would only erase the period. Use
+    /// `ChartDelete` to remove bars without sending replacements.
+    /// 
+    /// &lt;br&gt;
+    /// The call changes the history of the trade server and is not reversible: removed bars are
+    /// not kept anywhere, so keep a backup of the trade server before writing. The response
+    /// confirms the trade server accepted the call, not that terminals have already reloaded the
+    /// history.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="symbol">Symbol name whose bars are replaced, e.g. "EURUSD".</param>
+    /// <param name="body">Bars to write into the window.</param>
+    /// <param name="from">Window start, as a trading time of the trade server. Required.</param>
+    /// <param name="to">Window end, as a trading time of the trade server. Required.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> ChartReplaceAsync(string symbol, MT5MarketChartWriteRequest body, DateTimeOffset @from, DateTimeOffset @to, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ChartReplace/{Uri.EscapeDataString(symbol)}";
+        var qs = new List<string>();
+        qs.Add("from=" + Uri.EscapeDataString(@from.ToString("O", CultureInfo.InvariantCulture)));
+        qs.Add("to=" + Uri.EscapeDataString(@to.ToString("O", CultureInfo.InvariantCulture)));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
     /// <summary>Get chart bars</summary>
     /// <remarks>
     /// &lt;br&gt;
@@ -78,6 +266,81 @@ public sealed partial class MT5Endpoints
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
+    /// <summary>Split the price history of a symbol</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Converts the stored bars and ticks of the symbol by the ratio of the new shares to the old
+    /// ones — a split when there are more new shares, a consolidation when there are fewer — and
+    /// rounds the converted prices by the chosen rule to the number of digits the symbol allows.
+    /// The optional window limits the conversion to a period; without it the whole stored history
+    /// of the symbol is converted.
+    /// 
+    /// &lt;br&gt;
+    /// The call changes both the bar history and the tick history of the trade server and is not
+    /// reversible: the original prices are not kept anywhere, so keep a backup of the trade server
+    /// before writing. The operation runs on the server in the background: the response confirms
+    /// the command was accepted, not that the split has finished, and a split already running for
+    /// the symbol is neither interrupted nor started again.
+    /// 
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="symbol">Symbol name whose history is split, e.g. "EURUSD".</param>
+    /// <param name="newShares">Number of shares after the split; must be positive.</param>
+    /// <param name="oldShares">Number of shares before the split; must be positive.</param>
+    /// <param name="roundingRule">How converted prices are rounded to the digits of the symbol.</param>
+    /// <param name="from">Window start, as a trading time of the trade server. Optional — the whole history when omitted.</param>
+    /// <param name="to">Window end, as a trading time of the trade server. Optional — the whole history when omitted.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> ChartSplitAsync(string symbol, int? newShares = null, int? oldShares = null, MT5ChartRoundingRule? roundingRule = null, DateTimeOffset? @from = null, DateTimeOffset? @to = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ChartSplit/{Uri.EscapeDataString(symbol)}";
+        var qs = new List<string>();
+        if (newShares is not null) qs.Add("newShares=" + newShares.Value.ToString(CultureInfo.InvariantCulture));
+        if (oldShares is not null) qs.Add("oldShares=" + oldShares.Value.ToString(CultureInfo.InvariantCulture));
+        if (roundingRule is not null) qs.Add("roundingRule=" + Uri.EscapeDataString(roundingRule.Value.ToString()));
+        if (@from is not null) qs.Add("from=" + Uri.EscapeDataString(@from.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (@to is not null) qs.Add("to=" + Uri.EscapeDataString(@to.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Change the stored minute bars of a symbol</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Writes the sent minute bars over the stored ones: a bar with the same opening time is
+    /// replaced, a bar with a new time is added. The symbol comes from the route. Bars are applied
+    /// in the order they are sent; the service neither sorts them nor checks them against the
+    /// stored range.
+    /// 
+    /// &lt;br&gt;
+    /// A bar whose opening price is zero deletes the stored bar with the same time. That is the
+    /// only way to remove a bar through this call — use `ChartDelete` to delete bars by time
+    /// without sending prices.
+    /// 
+    /// &lt;br&gt;
+    /// The call changes the history of the trade server and is not reversible: a replaced bar is
+    /// not kept anywhere, so keep a backup of the trade server before writing. The response
+    /// confirms the trade server accepted the bars, not that terminals have already reloaded them.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="symbol">Symbol name whose bars are changed, e.g. "EURUSD".</param>
+    /// <param name="body">Bars to write; each must carry its opening time.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> ChartUpdateAsync(string symbol, MT5MarketChartWriteRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ChartUpdate/{Uri.EscapeDataString(symbol)}";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
     /// <summary>Create a client</summary>
     /// <remarks>
     /// Adds a client — the person behind one or more accounts — to the server database. The
@@ -95,6 +358,46 @@ public sealed partial class MT5Endpoints
         var result = await _connection.SendAsync<MT5ClientApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Add clients in bulk</summary>
+    /// <remarks>
+    /// Adds the listed clients to the server database in one call — the same rules and the same
+    /// validation as the single add. Every record receives the identifier the server assigned to it,
+    /// which is returned per entry together with its result code. A partial failure answers one entry
+    /// per client, so inspect each result instead of trusting the batch as a whole.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Client records to create.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> ClientAddBatchAsync(IReadOnlyList<MT5Client> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ClientAddBatch";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
+    }
+
+    /// <summary>Add clients in bulk (plain array)</summary>
+    /// <remarks>
+    /// Same operation as `ClientAddBatch` with the same rules: the batch is validated per record and
+    /// one entry per client is returned, together with the identifier the server assigned.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Client records to create.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> ClientAddBatchArrayAsync(IReadOnlyList<MT5Client> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ClientAddBatchArray";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
     }
 
     /// <summary>Delete a client</summary>
@@ -117,13 +420,32 @@ public sealed partial class MT5Endpoints
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
+    /// <summary>Delete clients in bulk</summary>
+    /// <remarks>
+    /// Removes several client records from the server database in one call. The operation is not
+    /// reversible. Accounts and documents attached to the clients are not deleted by this call.
+    /// One entry per identifier is returned, so a partial failure names the records that survived.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Identifiers of the clients to delete.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> ClientDeleteBatchAsync(IReadOnlyList<long> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ClientDeleteBatch";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
+    }
+
     /// <summary>Read a client</summary>
     /// <remarks>
     /// Fetches the client record of the given identifier from the trade server. The call only
     /// reads and changes nothing. An identifier that does not exist is answered with a platform
     /// error rather than an empty record.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="clientId">Client identifier.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -131,9 +453,118 @@ public sealed partial class MT5Endpoints
     public async Task<MT5Client?> ClientRequestAsync(long clientId, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/ClientRequest/{clientId.ToString(CultureInfo.InvariantCulture)}";
-        var result = await _connection.SendAsync<MT5ClientApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5ClientApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Clients by preferred group</summary>
+    /// <remarks>
+    /// Returns the clients whose preferred group matches the mask, and also those without a preferred
+    /// group when one of their bound accounts belongs to a matching group. The mask takes one group,
+    /// several comma-separated groups or wildcards: `*` matches any value and `!` excludes,
+    /// for example `demo*,!demoforex`. Reading changes nothing.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="groups">Group mask, several groups or a negation list.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Client>> ClientRequestByGroupAsync(string? groups = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ClientRequestByGroup";
+        var qs = new List<string>();
+        if (groups is not null) qs.Add("groups=" + Uri.EscapeDataString(groups));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5ClientListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Client>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Client>();
+    }
+
+    /// <summary>History of a client record</summary>
+    /// <remarks>
+    /// Returns the versions of the client record for the requested time window — the record as it was
+    /// after every change. Both bounds are optional: without them the whole history is read. When an
+    /// author is given, only the changes made by that manager account are returned. Reading changes
+    /// nothing.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="clientId">Client identifier.</param>
+    /// <param name="author">Login of the manager account that made the changes; omitted means any author.</param>
+    /// <param name="from">Window start; omitted means the beginning of the history.</param>
+    /// <param name="to">Window end; omitted means no upper bound.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Client>> ClientRequestHistoryAsync(long clientId, long? author = null, DateTimeOffset? @from = null, DateTimeOffset? @to = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ClientRequestHistory/{clientId.ToString(CultureInfo.InvariantCulture)}";
+        var qs = new List<string>();
+        if (author is not null) qs.Add("author=" + author.Value.ToString(CultureInfo.InvariantCulture));
+        if (@from is not null) qs.Add("from=" + Uri.EscapeDataString(@from.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (@to is not null) qs.Add("to=" + Uri.EscapeDataString(@to.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5ClientListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Client>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Client>();
+    }
+
+    /// <summary>Update a client</summary>
+    /// <remarks>
+    /// Writes the changed client record back to the server database. Send the whole record, not only
+    /// the fields that changed: a field left out is written as empty, so read the client first, change
+    /// what is needed and send the result. The person name must be filled in, otherwise the record is
+    /// refused. A client can only be changed from the server that created it; a record that does not
+    /// exist is answered with a platform error. The response carries the record as stored by the server.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Complete client record, including its identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Client?> ClientUpdateAsync(MT5Client body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ClientUpdate";
+        var result = await _connection.SendAsync<MT5ClientApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Update clients in bulk</summary>
+    /// <remarks>
+    /// Writes several changed client records back in one call. As with the single update, every record
+    /// must be complete, not only the changed fields. One entry per client is returned, so a partial
+    /// failure names the clients that were refused.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Complete client records, each with its identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> ClientUpdateBatchAsync(IReadOnlyList<MT5Client> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ClientUpdateBatch";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
+    }
+
+    /// <summary>Update clients in bulk (plain array)</summary>
+    /// <remarks>
+    /// Same operation as `ClientUpdateBatch` with the same rules: every record must be complete and
+    /// one entry per client is returned.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Complete client records, each with its identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> ClientUpdateBatchArrayAsync(IReadOnlyList<MT5Client> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ClientUpdateBatchArray";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
     }
 
     /// <summary>Attach a trading account to a client</summary>
@@ -157,6 +588,567 @@ public sealed partial class MT5Endpoints
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
+    /// <summary>Bind trading accounts to a client in bulk</summary>
+    /// <remarks>
+    /// Binds the listed accounts to the client record in one call. The accounts must already exist —
+    /// the call does not create them — and the account data is not copied into the client. One entry
+    /// per login is returned, so a partial failure names the accounts that stayed unbound.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="clientId">Client identifier.</param>
+    /// <param name="body">Trade account logins to bind.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> ClientUserAddBatchAsync(long clientId, IReadOnlyList<long> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ClientUserAddBatch/{clientId.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
+    }
+
+    /// <summary>Unbind a trading account from a client</summary>
+    /// <remarks>
+    /// Removes the link between the account and the client record. The account itself is not deleted
+    /// and stays on the server. The response carries the platform result code of the operation.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="clientId">Client identifier.</param>
+    /// <param name="login">Trade account login to unbind.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> ClientUserDeleteAsync(long clientId, long login, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ClientUserDelete/{clientId.ToString(CultureInfo.InvariantCulture)}/{login.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Unbind trading accounts from a client in bulk</summary>
+    /// <remarks>
+    /// Removes the links between the listed accounts and the client record in one call. The accounts
+    /// themselves are not deleted. One entry per login is returned, so a partial failure names the
+    /// accounts that stayed bound.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="clientId">Client identifier.</param>
+    /// <param name="body">Trade account logins to unbind.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> ClientUserDeleteBatchAsync(long clientId, IReadOnlyList<long> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ClientUserDeleteBatch/{clientId.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
+    }
+
+    /// <summary>Trading accounts of a client</summary>
+    /// <remarks>
+    /// Returns the logins of every trading account bound to the client record. Reading changes nothing;
+    /// a client without bound accounts answers an empty list.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="clientId">Client identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<long>> ClientUserRequestAsync(long clientId, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ClientUserRequest/{clientId.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<UInt64ListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<long>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<long>();
+    }
+
+    /// <summary>Add a comment to a client or a document</summary>
+    /// <remarks>
+    /// Stores a comment and returns it as the server saved it, including the identifier it was assigned.
+    /// The client must be identified; a document identifier is optional and, when given, makes the
+    /// comment belong to that document instead of the client. A comment can only be added from the
+    /// server that holds the client. Files are attached to the comment separately.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Comment record to store.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Comment?> CommentAddAsync(MT5Comment body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/CommentAdd";
+        var result = await _connection.SendAsync<MT5CommentApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Add comments in bulk</summary>
+    /// <remarks>
+    /// Stores the listed comments in one call with the same rules as the single add. One entry per
+    /// comment is returned with the identifier the server assigned.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Comment records to store.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> CommentAddBatchAsync(IReadOnlyList<MT5Comment> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/CommentAddBatch";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
+    }
+
+    /// <summary>Add comments in bulk (plain array)</summary>
+    /// <remarks>
+    /// Same operation as `CommentAddBatch` with the same rules: one entry per comment is returned
+    /// together with the identifier the server assigned.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Comment records to store.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> CommentAddBatchArrayAsync(IReadOnlyList<MT5Comment> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/CommentAddBatchArray";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
+    }
+
+    /// <summary>Delete a comment</summary>
+    /// <remarks>
+    /// Removes the comment from the client or document it belongs to. The operation is not reversible and
+    /// does not delete the files attached to the comment. The response carries the platform result code.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="commentId">Comment identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> CommentDeleteAsync(long commentId, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/CommentDelete/{commentId.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Delete comments in bulk</summary>
+    /// <remarks>
+    /// Removes several comments in one call. The operation is not reversible and does not delete the
+    /// attached files. One entry per identifier is returned, so a partial failure names the comments
+    /// that survived.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Identifiers of the comments to delete.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> CommentDeleteBatchAsync(IReadOnlyList<long> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/CommentDeleteBatch";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
+    }
+
+    /// <summary>Read a comment</summary>
+    /// <remarks>
+    /// Fetches the comment of the given identifier together with the list of its attached files
+    /// (identifier, name and size — not the content). Reading changes nothing. An identifier that does
+    /// not exist is answered with a platform error rather than an empty record.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="commentId">Comment identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Comment?> CommentRequestAsync(long commentId, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/CommentRequest/{commentId.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5CommentApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Comments on a client</summary>
+    /// <remarks>
+    /// Returns a slice of the comments stored on the client record, in the order the server keeps them.
+    /// The slice is set by `position` (zero-based index of the first comment) and `total`
+    /// (number of comments to return), so a long thread is read page by page. Reading changes nothing.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="clientId">Client identifier.</param>
+    /// <param name="position">Zero-based index of the first comment to return; 0 means the beginning.</param>
+    /// <param name="total">Number of comments to return; 0 means all of them.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Comment>> CommentRequestByClientAsync(long clientId, int? position = null, int? total = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/CommentRequestByClient/{clientId.ToString(CultureInfo.InvariantCulture)}";
+        var qs = new List<string>();
+        if (position is not null) qs.Add("position=" + position.Value.ToString(CultureInfo.InvariantCulture));
+        if (total is not null) qs.Add("total=" + total.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5CommentListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Comment>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Comment>();
+    }
+
+    /// <summary>Comments on a client document</summary>
+    /// <remarks>
+    /// Returns a slice of the comments stored on the document, in the order the server keeps them. The
+    /// slice is set by `position` (zero-based index of the first comment) and `total` (number
+    /// of comments to return), so a long thread is read page by page. Reading changes nothing.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="documentId">Document identifier.</param>
+    /// <param name="position">Zero-based index of the first comment to return; 0 means the beginning.</param>
+    /// <param name="total">Number of comments to return; 0 means all of them.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Comment>> CommentRequestByDocumentAsync(long documentId, int? position = null, int? total = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/CommentRequestByDocument/{documentId.ToString(CultureInfo.InvariantCulture)}";
+        var qs = new List<string>();
+        if (position is not null) qs.Add("position=" + position.Value.ToString(CultureInfo.InvariantCulture));
+        if (total is not null) qs.Add("total=" + total.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5CommentListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Comment>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Comment>();
+    }
+
+    /// <summary>Change a comment</summary>
+    /// <remarks>
+    /// Writes the changed comment back. Send the whole comment, not only the fields that changed — read
+    /// it first and change what is needed. The client and, for a document comment, the document must be
+    /// identified. A comment can only be changed from the server that holds its client.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Complete comment record, including its identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Comment?> CommentUpdateAsync(MT5Comment body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/CommentUpdate";
+        var result = await _connection.SendAsync<MT5CommentApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Change comments in bulk</summary>
+    /// <remarks>
+    /// Writes several changed comments back in one call with the same rules as the single change:
+    /// every record must be complete. One entry per comment is returned.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Complete comment records, each with its identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> CommentUpdateBatchAsync(IReadOnlyList<MT5Comment> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/CommentUpdateBatch";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
+    }
+
+    /// <summary>Change comments in bulk (plain array)</summary>
+    /// <remarks>
+    /// Same operation as `CommentUpdateBatch` with the same rules: every record must be complete
+    /// and one entry per comment is returned.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Complete comment records, each with its identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> CommentUpdateBatchArrayAsync(IReadOnlyList<MT5Comment> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/CommentUpdateBatchArray";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
+    }
+
+    /// <summary>Send a custom command to the trade server</summary>
+    /// <remarks>
+    /// Delivers the data to a plugin installed on the trade server that handles custom commands and
+    /// returns what the plugin answers. The platform does not interpret the data in either
+    /// direction.
+    /// 
+    /// A server without such a plugin refuses the command, which is answered with the platform error
+    /// that says so. The command is a request to the plugin, not a stored record: whether it is safe
+    /// to repeat is decided by the plugin.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Data to send.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5CustomCommandResult?> CustomCommandAsync(MT5CustomCommandRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/CustomCommand";
+        var result = await _connection.SendAsync<MT5CustomCommandResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Daily reports of one account</summary>
+    /// <remarks>
+    /// Returns the daily reports of the account for the requested period, one entry per reported
+    /// day, together with the positions and pending orders that were open at the end of that day.
+    /// The window bounds are optional: without them every stored report is returned. Times are
+    /// seconds since 01.01.1970 as the trade server counts them; a report belongs to the window
+    /// when its generation time falls inside it. This is the most expensive of the daily reads —
+    /// use the lightweight variant when the open positions and orders are not needed.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="login">Login of the account.</param>
+    /// <param name="from">Window start in seconds since 01.01.1970; omitted means 01.01.1970.</param>
+    /// <param name="to">Window end in seconds since 01.01.1970; omitted means no upper bound.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Daily>> DailyRequestAsync(long login, long? @from = null, long? @to = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DailyRequest/{login.ToString(CultureInfo.InvariantCulture)}";
+        var qs = new List<string>();
+        if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
+        if (@to is not null) qs.Add("to=" + @to.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5DailyListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Daily>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Daily>();
+    }
+
+    /// <summary>Daily reports of the accounts of a group</summary>
+    /// <remarks>
+    /// Returns the daily reports of every account in the groups matching the mask, for the
+    /// requested period, with the positions and pending orders open at the end of each day.
+    /// The result is not paginated: the whole set is returned at once. Times are seconds since
+    /// 01.01.1970 as the trade server counts them.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="mask">Group mask — one group, several comma-separated groups, or a mask with `*` (any value) and `!` (exception), for example `demo*,!demoforex`.</param>
+    /// <param name="from">Window start in seconds since 01.01.1970; omitted means 01.01.1970.</param>
+    /// <param name="to">Window end in seconds since 01.01.1970; omitted means no upper bound.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Daily>> DailyRequestByGroupAsync(string mask, long? @from = null, long? @to = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DailyRequestByGroup/{Uri.EscapeDataString(mask)}";
+        var qs = new List<string>();
+        if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
+        if (@to is not null) qs.Add("to=" + @to.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5DailyListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Daily>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Daily>();
+    }
+
+    /// <summary>Daily reports of several accounts</summary>
+    /// <remarks>
+    /// Returns the daily reports of the listed accounts for the requested period, with the
+    /// positions and pending orders open at the end of each day. The logins travel in the request
+    /// body; a request without logins is rejected as invalid input. Times are seconds since
+    /// 01.01.1970 as the trade server counts them.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="body">Logins of the accounts to read.</param>
+    /// <param name="from">Window start in seconds since 01.01.1970; omitted means 01.01.1970.</param>
+    /// <param name="to">Window end in seconds since 01.01.1970; omitted means no upper bound.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Daily>> DailyRequestByLoginsAsync(IReadOnlyList<long> body, long? @from = null, long? @to = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DailyRequestByLogins";
+        var qs = new List<string>();
+        if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
+        if (@to is not null) qs.Add("to=" + @to.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5DailyListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Daily>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Daily>();
+    }
+
+    /// <summary>Lightweight daily reports of one account</summary>
+    /// <remarks>
+    /// Returns the daily reports of the account for the requested period without the positions
+    /// and pending orders that were open at the end of the reported day. The result is otherwise
+    /// identical to the full report and costs the trade server far less to build. Times are
+    /// seconds since 01.01.1970 as the trade server counts them.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="login">Login of the account.</param>
+    /// <param name="from">Window start in seconds since 01.01.1970; omitted means 01.01.1970.</param>
+    /// <param name="to">Window end in seconds since 01.01.1970; omitted means no upper bound.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Daily>> DailyRequestLightAsync(long login, long? @from = null, long? @to = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DailyRequestLight/{login.ToString(CultureInfo.InvariantCulture)}";
+        var qs = new List<string>();
+        if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
+        if (@to is not null) qs.Add("to=" + @to.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5DailyListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Daily>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Daily>();
+    }
+
+    /// <summary>Lightweight daily reports of the accounts of a group</summary>
+    /// <remarks>
+    /// Returns the daily reports of every account in the groups matching the mask, for the
+    /// requested period, without the positions and pending orders open at the end of each day.
+    /// The result is not paginated: the whole set is returned at once. Times are seconds since
+    /// 01.01.1970 as the trade server counts them.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="mask">Group mask — one group, several comma-separated groups, or a mask with `*` (any value) and `!` (exception), for example `demo*,!demoforex`.</param>
+    /// <param name="from">Window start in seconds since 01.01.1970; omitted means 01.01.1970.</param>
+    /// <param name="to">Window end in seconds since 01.01.1970; omitted means no upper bound.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Daily>> DailyRequestLightByGroupAsync(string mask, long? @from = null, long? @to = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DailyRequestLightByGroup/{Uri.EscapeDataString(mask)}";
+        var qs = new List<string>();
+        if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
+        if (@to is not null) qs.Add("to=" + @to.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5DailyListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Daily>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Daily>();
+    }
+
+    /// <summary>Lightweight daily reports of several accounts</summary>
+    /// <remarks>
+    /// Returns the daily reports of the listed accounts for the requested period, without the
+    /// positions and pending orders open at the end of each day. The logins travel in the request
+    /// body; a request without logins is rejected as invalid input. Times are seconds since
+    /// 01.01.1970 as the trade server counts them.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="body">Logins of the accounts to read.</param>
+    /// <param name="from">Window start in seconds since 01.01.1970; omitted means 01.01.1970.</param>
+    /// <param name="to">Window end in seconds since 01.01.1970; omitted means no upper bound.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Daily>> DailyRequestLightByLoginsAsync(IReadOnlyList<long> body, long? @from = null, long? @to = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DailyRequestLightByLogins";
+        var qs = new List<string>();
+        if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
+        if (@to is not null) qs.Add("to=" + @to.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5DailyListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Daily>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Daily>();
+    }
+
+    /// <summary>Add a deal</summary>
+    /// <remarks>
+    /// Stores a deal in the trade database of the connected server without trading it: the
+    /// balance of the account is not changed by the call itself, the record is simply written.
+    /// The ticket, when given, must fall inside the deal ticket range of the server and be above
+    /// the last used one; when omitted the server assigns the next free ticket.
+    /// The operation is not idempotent — a repeat after an unclear outcome may add a second deal.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Deal fields.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> DealAddAsync(MT5Deal body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DealAdd";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Add several deals</summary>
+    /// <remarks>
+    /// Adds every deal of the body and answers one result code per deal, at the same index as in
+    /// the request. A partial failure answers the array as well; a complete failure answers the
+    /// error code only. An empty body is rejected as invalid input.
+    /// The operation is not idempotent — a repeat after an unclear outcome may add the deals a
+    /// second time.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Deal fields, one entry per deal to add.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> DealAddBatchAsync(IReadOnlyList<MT5Deal> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DealAddBatch";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Add several deals (plain array form)</summary>
+    /// <remarks>
+    /// Same effect and same reply as the batch form: one result code per deal of the body, at the
+    /// same index. Kept because the two forms are separate operations of the trade server and
+    /// differ in the shape of the array they accept.
+    /// The operation is not idempotent — a repeat after an unclear outcome may add the deals a
+    /// second time.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Deal fields, one entry per deal to add.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> DealAddBatchArrayAsync(IReadOnlyList<MT5Deal> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DealAddBatchArray";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Delete a deal</summary>
+    /// <remarks>
+    /// Removes the deal record from the trade database. The balance and the open positions are
+    /// not recalculated, so the account may afterwards fail consistency checks. The deal must live
+    /// on the server this request is addressed to.
+    /// The operation is not idempotent — a repeat after an unclear outcome answers "not found".
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="ticket">Deal ticket.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> DealDeleteAsync(long ticket, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DealDelete/{ticket.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
     /// <summary>Delete deals in bulk</summary>
     /// <remarks>
     /// Deletes the listed deals and returns one result code per ticket, in the same order.
@@ -174,6 +1166,72 @@ public sealed partial class MT5Endpoints
     public async Task<IReadOnlyList<MT5Result>> DealDeleteBatchAsync(IReadOnlyList<long> body, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/DealDeleteBatch";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Perform a deal</summary>
+    /// <remarks>
+    /// Executes a trade on the account: the balance and the positions change as the trade
+    /// requires, which is what separates this call from storing a deal record. Login, symbol,
+    /// action, volume and price are mandatory; the closing of a position under the hedged
+    /// accounting mode also needs its identifier. The account must belong to the server this
+    /// request is addressed to. The reply is the deal as the server stored it, with the ticket and
+    /// time it assigned.
+    /// The operation is not idempotent — a repeat after an unclear outcome performs the trade a
+    /// second time and moves the balance twice.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Deal to perform.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Deal?> DealPerformAsync(MT5Deal body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DealPerform";
+        var result = await _connection.SendAsync<MT5DealApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Perform several deals</summary>
+    /// <remarks>
+    /// Performs every deal of the body and answers one result code per deal, at the same index as
+    /// in the request. A partial failure answers the array as well; a complete failure answers the
+    /// error code only. An empty body is rejected as invalid input.
+    /// The operation is not idempotent — a repeat after an unclear outcome performs the trades a
+    /// second time.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Deals to perform, one entry per deal.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> DealPerformBatchAsync(IReadOnlyList<MT5Deal> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DealPerformBatch";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Perform several deals (plain array form)</summary>
+    /// <remarks>
+    /// Same effect and same reply as the batch form: one result code per deal of the body, at the
+    /// same index. Kept because the two forms are separate operations of the trade server and
+    /// differ in the shape of the array they accept.
+    /// The operation is not idempotent — a repeat after an unclear outcome performs the trades a
+    /// second time.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Deals to perform, one entry per deal.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> DealPerformBatchArrayAsync(IReadOnlyList<MT5Deal> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DealPerformBatchArray";
         var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
@@ -281,6 +1339,33 @@ public sealed partial class MT5Endpoints
         return (IReadOnlyList<MT5Deal>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Deal>();
     }
 
+    /// <summary>Deals of several accounts by symbol</summary>
+    /// <remarks>
+    /// Returns the deals of the given symbol for the given accounts within a time window, read
+    /// from the trade server. Omitted bounds mean the whole history. The result is not paginated:
+    /// the whole window is returned at once.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="symbol">Symbol name.</param>
+    /// <param name="logins">Account logins, repeated as `logins=…&amp;logins=…` query parameters.</param>
+    /// <param name="from">Window start; omit to start from 01.01.1970.</param>
+    /// <param name="to">Window end; omit to take everything up to the newest record.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Deal>> DealRequestByLoginsSymbolAsync(string symbol, IReadOnlyList<long>? logins = null, DateTimeOffset? @from = null, DateTimeOffset? @to = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DealRequestByLoginsSymbol/{Uri.EscapeDataString(symbol)}";
+        var qs = new List<string>();
+        if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
+        if (@from is not null) qs.Add("from=" + Uri.EscapeDataString(@from.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (@to is not null) qs.Add("to=" + Uri.EscapeDataString(@to.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5DealListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Deal>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Deal>();
+    }
+
     /// <summary>Deal by a ticket</summary>
     /// <remarks>
     /// Reads a single deal from the server history by its ticket number.
@@ -337,6 +1422,36 @@ public sealed partial class MT5Endpoints
         return (IReadOnlyList<MT5Deal>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Deal>();
     }
 
+    /// <summary>One page of the deal history of an account</summary>
+    /// <remarks>
+    /// Returns a slice of the deals of the account, read from the server. The window and the slice
+    /// are given in the query; an omitted window means the whole history. The page may be shorter
+    /// than `total` at the end of the range — walk it by adding the returned count to
+    /// `offset`.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="login">Account login (account number).</param>
+    /// <param name="from">Window start; omit to start from 01.01.1970.</param>
+    /// <param name="to">Window end; omit to take everything up to the newest record.</param>
+    /// <param name="offset">Index of the first record of the page.</param>
+    /// <param name="total">Maximum number of records in the page.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Deal>> DealRequestPageAsync(long login, DateTimeOffset? @from = null, DateTimeOffset? @to = null, int? offset = null, int? total = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DealRequestPage/{login.ToString(CultureInfo.InvariantCulture)}";
+        var qs = new List<string>();
+        if (@from is not null) qs.Add("from=" + Uri.EscapeDataString(@from.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (@to is not null) qs.Add("to=" + Uri.EscapeDataString(@to.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (offset is not null) qs.Add("offset=" + offset.Value.ToString(CultureInfo.InvariantCulture));
+        if (total is not null) qs.Add("total=" + total.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5DealListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Deal>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Deal>();
+    }
+
     /// <summary>Update a deal</summary>
     /// <remarks>
     /// The server first reads the existing deal, then applies only the fields present in the body,
@@ -351,6 +1466,76 @@ public sealed partial class MT5Endpoints
     public async Task<bool> DealUpdateAsync(MT5Deal body, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/DealUpdate";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Update several deals</summary>
+    /// <remarks>
+    /// Applies the fields present in each entry to its stored deal and answers one result code per
+    /// entry, at the same index as in the request. Every entry must carry its ticket. An empty
+    /// body is rejected as invalid input.
+    /// The operation is not idempotent — a repeat after an unclear outcome applies the changes a
+    /// second time.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Deal fields to apply, one entry per deal.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> DealUpdateBatchAsync(IReadOnlyList<MT5Deal> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DealUpdateBatch";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Update several deals (plain array form)</summary>
+    /// <remarks>
+    /// Same effect and same reply as the batch form: one result code per entry of the body, at
+    /// the same index. Kept because the two forms are separate operations of the trade server and
+    /// differ in the shape of the array they accept.
+    /// The operation is not idempotent — a repeat after an unclear outcome applies the changes a
+    /// second time.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Deal fields to apply, one entry per deal.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> DealUpdateBatchArrayAsync(IReadOnlyList<MT5Deal> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DealUpdateBatchArray";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Answer the trade request taken for processing</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Completes the request taken with `DealerGet` or `DealerLock`: the confirmation
+    /// carries the answer code and, depending on the request, the confirmed volume, price and
+    /// the identifiers of the order and the deal created in an external trading system. The
+    /// request is processed by the trade server immediately and cannot be answered twice.
+    /// 
+    /// &lt;br&gt;
+    /// The identifier in the confirmation is the identifier of the original request, not the
+    /// caller-side one. The queue must be opened with `DealerStart` first. A rejected
+    /// answer is returned as the platform error that explains it, and the request then stays
+    /// for the platform to expire.
+    /// 
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Answer to the trade request.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> DealerAnswerAsync(MT5Confirm body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DealerAnswer";
         var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
@@ -407,6 +1592,60 @@ public sealed partial class MT5Endpoints
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
+    /// <summary>Take the first request of the queue for processing</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Takes the request at the head of the queue and reserves it for this connection: the
+    /// trade server will not hand it to another dealer and waits for the answer. The request
+    /// must be answered with `DealerAnswer`; an unanswered request is not returned to the
+    /// queue and is lost.
+    /// 
+    /// &lt;br&gt;
+    /// The call is a write, not a read for all practical purposes: it changes the state of the
+    /// queue and cannot be safely repeated — a repeated call takes the next request. When the
+    /// queue is empty the platform answers `MT_RET_OK_NONE`. The queue must be opened with
+    /// `DealerStart` first.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Request?> DealerGetAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DealerGet";
+        var result = await _connection.SendAsync<MT5RequestApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Take a request with the given identifier for processing</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Reserves the request with the given identifier for this connection, exactly as
+    /// `DealerGet` does for the head of the queue, and returns it. The request must be
+    /// answered with `DealerAnswer`; an unanswered request is not returned to the queue
+    /// and is lost.
+    /// 
+    /// &lt;br&gt;
+    /// `MT_RET_OK_NONE` means that the request is no longer available: it has already been
+    /// taken by another dealer or has been processed. The queue must be opened with
+    /// `DealerStart` first.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="id">Identifier of the trade request.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Request?> DealerLockAsync(int id, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DealerLock/{id.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5RequestApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
     /// <summary>Send a trade request on behalf of the dealer</summary>
     /// <remarks>
     /// &lt;br&gt;
@@ -433,6 +1672,432 @@ public sealed partial class MT5Endpoints
         var result = await _connection.SendAsync<MT5RequestApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Open the queue of trade requests for dealing</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Subscribes the connection to the queue of trade requests of the trade server and loads
+    /// the requests already waiting in it. From that moment the queue can be read and the
+    /// requests can be taken for processing — by this connection only, and the subscription
+    /// lives until the queue is closed or the connection is lost.
+    /// 
+    /// &lt;br&gt;
+    /// The call does not take a request and does not answer one: it only enables the queue.
+    /// Repeating it on a connection whose queue is already open is harmless.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> DealerStartAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DealerStart";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Close the queue of trade requests</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Stops dealing on the connection: the queue is no longer read or taken from, and the
+    /// requests waiting in it stay in the queue for other dealers. Requests already taken for
+    /// processing are not returned to the queue — they must still be answered.
+    /// 
+    /// &lt;br&gt;
+    /// The queue applies to the whole connection to the trade platform, so closing it affects
+    /// every call that reads or takes requests from it. Repeating the call is harmless.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> DealerStopAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DealerStop";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Add a document to a client record</summary>
+    /// <remarks>
+    /// Stores a document in the client record and returns it as the server saved it, including the
+    /// identifier it was assigned. The client must be identified; otherwise the record is refused.
+    /// A document can only be added from the server that holds the client. Files are attached to the
+    /// document separately, by the attachment routes.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Document record to store.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Document?> DocumentAddAsync(MT5Document body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DocumentAdd";
+        var result = await _connection.SendAsync<MT5DocumentApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Add documents in bulk</summary>
+    /// <remarks>
+    /// Stores the listed documents in one call with the same rules as the single add. One entry per
+    /// document is returned with the identifier the server assigned, so a partial failure names the
+    /// documents that were refused.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Document records to store.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> DocumentAddBatchAsync(IReadOnlyList<MT5Document> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DocumentAddBatch";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
+    }
+
+    /// <summary>Add documents in bulk (plain array)</summary>
+    /// <remarks>
+    /// Same operation as `DocumentAddBatch` with the same rules: one entry per document is
+    /// returned together with the identifier the server assigned.
+    /// The operation is not idempotent — a repeat after an unclear outcome creates a second record.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Document records to store.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> DocumentAddBatchArrayAsync(IReadOnlyList<MT5Document> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DocumentAddBatchArray";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
+    }
+
+    /// <summary>Delete a document</summary>
+    /// <remarks>
+    /// Removes the document from the client record. The operation is not reversible; the files attached
+    /// to the document are not deleted by this call. The response carries the platform result code.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="documentId">Document identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> DocumentDeleteAsync(long documentId, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DocumentDelete/{documentId.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Delete documents in bulk</summary>
+    /// <remarks>
+    /// Removes several documents in one call. The operation is not reversible and does not delete the
+    /// attached files. One entry per identifier is returned, so a partial failure names the documents
+    /// that survived.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Identifiers of the documents to delete.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> DocumentDeleteBatchAsync(IReadOnlyList<long> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DocumentDeleteBatch";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
+    }
+
+    /// <summary>Read a document</summary>
+    /// <remarks>
+    /// Fetches the document of the given identifier together with the list of its attached files
+    /// (identifier, name and size — not the content). Reading changes nothing. An identifier that does
+    /// not exist is answered with a platform error rather than an empty record.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="documentId">Document identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Document?> DocumentRequestAsync(long documentId, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DocumentRequest/{documentId.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5DocumentApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Documents of a client</summary>
+    /// <remarks>
+    /// Returns every document stored in the client record, each with the list of its attached files
+    /// (identifier, name and size — not the content). Reading changes nothing; a client without
+    /// documents answers an empty list.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="clientId">Client identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Document>> DocumentRequestByClientAsync(long clientId, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DocumentRequestByClient/{clientId.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5DocumentListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Document>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Document>();
+    }
+
+    /// <summary>History of a document</summary>
+    /// <remarks>
+    /// Returns the versions of the document for the requested time window — the record as it was after
+    /// every change. Both bounds are optional: without them the whole history is read. When an author is
+    /// given, only the changes made by that manager account are returned. Reading changes nothing.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="documentId">Document identifier.</param>
+    /// <param name="author">Login of the manager account that made the changes; omitted means any author.</param>
+    /// <param name="from">Window start; omitted means the beginning of the history.</param>
+    /// <param name="to">Window end; omitted means no upper bound.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Document>> DocumentRequestHistoryAsync(long documentId, long? author = null, DateTimeOffset? @from = null, DateTimeOffset? @to = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DocumentRequestHistory/{documentId.ToString(CultureInfo.InvariantCulture)}";
+        var qs = new List<string>();
+        if (author is not null) qs.Add("author=" + author.Value.ToString(CultureInfo.InvariantCulture));
+        if (@from is not null) qs.Add("from=" + Uri.EscapeDataString(@from.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (@to is not null) qs.Add("to=" + Uri.EscapeDataString(@to.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5DocumentListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Document>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Document>();
+    }
+
+    /// <summary>Change a document of a client record</summary>
+    /// <remarks>
+    /// Writes the changed document back to the client record. Send the whole document, not only the
+    /// fields that changed — read it first and change what is needed. A document can only be changed
+    /// from the server that holds its client. The response carries the document as stored.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Complete document record, including its identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Document?> DocumentUpdateAsync(MT5Document body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DocumentUpdate";
+        var result = await _connection.SendAsync<MT5DocumentApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Change documents in bulk</summary>
+    /// <remarks>
+    /// Writes several changed documents back in one call with the same rules as the single change:
+    /// every record must be complete. One entry per document is returned.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Complete document records, each with its identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> DocumentUpdateBatchAsync(IReadOnlyList<MT5Document> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DocumentUpdateBatch";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
+    }
+
+    /// <summary>Change documents in bulk (plain array)</summary>
+    /// <remarks>
+    /// Same operation as `DocumentUpdateBatch` with the same rules: every record must be complete
+    /// and one entry per document is returned.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Complete document records, each with its identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchResult>> DocumentUpdateBatchArrayAsync(IReadOnlyList<MT5Document> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/DocumentUpdateBatchArray";
+        var result = await _connection.SendAsync<MT5BatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchResult>();
+    }
+
+    /// <summary>Send an email from one of the mail configurations of the trade server</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Queues an email for the recipient through the mail configuration named by the request. The
+    /// configuration must exist on the trade server; without it the platform error is returned and
+    /// nothing is sent.
+    /// 
+    /// &lt;br&gt;
+    /// The answer carries the platform result code: success means the server accepted the message
+    /// for sending, not that it was delivered. The subject and the body are not stored or logged by
+    /// the service.
+    /// 
+    /// &lt;br&gt;
+    /// The operation is not idempotent — a repeat after an unclear outcome delivers a second message.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Mail configuration, recipient and content.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> EmailSendAsync(MT5EmailSendRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/EmailSend";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Currency of the net total of the exposure table</summary>
+    /// <remarks>
+    /// Returns the currency the net total of the exposure table is expressed in. The value is a
+    /// property of the trade server connection, not of a single request.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<string?> ExposureCurrencyGetAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ExposureCurrency";
+        var result = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Set the currency of the net total of the exposure table</summary>
+    /// <remarks>
+    /// Sets the currency the net total of the exposure table is expressed in. The value is a
+    /// property of the trade server connection, not of a single request, so the change is visible
+    /// to every reader of the exposure table until it is set back. The trade server accepts only
+    /// currencies it knows; an unknown one is answered with a platform error.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Currency code of the net total, as a JSON string.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> ExposureCurrencyPostAsync(string body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ExposureCurrency";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Exposure of the company for one asset</summary>
+    /// <remarks>
+    /// Returns the exposure record of the asset: the volume the clients hold, the volume the
+    /// company holds on its hedging account and the conversion rate of the net total. An unknown
+    /// asset answers with the platform error that explains it rather than an empty record.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="symbol">Name of the asset.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Exposure?> ExposureGetAsync(string symbol, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ExposureGet/{Uri.EscapeDataString(symbol)}";
+        var result = await _connection.SendAsync<MT5ExposureApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Exposure of the company for every asset</summary>
+    /// <remarks>
+    /// Returns the whole exposure table: one record per asset with the volume the clients hold,
+    /// the volume the company holds on its hedging account and the conversion rate of the net
+    /// total. The table ends with the net total record, which carries an empty asset name.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Exposure>> ExposureGetAllAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ExposureGetAll";
+        var result = await _connection.SendAsync<MT5ExposureListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Exposure>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Exposure>();
+    }
+
+    /// <summary>Describe an IP address</summary>
+    /// <remarks>
+    /// Resolves the IPv4 or IPv6 address against the geo database of the platform and returns the
+    /// description of the address range it belongs to: geography, network owner and the additional
+    /// characteristics of the address.
+    /// 
+    /// The flags choose which data is requested — the fields whose flag was not set are left empty,
+    /// so asking for everything costs one answer of the widest kind but is the simplest way to fill
+    /// the record. The record carries the IPv4 bounds of the range; the IPv6 bounds are not
+    /// returned.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="address">IPv4 or IPv6 address to describe.</param>
+    /// <param name="flags">Bit mask of the requested data: continent, country, city, region, province, autonomous system, ISP, organisation, coordinates, details.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5GeoRecord?> GeoResolveAsync(string? address = null, int? flags = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/GeoResolve";
+        var qs = new List<string>();
+        if (address is not null) qs.Add("address=" + Uri.EscapeDataString(address));
+        if (flags is not null) qs.Add("flags=" + flags.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5GeoRecordApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Describe a list of IP addresses</summary>
+    /// <remarks>
+    /// Resolves several IPv4 and IPv6 addresses in one call. The entries of the answer follow the
+    /// order of the request and each carries its own result code, so an address the platform could
+    /// not resolve does not hide the outcome of the others: the answer as a whole is a success when
+    /// at least one address was resolved and the platform reports a partial result.
+    /// 
+    /// The flags choose which data is requested, exactly as for a single address. The record of a
+    /// resolved address carries the IPv4 bounds of its range; the IPv6 bounds are not returned.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="addresses">Addresses to describe; repeat the parameter for each address.</param>
+    /// <param name="flags">Bit mask of the requested data: continent, country, city, region, province, autonomous system, ISP, organisation, coordinates, details.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5GeoResolveResult>> GeoResolveBatchAsync(IReadOnlyList<string>? addresses = null, int? flags = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/GeoResolveBatch";
+        var qs = new List<string>();
+        if (addresses is not null) foreach (var v in addresses) qs.Add("addresses=" + Uri.EscapeDataString(v));
+        if (flags is not null) qs.Add("flags=" + flags.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5GeoResolveResultListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5GeoResolveResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5GeoResolveResult>();
     }
 
     /// <summary>Get a group from the pump cache</summary>
@@ -520,6 +2185,69 @@ public sealed partial class MT5Endpoints
         return (IReadOnlyList<MT5ConGroup>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5ConGroup>();
     }
 
+    /// <summary>Change a group configuration</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Writes the fields present in the body to the group with the given name. Only the fields
+    /// the trading platform lets a manager change are accepted: the margin call level, the stop
+    /// out level, the mode used to check them and the group trade options. A field left out of
+    /// the body keeps its current value, and a body without any field is rejected.
+    /// 
+    /// &lt;br&gt;
+    /// The configuration is read from the trade server first, the body is applied over it and the
+    /// result is written back, so a request never overwrites values it does not mention. The
+    /// answer carries the configuration stored by the server after the write. Commission settings
+    /// and per-symbol overrides are not part of this body.
+    /// 
+    /// &lt;br&gt;
+    /// The change is accepted only from the main trade server and only for a manager holding the
+    /// rights to group margin and commission settings; any other case is answered with the
+    /// platform error code. Repeat the request to retry after a failure that reported no result.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="group">Group name, including the path, e.g. `demo\demoforex`.</param>
+    /// <param name="body">Fields to change; omitted fields keep their current value.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5ConGroup?> GroupUpdateAsync(string group, MT5GroupUpdateRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/GroupUpdate/{Uri.EscapeDataString(group)}";
+        var result = await _connection.SendAsync<MT5ConGroupApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Change several group configurations in one call</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Each entry names a group and carries the fields to change, with the same rules and the same
+    /// accepted fields as the single group change. Entries are read and prepared one by one and then
+    /// sent to the trade server together; the answer lists the outcome of every entry in the order
+    /// it was sent.
+    /// 
+    /// &lt;br&gt;
+    /// A group that cannot be read, or an entry that cannot be prepared, is reported with its own
+    /// result code and does not block the others. When the platform refuses the whole batch, the
+    /// error code of the call is returned instead of the list. Duplicate group names in one request
+    /// are rejected. The call requires the rights to group margin and commission settings and is
+    /// accepted only by the main trade server.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Entries to apply: group name and the fields to change.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchUpdateResult>> GroupUpdateBatchAsync(IReadOnlyList<MT5GroupBatchUpdateItem> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/GroupUpdateBatch";
+        var result = await _connection.SendAsync<MT5BatchUpdateResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchUpdateResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchUpdateResult>();
+    }
+
     /// <summary>Order history of an account</summary>
     /// <remarks>
     /// Returns the orders of a single account within a time window, closed and still
@@ -570,6 +2298,85 @@ public sealed partial class MT5Endpoints
         return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
     }
 
+    /// <summary>Order history by group and symbol</summary>
+    /// <remarks>
+    /// Returns the history orders of the given symbol for every login in the groups matching the
+    /// mask, within a time window. Omitted bounds mean the whole history: from 01.01.1970 to the
+    /// newest record. The result is not paginated: the whole window is returned at once.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="mask">Group mask — one group, several comma-separated groups, or a mask with `*` (any value) and `!` (exception), for example `demo*,!demoforex`.</param>
+    /// <param name="symbol">Symbol name.</param>
+    /// <param name="from">Window start; omit to start from 01.01.1970.</param>
+    /// <param name="to">Window end; omit to take everything up to the newest record.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Order>> HistoryRequestByGroupSymbolAsync(string mask, string symbol, DateTimeOffset? @from = null, DateTimeOffset? @to = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/HistoryRequestByGroupSymbol/{Uri.EscapeDataString(mask)}/{Uri.EscapeDataString(symbol)}";
+        var qs = new List<string>();
+        if (@from is not null) qs.Add("from=" + Uri.EscapeDataString(@from.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (@to is not null) qs.Add("to=" + Uri.EscapeDataString(@to.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
+    }
+
+    /// <summary>Order history of several accounts</summary>
+    /// <remarks>
+    /// Returns the history orders of the given accounts within a time window. Omitted bounds mean
+    /// the whole history: from 01.01.1970 to the newest record. The result is not paginated: the
+    /// whole window is returned at once.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="logins">Account logins, repeated as `logins=…&amp;logins=…` query parameters.</param>
+    /// <param name="from">Window start; omit to start from 01.01.1970.</param>
+    /// <param name="to">Window end; omit to take everything up to the newest record.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Order>> HistoryRequestByLoginsAsync(IReadOnlyList<long>? logins = null, DateTimeOffset? @from = null, DateTimeOffset? @to = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/HistoryRequestByLogins";
+        var qs = new List<string>();
+        if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
+        if (@from is not null) qs.Add("from=" + Uri.EscapeDataString(@from.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (@to is not null) qs.Add("to=" + Uri.EscapeDataString(@to.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
+    }
+
+    /// <summary>Order history of several accounts by symbol</summary>
+    /// <remarks>
+    /// Returns the history orders of the given symbol for the given accounts within a time
+    /// window. Omitted bounds mean the whole history: from 01.01.1970 to the newest record. The
+    /// result is not paginated: the whole window is returned at once.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="symbol">Symbol name.</param>
+    /// <param name="logins">Account logins, repeated as `logins=…&amp;logins=…` query parameters.</param>
+    /// <param name="from">Window start; omit to start from 01.01.1970.</param>
+    /// <param name="to">Window end; omit to take everything up to the newest record.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Order>> HistoryRequestByLoginsSymbolAsync(string symbol, IReadOnlyList<long>? logins = null, DateTimeOffset? @from = null, DateTimeOffset? @to = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/HistoryRequestByLoginsSymbol/{Uri.EscapeDataString(symbol)}";
+        var qs = new List<string>();
+        if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
+        if (@from is not null) qs.Add("from=" + Uri.EscapeDataString(@from.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (@to is not null) qs.Add("to=" + Uri.EscapeDataString(@to.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
+    }
+
     /// <summary>Order history by tickets (request body)</summary>
     /// <remarks>
     /// Returns the order history records with the given tickets, sent in the request body
@@ -589,6 +2396,364 @@ public sealed partial class MT5Endpoints
         return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
     }
 
+    /// <summary>One page of the order history of an account</summary>
+    /// <remarks>
+    /// Returns a slice of the history orders of the account, read from the server. The window and
+    /// the slice are given in the query; an omitted window means the whole history. The page may
+    /// be shorter than `total` at the end of the range — walk it by adding the returned count
+    /// to `offset`.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="login">Account login (account number).</param>
+    /// <param name="from">Window start; omit to start from 01.01.1970.</param>
+    /// <param name="to">Window end; omit to take everything up to the newest record.</param>
+    /// <param name="offset">Index of the first record of the page.</param>
+    /// <param name="total">Maximum number of records in the page.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Order>> HistoryRequestPageAsync(long login, DateTimeOffset? @from = null, DateTimeOffset? @to = null, int? offset = null, int? total = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/HistoryRequestPage/{login.ToString(CultureInfo.InvariantCulture)}";
+        var qs = new List<string>();
+        if (@from is not null) qs.Add("from=" + Uri.EscapeDataString(@from.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (@to is not null) qs.Add("to=" + Uri.EscapeDataString(@to.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (offset is not null) qs.Add("offset=" + offset.Value.ToString(CultureInfo.InvariantCulture));
+        if (total is not null) qs.Add("total=" + total.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
+    }
+
+    /// <summary>Floating margin configuration by name</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Returns the floating margin configuration with the given name as the API process holds it,
+    /// including its rules and the tiers of every rule. The name is the configuration name shown in
+    /// the platform administration — it is the identity of the record, so a different spelling answers
+    /// the platform's not-found error.
+    /// 
+    /// &lt;br&gt;
+    /// The answer is served without asking the trade server, so it changes only when the configuration
+    /// reaches the API process. When the requested name is not here yet, ask for it with the request
+    /// variant of this call, which reads it from the server.
+    /// 
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="name">Configuration name.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Leverage?> LeverageGetAsync(string name, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/LeverageGet/{Uri.EscapeDataString(name)}";
+        var result = await _connection.SendAsync<MT5LeverageApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Request a floating margin configuration from the trade server</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Reads the floating margin configuration with the given name from the trade server — a
+    /// round-trip, unlike the cached read — and returns it with its rules and tiers. Use it when the
+    /// configuration may have changed since it reached the API process, for example right after it was
+    /// edited in the platform administration.
+    /// 
+    /// &lt;br&gt;
+    /// The call blocks until the server answers. A name the server does not know is returned as the
+    /// platform's not-found error.
+    /// 
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="name">Configuration name.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Leverage?> LeverageRequestAsync(string name, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/LeverageRequest/{Uri.EscapeDataString(name)}";
+        var result = await _connection.SendAsync<MT5LeverageApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Floating margin configurations that apply to groups</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Returns every floating margin configuration the trade server applies to at least one of the
+    /// groups selected by the mask. The mask takes group names including the subgroup
+    /// (`demo\demoforex`), several names separated by commas, and the wildcards `*` (any
+    /// value) and `!` (exclude), for example `demo*,!demoforex` — every group whose name
+    /// starts with `demo` except `demoforex`. An omitted mask selects every group.
+    /// 
+    /// &lt;br&gt;
+    /// The call blocks until the server answers. Every configuration is returned with its rules and
+    /// tiers.
+    /// 
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="groups">Group mask; omitted means every group.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Leverage>> LeverageRequestArrayAsync(string? groups = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/LeverageRequestArray";
+        var qs = new List<string>();
+        if (groups is not null) qs.Add("groups=" + Uri.EscapeDataString(groups));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5LeverageListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Leverage>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Leverage>();
+    }
+
+    /// <summary>Check the application license on the trade server</summary>
+    /// <remarks>
+    /// Asks the trade server whether the use of the named application is authorized in its platform
+    /// license and receives the signed answer. The signature covers the result code, the application
+    /// name and the random sequence, so the caller verifies the authenticity of the answer with the
+    /// public key of the platform.
+    /// 
+    /// The name is limited to 128 characters and the random sequence to 256 bytes; a longer value
+    /// is refused as invalid. This check answers the licensing question alone — it changes nothing
+    /// on the server.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Application license to verify.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5LicenseCheckResult?> LicenseCheckAsync(MT5LicenseCheckRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/LicenseCheck";
+        var result = await _connection.SendAsync<MT5LicenseCheckResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Flush the local journal of the manager interface to disk</summary>
+    /// <remarks>
+    /// Writes the buffer of the local journal of the manager interface to disk at once instead of
+    /// waiting for the next flush. The journal is local to the process that holds the connection;
+    /// the call changes nothing on the trade server and answers `true`.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> LoggerFlushAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/LoggerFlush";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Write a formatted entry into the local journal</summary>
+    /// <remarks>
+    /// Adds an entry to the local journal of the manager interface of the connection. The text is
+    /// written as given: no format placeholders of the platform are applied to it, so a percent
+    /// sign in the message is kept. Line feed and carriage return are refused as invalid — the
+    /// platform computes the journal checksum line by line — and so is a message longer than 16 KB.
+    /// 
+    /// The journal is local to the process that holds the connection; the call changes nothing on
+    /// the trade server.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Entry to write: the platform code of the event and its text.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> LoggerOutAsync(MT5LoggerMessage body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/LoggerOut";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Write an unformatted entry into the local journal</summary>
+    /// <remarks>
+    /// The same entry as the formatted variant, written without scanning the text for format
+    /// placeholders. Cheaper for messages that are known to carry no arguments, which is the usual
+    /// case for a text received over the API.
+    /// 
+    /// Line feed and carriage return are refused as invalid, and so is a message longer than 16 KB.
+    /// The journal is local to the process that holds the connection; the call changes nothing on
+    /// the trade server.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Entry to write: the platform code of the event and its text.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> LoggerOutStringAsync(MT5LoggerMessage body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/LoggerOutString";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Read the journal of the trade server</summary>
+    /// <remarks>
+    /// Returns the entries of the chosen kind in the given time window, newest and oldest included.
+    /// The window is given in seconds elapsed since 01.01.1970; the optional keyword narrows the
+    /// entries the way the journal search of the platform does.
+    /// 
+    /// &lt;br&gt;`mode` accepts 0 (standard entries), 1 (errors only) or 2 (full journal); `type`
+    /// accepts 0 (all events), 1–8 (configuration, system, network, history, users, trades, API
+    /// calls, notifications) or 16–17 (live update, outgoing mail). Any other value is refused.
+    /// 
+    /// 
+    /// The whole window is returned in one answer, so a wide window over a busy server is a large
+    /// response.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="mode">Platform request mode of the journal.</param>
+    /// <param name="type">Platform event type to request.</param>
+    /// <param name="from">Start of the window, seconds elapsed since 01.01.1970.</param>
+    /// <param name="to">End of the window, seconds elapsed since 01.01.1970.</param>
+    /// <param name="filter">Optional keyword of the journal search.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5LogRecord>> LoggerServerRequestAsync(int? mode = null, int? type = null, long? @from = null, long? @to = null, string? filter = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/LoggerServerRequest";
+        var qs = new List<string>();
+        if (mode is not null) qs.Add("mode=" + mode.Value.ToString(CultureInfo.InvariantCulture));
+        if (type is not null) qs.Add("type=" + type.Value.ToString(CultureInfo.InvariantCulture));
+        if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
+        if (@to is not null) qs.Add("to=" + @to.Value.ToString(CultureInfo.InvariantCulture));
+        if (filter is not null) qs.Add("filter=" + Uri.EscapeDataString(filter));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5LogRecordListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5LogRecord>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5LogRecord>();
+    }
+
+    /// <summary>Read a message with its body and attachments</summary>
+    /// <remarks>
+    /// Fetches the whole message — headers, body and the files attached to it — from the trade
+    /// server. The list route leaves the content out, so this is the call that carries it.
+    /// 
+    /// The identifier is the one the server assigned to the message, as returned by the list route.
+    /// An identifier the server does not know is answered with the platform error that explains it.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="id">Message identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Mail?> MailBodyRequestAsync(long id, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/MailBodyRequest/{id.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5MailApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Delete a message by its position in the mailbox</summary>
+    /// <remarks>
+    /// Removes the message at the given zero-based position of the mailbox of the account the API
+    /// uses to connect. Positions of the following messages shift down by one, so deleting several
+    /// messages by position in one pass must account for the shift, and the identifier route is the
+    /// safer choice. The deletion is not reversible.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="pos">Zero-based position of the message in the mailbox.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> MailDeleteAsync(int? pos = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/MailDelete";
+        var qs = new List<string>();
+        if (pos is not null) qs.Add("pos=" + pos.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Delete a message by its identifier</summary>
+    /// <remarks>
+    /// Removes the message with the given identifier from the mailbox of the account the API uses
+    /// to connect. Unlike deletion by position, this call does not depend on the order of the
+    /// mailbox. The deletion is not reversible; an identifier the server does not know is answered
+    /// with the platform error that explains it.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="id">Message identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> MailDeleteIdAsync(long id, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/MailDeleteId/{id.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>List messages of the internal mail</summary>
+    /// <remarks>
+    /// Enumerates the mailbox of the account the API uses to connect to the trade server. Only the
+    /// headers are returned — subject, sender, recipient, time and sizes — so a mailbox with large
+    /// messages is enumerated without transferring their content. Request a single message by its
+    /// identifier to receive the body and the attachments.
+    /// 
+    /// The positions are counted from zero over the mailbox as it is held by the connection; the
+    /// list grows as new messages arrive. Every entry of the page costs one native read, so the
+    /// page is capped at `count` entries and a call that asks for more than 1000 is refused
+    /// as invalid.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="from">Zero-based position of the first message; entries before it are skipped.</param>
+    /// <param name="count">Number of messages to return, 1 to 1000. Default 100.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Mail>> MailRequestAsync(int? @from = null, int? count = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/MailRequest";
+        var qs = new List<string>();
+        if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
+        if (count is not null) qs.Add("count=" + count.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5MailListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Mail>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Mail>();
+    }
+
+    /// <summary>Send a message through the internal mail</summary>
+    /// <remarks>
+    /// Sends a message to the account with the given login through the internal mail system of the
+    /// trade server. The sender is filled by the server with the account the API uses to connect,
+    /// so it is not part of the request; the subject and the recipient are required, and a request
+    /// without either is refused as invalid before the server is asked.
+    /// 
+    /// The body and the attachments travel whole and are stored as sent. The platform substitutes
+    /// the account macros (login, name, currency, balance, credit, equity, margin, free margin,
+    /// margin level, leverage) with the data of the recipient when the message is shown.
+    /// Every call sends a new message: a repeated request after a timeout may deliver a second copy.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Message to send.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> MailSendAsync(MT5MailSendRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/MailSend";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
     /// <summary>Get the current session manager</summary>
     /// <remarks>
     /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
@@ -601,6 +2766,498 @@ public sealed partial class MT5Endpoints
         var result = await _connection.SendAsync<MT5ConManagerApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Send an SMS through the messenger integration of the trade server</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Queues an SMS to the phone number through the messenger integration configured on the trade
+    /// server. A group may be named to pick the provider that serves it; without it the provider is
+    /// chosen without regard to the group.
+    /// 
+    /// &lt;br&gt;
+    /// Success means the message was accepted for sending, not that it was delivered. An invalid
+    /// or non-mobile number is answered with its own platform error, which names the reason. The
+    /// message text is not stored or logged by the service.
+    /// 
+    /// &lt;br&gt;
+    /// The operation is not idempotent — a repeat after an unclear outcome delivers a second message.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Phone number, optional group and sender, and the text.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> MessengerSendAsync(MT5MessengerSendRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/MessengerSend";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Validate a phone number against the local numbering rules</summary>
+    /// <remarks>
+    /// Checks the submitted number against the numbering rules the trade server uses and answers
+    /// whether it may be used for messenger delivery. Nothing is sent and nothing changes.
+    /// &lt;br&gt;
+    /// The answer is `false` for a number the rules reject — an invalid number and a landline
+    /// number both count as rejected; every other failure, such as an unavailable connection, is
+    /// returned as a platform error.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Phone number in international format, for example `+74951113594`.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> MessengerVerifyPhoneAsync(string body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/MessengerVerifyPhone";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Address of the trade server the connection is held to</summary>
+    /// <remarks>
+    /// Returns the address the manager connection currently talks to. After the connection moved to
+    /// another access point this is the new address, which is what makes it useful together with
+    /// the server name.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<string?> NetworkAddressAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/NetworkAddress";
+        var result = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Bytes received from the trade server</summary>
+    /// <remarks>
+    /// Total number of bytes accepted from the trade server since the process started. The count
+    /// covers every manager connection of the process, so it measures the traffic of the API as a
+    /// whole rather than of this trade platform alone.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<long> NetworkBytesReadAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/NetworkBytesRead";
+        var result = await _connection.SendAsync<UInt64ApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Bytes sent to the trade server</summary>
+    /// <remarks>
+    /// Total number of bytes sent to the trade server since the process started. The count covers
+    /// every manager connection of the process, so it measures the traffic of the API as a whole
+    /// rather than of this trade platform alone.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<long> NetworkBytesSentAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/NetworkBytesSent";
+        var result = await _connection.SendAsync<UInt64ApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Rescan the access points of the trade server</summary>
+    /// <remarks>
+    /// Forces a scan of the access points of the trade server — the network map with the load of
+    /// each access server and the ping to it — and reports whether a better access point than the
+    /// current one was found. The scan is rate-limited by the platform to one request per half an
+    /// hour; a call inside that window is answered with the platform error that says so.
+    /// 
+    /// The answer says what was found, not what was done: the connection is not switched. Moving
+    /// the connection to the found access point is a separate step of the connection management.
+    /// A zero `timeout` checks for a better point without waiting for the scan to finish.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="flags">Reserved for future use; pass zero.</param>
+    /// <param name="timeout">Time to wait for the scan, in milliseconds.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> NetworkRescanAsync(int? flags = null, int? timeout = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/NetworkRescan";
+        var qs = new List<string>();
+        if (flags is not null) qs.Add("flags=" + flags.Value.ToString(CultureInfo.InvariantCulture));
+        if (timeout is not null) qs.Add("timeout=" + timeout.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Name of the trade server the connection is held to</summary>
+    /// <remarks>
+    /// Returns the server name the manager connection was opened with. The name is the one given at
+    /// connection time, not the address currently used, so it lets the caller recognise a server
+    /// that is reached through another access point.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<string?> NetworkServerAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/NetworkServer";
+        var result = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Read a news item with its body</summary>
+    /// <remarks>
+    /// Fetches the whole news item — subject, category, time, language, flags and body — from the
+    /// trade server. The list route returns headers alone, so this is the call that carries the body.
+    /// 
+    /// The identifier is the one the server assigned to the news item, as returned by the list
+    /// route. An identifier the server does not know is answered with the platform error that
+    /// explains it.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="id">News item identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5News?> NewsBodyRequestAsync(long id, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/NewsBodyRequest/{id.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5NewsApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>List news items received by the manager account</summary>
+    /// <remarks>
+    /// Enumerates the news items received by the account the API uses to connect. Only the headers
+    /// are returned; request a single news item by its identifier to receive the body.
+    /// 
+    /// The positions are counted from zero. Every entry of the page costs one native read, so the
+    /// page is capped at `count` entries and a call that asks for more than 1000 is refused as
+    /// invalid.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="from">Zero-based position of the first news item; entries before it are skipped.</param>
+    /// <param name="count">Number of news items to return, 1 to 1000. Default 100.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5News>> NewsRequestAsync(int? @from = null, int? count = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/NewsRequest";
+        var qs = new List<string>();
+        if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
+        if (count is not null) qs.Add("count=" + count.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5NewsListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5News>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5News>();
+    }
+
+    /// <summary>Publish a news item</summary>
+    /// <remarks>
+    /// Sends a news item to the trade server, where it is delivered to the recipients configured
+    /// for the manager account. The subject is required; a request without it is refused as
+    /// invalid before the server is asked.
+    /// 
+    /// The publication time, the language, the flags and the body are stored as sent; a field left
+    /// out keeps the value the platform starts it with. Every call publishes a new item: a repeated
+    /// request after a timeout may publish a second copy.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">News item to publish.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> NewsSendAsync(MT5NewsSendRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/NewsSend";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Send a push notification to mobile terminals</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Delivers a short message to the mobile terminals of the named accounts, either by their
+    /// logins on the trade server or by the MetaQuotes identifiers their terminals are registered
+    /// with. Exactly one of the two addressing lists must be sent.
+    /// 
+    /// &lt;br&gt;
+    /// Success means the notification was accepted for delivery, not that it reached a terminal;
+    /// delivery needs the mobile terminal of the platform to be installed and registered. The
+    /// message is limited by the platform to 1024 characters and is not stored or logged by the
+    /// service.
+    /// 
+    /// &lt;br&gt;
+    /// The operation is not idempotent — a repeat after an unclear outcome delivers a second message.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Recipients and the message text.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> NotificationsSendAsync(MT5NotificationsSendRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/NotificationsSend";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Disconnect a client from the trade server</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Drops every open session of the given login. The terminals of the account reconnect on
+    /// their own afterwards, so the account appears in the connection list again within a short
+    /// time unless its access is closed.
+    /// 
+    /// &lt;br&gt;
+    /// Forced disconnection is the way to make new account settings take effect at once — a
+    /// terminal keeps the settings it loaded at login. The call answers `true` when every
+    /// session of the login was dropped; a login without open sessions answers the platform
+    /// "not found" error. Repeating the call is harmless.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="login">User login (account number).</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> OnlineDisconnectAsync(long login, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OnlineDisconnect/{login.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Disconnect several clients from the trade server</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Drops every open session of every login in the body. Each login is processed on its own:
+    /// the answer carries its outcome, so one login that could not be dropped does not hide the
+    /// result of the others. Duplicates in the body are collapsed, and logins without open
+    /// sessions are reported as "not found".
+    /// 
+    /// &lt;br&gt;
+    /// The answer is a list with one entry per requested login, in request order. The call is
+    /// safe to repeat: a login that was already dropped answers "not found" and changes nothing.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Logins of the accounts to disconnect; at most 1000 per call.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5OnlineDisconnectResult>> OnlineDisconnectBatchAsync(IReadOnlyList<long> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OnlineDisconnectBatch";
+        var result = await _connection.SendAsync<MT5OnlineDisconnectResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5OnlineDisconnectResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5OnlineDisconnectResult>();
+    }
+
+    /// <summary>Read the open sessions of one account</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Returns every live connection of the given login. A login usually holds one session, but
+    /// a terminal and a mobile application connected at the same time appear as two entries with
+    /// their own session identifiers.
+    /// 
+    /// &lt;br&gt;
+    /// An account that is not connected answers an empty list. The call changes nothing.
+    /// 
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="login">User login (account number).</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Online>> OnlineGetAsync(long login, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OnlineGet/{login.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5OnlineListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Online>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Online>();
+    }
+
+    /// <summary>Read the live connection list of the trade server</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Returns the connections of every type the trade server currently holds — client
+    /// terminals, mobile applications, manager terminals and API clients — except the platform's
+    /// own server-to-server links, which are not part of the list.
+    /// 
+    /// &lt;br&gt;
+    /// The window is positional: `from` is the position it starts at and `count` its
+    /// size. The list is live and shifts while it is read, so a repeated call may return entries
+    /// that moved between pages; read the whole list in one pass when consistency matters more
+    /// than the page size. `total` in the answer is the connection count at the moment of
+    /// the request — a list shorter than `total` means the window ended, not that the
+    /// remaining positions are empty.
+    /// 
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="from">Position the window starts at; the first connection when omitted.</param>
+    /// <param name="count">Window size; 100 when omitted, at most 1000.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5OnlinePage?> OnlineRequestAsync(int? @from = null, int? count = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OnlineRequest";
+        var qs = new List<string>();
+        if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
+        if (count is not null) qs.Add("count=" + count.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5OnlinePageApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Add an order</summary>
+    /// <remarks>
+    /// Creates an order in the trade database of the connected server. The ticket, when given,
+    /// must fall inside the order ticket range of the server and be above the last used ticket;
+    /// when it is omitted the server assigns the next free one. The order is stored as passed:
+    /// the server checks the fields, it does not trade them.
+    /// The operation is not idempotent — a repeat after an unclear outcome may add a second order
+    /// with another ticket.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Order fields. Fields omitted keep the defaults the server assigns to a new order.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> OrderAddAsync(MT5Order body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OrderAdd";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Add several orders</summary>
+    /// <remarks>
+    /// Adds every order of the body and answers one result code per order, at the same index as
+    /// in the request. A partial failure answers the array as well, so the caller sees which
+    /// orders were stored; a complete failure answers the error code only. An empty body is
+    /// rejected as invalid input.
+    /// The operation is not idempotent — a repeat after an unclear outcome may add the orders a
+    /// second time.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Order fields, one entry per order to add.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> OrderAddBatchAsync(IReadOnlyList<MT5Order> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OrderAddBatch";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Add several orders (plain array form)</summary>
+    /// <remarks>
+    /// Same effect and same reply as the batch form: one result code per order of the body, at
+    /// the same index. Kept because the two forms are separate operations of the trade server and
+    /// differ in the shape of the array they accept.
+    /// The operation is not idempotent — a repeat after an unclear outcome may add the orders a
+    /// second time.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Order fields, one entry per order to add.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> OrderAddBatchArrayAsync(IReadOnlyList<MT5Order> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OrderAddBatchArray";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Cancel an order</summary>
+    /// <remarks>
+    /// Moves the order to the cancelled state: it is neither executed nor triggered and no margin
+    /// is held for it. The order must have been created on the server this request is addressed
+    /// to; any other server answers with an error.
+    /// The operation is not idempotent — a repeat after an unclear outcome is refused with the
+    /// state error of the trade server, not applied twice.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="ticket">Order ticket.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> OrderCancelAsync(long ticket, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OrderCancel/{ticket.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Cancel several orders</summary>
+    /// <remarks>
+    /// Cancels every ticket of the body and answers one result code per ticket, at the same index
+    /// as in the request. A partial failure answers the array as well; a complete failure answers
+    /// the error code only. An empty body is rejected as invalid input.
+    /// The operation is not idempotent — a repeat after an unclear outcome is refused for the
+    /// tickets already cancelled.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Order tickets to cancel.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> OrderCancelBatchAsync(IReadOnlyList<long> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OrderCancelBatch";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Delete an order</summary>
+    /// <remarks>
+    /// Removes the order record from the trade database; it is not moved to history. The order
+    /// must have been created on the server this request is addressed to.
+    /// The operation is not idempotent — a repeat after an unclear outcome answers "not found".
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="ticket">Order ticket.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> OrderDeleteAsync(long ticket, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OrderDelete/{ticket.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
     /// <summary>Delete several orders at once</summary>
@@ -649,7 +3306,7 @@ public sealed partial class MT5Endpoints
     /// Returns active and pending orders for all logins in groups matching the mask,
     /// ordered by Order ID ascending. Use the cursor for the next page.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="mask">Group mask — exact group name or a wildcard like "real\*".</param>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
@@ -663,7 +3320,7 @@ public sealed partial class MT5Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -732,13 +3389,51 @@ public sealed partial class MT5Endpoints
         return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
     }
 
+    /// <summary>Open orders of an account</summary>
+    /// <remarks>
+    /// Returns the pending orders of the account that are still in the trade database, read from
+    /// the server rather than from the local cache. The result is not paginated: the whole set is
+    /// returned at once.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="login">Account login (account number).</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Order>> OrderGetOpenAsync(long login, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OrderGetOpen/{login.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
+    }
+
+    /// <summary>Get an order from the server</summary>
+    /// <remarks>
+    /// Returns a single order read from the trade server, bypassing the local cache of the
+    /// connection. When the ticket is unknown, the response carries the trade server's "not
+    /// found" error code instead of a record.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="ticket">Order ticket.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Order?> OrderRequestAsync(long ticket, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OrderRequest/{ticket.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5OrderApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
     /// <summary>List orders by group</summary>
     /// <remarks>
     /// Returns the orders of every login in the groups matching the mask. Only groups
     /// belonging to the trade platform are scanned. The result is not paginated: the
     /// whole set is returned at once, in the order the trade server reports it.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="mask">Group mask — one group, several comma-separated groups, or a mask with `*` (any value) and `!` (exception), for example `demo*,!demoforex`.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
@@ -746,7 +3441,7 @@ public sealed partial class MT5Endpoints
     public async Task<IReadOnlyList<MT5Order>> OrderRequestByGroupAsync(string mask, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/OrderRequestByGroup/{Uri.EscapeDataString(mask)}";
-        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
     }
@@ -757,7 +3452,7 @@ public sealed partial class MT5Endpoints
     /// mask. The result is not paginated: the whole set is returned at once, in the order
     /// the trade server reports it.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="mask">Group mask — one group, several comma-separated groups, or a mask with `*` (any value) and `!` (exception), for example `demo*,!demoforex`.</param>
     /// <param name="symbol">Symbol name — one symbol or several comma-separated symbols.</param>
@@ -766,7 +3461,51 @@ public sealed partial class MT5Endpoints
     public async Task<IReadOnlyList<MT5Order>> OrderRequestByGroupSymbolAsync(string mask, string symbol, CallOptions? options = null)
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/OrderRequestByGroupSymbol/{Uri.EscapeDataString(mask)}/{Uri.EscapeDataString(symbol)}";
-        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
+    }
+
+    /// <summary>Orders of several accounts, read from the server</summary>
+    /// <remarks>
+    /// Returns the orders of the given accounts as the trade server holds them now. The result is
+    /// not paginated: the whole set is returned at once. Use the ticket-based form for a longer
+    /// list than fits in the query string.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="logins">Account logins, repeated as `logins=…&amp;logins=…` query parameters.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Order>> OrderRequestByLoginsAsync(IReadOnlyList<long>? logins = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OrderRequestByLogins";
+        var qs = new List<string>();
+        if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
+    }
+
+    /// <summary>Orders of several accounts by symbol, read from the server</summary>
+    /// <remarks>
+    /// Returns the orders of the given symbol for the given accounts as the trade server holds
+    /// them now. The result is not paginated: the whole set is returned at once.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="symbol">Symbol name.</param>
+    /// <param name="logins">Account logins, repeated as `logins=…&amp;logins=…` query parameters.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Order>> OrderRequestByLoginsSymbolAsync(string symbol, IReadOnlyList<long>? logins = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OrderRequestByLoginsSymbol/{Uri.EscapeDataString(symbol)}";
+        var qs = new List<string>();
+        if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
     }
@@ -788,6 +3527,181 @@ public sealed partial class MT5Endpoints
         var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
+    }
+
+    /// <summary>Pending orders of an account, read from the server</summary>
+    /// <remarks>
+    /// Same set as the cached read, but the trade server is asked each time, so the answer is
+    /// current even when the cache of the connection is behind. The result is not paginated: the
+    /// whole set is returned at once.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="login">Account login (account number).</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Order>> OrderRequestOpenAsync(long login, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OrderRequestOpen/{login.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5OrderListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Order>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Order>();
+    }
+
+    /// <summary>Update an order</summary>
+    /// <remarks>
+    /// Applies only the fields present in the body to the stored order; everything omitted keeps
+    /// its current value. The order must exist and must have been created on the server this
+    /// request is addressed to — any other server answers with an error instead of applying the
+    /// change.
+    /// The operation is not idempotent — a repeat after an unclear outcome applies the change a
+    /// second time and may overwrite a newer value.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Order fields to apply; the ticket identifies the order.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> OrderUpdateAsync(MT5Order body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OrderUpdate";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Update several orders</summary>
+    /// <remarks>
+    /// Applies the fields present in each entry to its stored order and answers one result code
+    /// per entry, at the same index as in the request. Every order must carry its ticket and must
+    /// belong to the server this request is addressed to. An empty body is rejected as invalid
+    /// input.
+    /// The operation is not idempotent — a repeat after an unclear outcome applies the changes a
+    /// second time.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Order fields to apply, one entry per order.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> OrderUpdateBatchAsync(IReadOnlyList<MT5Order> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OrderUpdateBatch";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Update several orders (plain array form)</summary>
+    /// <remarks>
+    /// Same effect and same reply as the batch form: one result code per entry of the body, at
+    /// the same index. Kept because the two forms are separate operations of the trade server and
+    /// differ in the shape of the array they accept.
+    /// The operation is not idempotent — a repeat after an unclear outcome applies the changes a
+    /// second time.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Order fields to apply, one entry per order.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> OrderUpdateBatchArrayAsync(IReadOnlyList<MT5Order> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/OrderUpdateBatchArray";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Change the password of the manager account used by the connection</summary>
+    /// <remarks>
+    /// Replaces the stored password of the account the API uses to connect to the trade server. The
+    /// change is made by the account itself and applies to the password type given in the route:
+    /// `Main`, `Investor`, `API` or `Trader`. Any other value is refused.
+    /// 
+    /// &lt;br&gt;
+    /// The connection settings kept by this API are not updated by this call: the next connection
+    /// attempt still presents the old password and the platform refuses it until the settings are
+    /// brought in line. Change the password here only together with the stored settings.
+    /// 
+    /// 
+    /// The new password must contain at least two of the three character kinds — lower case, upper
+    /// case, digits — and meet the minimum length of the group of the account; a password the
+    /// policy refuses is answered with the platform error that explains it.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="type">Password type to change: `Main`, `Investor` or `API`.</param>
+    /// <param name="body">New password value.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> PasswordChangeAsync(UsersPasswords type, string body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/PasswordChange/{type}";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Plugin configuration by name</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Returns the plugin configuration with the given name: the module it belongs to, the trade server
+    /// identifier, whether the platform keeps it loaded, its flags and every parameter. The name is the
+    /// configuration name shown in the platform administration — it is the identity of the record, so a
+    /// different spelling answers the platform's not-found error.
+    /// 
+    /// &lt;br&gt;
+    /// Parameters carry the module's own settings, and some modules keep credentials there — treat the
+    /// whole answer as sensitive. Values are returned in their text form; the parameter type says how
+    /// the module reads them.
+    /// 
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="name">Plugin configuration name.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Plugin?> PluginGetAsync(string name, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/PluginGet/{Uri.EscapeDataString(name)}";
+        var result = await _connection.SendAsync<MT5PluginApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Store a plugin configuration</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Writes the plugin configuration described by the body to the trade server. The record is
+    /// identified by its name: an existing configuration with that name is replaced, and one that does
+    /// not exist yet is added — the platform checks the record before storing it and refuses an
+    /// incomplete or inconsistent one with the platform's parameter error.
+    /// 
+    /// &lt;br&gt;
+    /// The body is the complete configuration: parameters that are not listed are not stored, so read
+    /// the configuration first and send it back with the fields you change. Parameters carry the
+    /// module's own settings, and some modules keep credentials there — the whole request is treated
+    /// as sensitive.
+    /// 
+    /// &lt;br&gt;
+    /// The trade server accepts the write only when the module is marked as editable through the
+    /// manager interface, when plugin settings are pumped on the connection, and when the account of
+    /// the API has the right to change plugin configurations; otherwise the platform error saying so is
+    /// returned.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Complete plugin configuration to store.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Plugin?> PluginUpdateAsync(MT5Plugin body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/PluginUpdate";
+        var result = await _connection.SendAsync<MT5PluginApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Delete positions in bulk</summary>
@@ -812,6 +3726,26 @@ public sealed partial class MT5Endpoints
         return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
     }
 
+    /// <summary>Delete a position by ticket</summary>
+    /// <remarks>
+    /// Removes the position record from the trade database without producing a closing deal, so
+    /// the account balance is not changed and may no longer add up. The position must live on the
+    /// server this request is addressed to.
+    /// The operation is not idempotent — a repeat after an unclear outcome answers "not found".
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="ticket">Position ticket.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> PositionDeleteByTicketAsync(long ticket, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/PositionDeleteByTicket/{ticket.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
     /// <summary>Open positions by a login</summary>
     /// <remarks>
     /// Returns all open positions of every symbol held by the account.
@@ -826,6 +3760,24 @@ public sealed partial class MT5Endpoints
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/PositionGet/{login.ToString(CultureInfo.InvariantCulture)}";
         var result = await _connection.SendAsync<MT5PositionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Position>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Position>();
+    }
+
+    /// <summary>Open positions of a group</summary>
+    /// <remarks>
+    /// Returns the open positions of every login in the groups matching the mask. The result is
+    /// not paginated: the whole set is returned at once.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="mask">Group mask — one group, several comma-separated groups, or a mask with `*` (any value) and `!` (exception), for example `demo*,!demoforex`.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Position>> PositionGetByGroupAsync(string mask, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/PositionGetByGroup/{Uri.EscapeDataString(mask)}";
+        var result = await _connection.SendAsync<MT5PositionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5Position>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Position>();
     }
@@ -869,6 +3821,25 @@ public sealed partial class MT5Endpoints
         return (IReadOnlyList<MT5Position>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Position>();
     }
 
+    /// <summary>Get a position by ticket</summary>
+    /// <remarks>
+    /// Returns a single open position by its ticket. Under the hedged accounting mode this is the
+    /// only way to address a position, because one account may hold several positions in the same
+    /// symbol.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="ticket">Position ticket.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Position?> PositionGetByTicketAsync(long ticket, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/PositionGetByTicket/{ticket.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5PositionApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
     /// <summary>Open positions by a list of tickets</summary>
     /// <remarks>
     /// Returns the open positions identified by the given tickets. This is the only way to address
@@ -890,12 +3861,31 @@ public sealed partial class MT5Endpoints
         return (IReadOnlyList<MT5Position>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Position>();
     }
 
+    /// <summary>Open positions of an account, read from the server</summary>
+    /// <remarks>
+    /// Same set as the cached read, but the trade server is asked each time, so the answer is
+    /// current even when the cache of the connection is behind. The result is not paginated: the
+    /// whole set is returned at once.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="login">Account login (account number).</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Position>> PositionRequestAsync(long login, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/PositionRequest/{login.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5PositionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Position>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Position>();
+    }
+
     /// <summary>List positions by group</summary>
     /// <remarks>
     /// Returns open positions for all logins in groups matching the mask,
     /// ordered by Position ID ascending. Use the cursor for the next page.
     /// 
-    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="mask">Group mask — exact group name or a wildcard like "real\*".</param>
     /// <param name="limit">Maximum number of items to return in one page. Omit to return all items in a single page. Maximum allowed value is 5000.</param>
@@ -909,9 +3899,1274 @@ public sealed partial class MT5Endpoints
         if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
         if (cursor is not null) qs.Add("cursor=" + Uri.EscapeDataString(cursor));
         if (qs.Count > 0) url += "?" + string.Join("&", qs);
-        var result = await _connection.SendAsync<MT5PositionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var result = await _connection.SendAsync<MT5PositionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.UnwrapPage(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Open positions of a group and symbol, read from the server</summary>
+    /// <remarks>
+    /// Returns the open positions of the given symbol for the logins in the groups matching the
+    /// mask, read from the trade server. The result is not paginated: the whole set is returned
+    /// at once.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="mask">Group mask — one group, several comma-separated groups, or a mask with `*` (any value) and `!` (exception), for example `demo*,!demoforex`.</param>
+    /// <param name="symbol">Symbol name.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Position>> PositionRequestByGroupSymbolAsync(string mask, string symbol, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/PositionRequestByGroupSymbol/{Uri.EscapeDataString(mask)}/{Uri.EscapeDataString(symbol)}";
+        var result = await _connection.SendAsync<MT5PositionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Position>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Position>();
+    }
+
+    /// <summary>Open positions of several accounts, read from the server</summary>
+    /// <remarks>
+    /// Returns the open positions of the given accounts as the trade server holds them now. The
+    /// result is not paginated: the whole set is returned at once.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="logins">Account logins, repeated as `logins=…&amp;logins=…` query parameters.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Position>> PositionRequestByLoginsAsync(IReadOnlyList<long>? logins = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/PositionRequestByLogins";
+        var qs = new List<string>();
+        if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5PositionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Position>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Position>();
+    }
+
+    /// <summary>Open positions of several accounts by symbol, read from the server</summary>
+    /// <remarks>
+    /// Returns the open positions of the given symbol for the given accounts as the trade server
+    /// holds them now. The result is not paginated: the whole set is returned at once.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="symbol">Symbol name.</param>
+    /// <param name="logins">Account logins, repeated as `logins=…&amp;logins=…` query parameters.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Position>> PositionRequestByLoginsSymbolAsync(string symbol, IReadOnlyList<long>? logins = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/PositionRequestByLoginsSymbol/{Uri.EscapeDataString(symbol)}";
+        var qs = new List<string>();
+        if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5PositionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Position>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Position>();
+    }
+
+    /// <summary>Open positions by tickets (request body)</summary>
+    /// <remarks>
+    /// Returns the open positions with the given tickets, sent in the request body so a long list
+    /// fits. The result is not paginated: the whole set is returned at once.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="body">Position tickets, in request-body JSON array form.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Position>> PositionRequestByTicketsAsync(IReadOnlyList<long> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/PositionRequestByTickets";
+        var result = await _connection.SendAsync<MT5PositionListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Position>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Position>();
+    }
+
+    /// <summary>Split or consolidate positions</summary>
+    /// <remarks>
+    /// Converts the volumes and prices of the listed positions by the ratio of the request (a
+    /// corporate action, for example) and answers one result code per ticket, at the same index
+    /// as in the request. Omit `adjustments` to let the server calculate the balance
+    /// adjustments itself; pass an array of zeros to skip them. A partial failure answers the
+    /// array as well.
+    /// The operation is not idempotent — a repeat after an unclear outcome splits the positions a
+    /// second time by the same ratio.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Tickets, conversion ratio and rounding rules.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> PositionSplitAsync(MT5PositionSplitRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/PositionSplit";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Update a position</summary>
+    /// <remarks>
+    /// Reads the stored position by its ticket and applies only the fields present in the body,
+    /// so everything omitted keeps its current value. A position is identified by its ticket; the
+    /// record must live on the server this request is addressed to.
+    /// The operation is not idempotent — a repeat after an unclear outcome applies the change a
+    /// second time and may overwrite a newer value.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Position fields to apply; `position.Position` identifies the position.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> PositionUpdateAsync(MT5Position body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/PositionUpdate";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Update several positions</summary>
+    /// <remarks>
+    /// Reads every stored position by its ticket, applies the fields present in each entry and
+    /// answers one result code per entry, at the same index as in the request. Every entry must
+    /// carry its ticket; an unknown ticket aborts the whole batch before anything is written and
+    /// its error code is answered instead. An empty body is rejected as invalid input.
+    /// The operation is not idempotent — a repeat after an unclear outcome applies the changes a
+    /// second time.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Position fields to apply, one entry per position.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> PositionUpdateBatchAsync(IReadOnlyList<MT5Position> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/PositionUpdateBatch";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Update several positions (plain array form)</summary>
+    /// <remarks>
+    /// Same effect and same reply as the batch form: one result code per entry of the body, at
+    /// the same index. Kept because the two forms are separate operations of the trade server and
+    /// differ in the shape of the array they accept.
+    /// The operation is not idempotent — a repeat after an unclear outcome applies the changes a
+    /// second time.
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Position fields to apply, one entry per position.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> PositionUpdateBatchArrayAsync(IReadOnlyList<MT5Position> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/PositionUpdateBatchArray";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Set the proxy of the manager connection</summary>
+    /// <remarks>
+    /// Stores the proxy parameters on the connection object the API uses for this trade platform.
+    /// They take effect on the next connection: a connection that is already established keeps the
+    /// route it was opened with.
+    /// 
+    /// The address and the authentication string are limited to 63 characters each; a longer value
+    /// is refused as invalid. The authentication string is never returned by any read.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Proxy parameters to store.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> ProxySetAsync(MT5ProxySettings body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/ProxySet";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Get a trade request by identifier</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Returns the trade request with the given identifier as it is known to the connection,
+    /// without taking it for processing: the request stays in the queue and can still be handled
+    /// by any dealer. Use `DealerLock` to reserve it for an answer.
+    /// 
+    /// &lt;br&gt;
+    /// The queue must be opened with `DealerStart` first. An identifier that is not in the
+    /// queue is answered with the platform code that states it.
+    /// 
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="id">Identifier of the trade request.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Request?> RequestGetAsync(int id, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/RequestGet/{id.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5RequestApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>List the trade requests waiting in the queue</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Returns the requests waiting in the queue as one list, in the order the trade server
+    /// keeps them. Reading does not take a request for processing and does not change the
+    /// queue; requests already taken by a dealer are not part of the list.
+    /// 
+    /// &lt;br&gt;
+    /// The whole queue is read at once and then trimmed to the requested window: `from`
+    /// skips that many requests from the head, `count` limits how many are returned, and
+    /// the default of both returns everything. The queue is live, so a repeated call may see a
+    /// different set. The queue must be opened with `DealerStart` first.
+    /// 
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="from">Number of requests to skip from the head of the queue; 0 by default.</param>
+    /// <param name="count">Maximum number of requests to return; 0 returns the whole queue.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Request>> RequestGetAllAsync(int? @from = null, int? count = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/RequestGetAll";
+        var qs = new List<string>();
+        if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
+        if (count is not null) qs.Add("count=" + count.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5RequestListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Request>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Request>();
+    }
+
+    /// <summary>Add a symbol to the selected-symbol list</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// The selected list decides whose price stream the manager application receives, so a symbol
+    /// outside it produces no prices in the streaming feeds. The name must match the symbol
+    /// exactly as the trade server holds it.
+    /// 
+    /// &lt;br&gt;
+    /// Adding a symbol that is already in the list changes nothing and answers success. Adding a
+    /// name the trade server does not know fails with a platform error.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Symbol to add.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> SelectedAddAsync(MT5SymbolRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SelectedAdd";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Add every available symbol to the selected-symbol list</summary>
+    /// <remarks>
+    /// Puts every symbol the manager application is allowed to see into the selected list. The
+    /// call changes nothing else and is safe to repeat.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> SelectedAddAllAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SelectedAddAll";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Add several symbols to the selected-symbol list</summary>
+    /// <remarks>
+    /// Adds every name in the body to the selected list in one call. The batch is applied as a
+    /// whole: the platform result covers the complete list. Names already present change
+    /// nothing. Repeating the call is harmless.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Symbols to add.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> SelectedAddBatchAsync(MT5SymbolsRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SelectedAddBatch";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Remove a symbol from the selected-symbol list</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Removes one symbol either by its name or by its position in the list; give exactly one of
+    /// the two. Removing a symbol that is not in the list fails with a platform error.
+    /// 
+    /// &lt;br&gt;
+    /// A symbol that has open orders or open positions cannot be removed while the manager
+    /// application receives orders or positions — such symbols stay in the list and the call
+    /// fails with a platform error.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Symbol name or list position to remove.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> SelectedDeleteAsync(MT5SelectedDeleteRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SelectedDelete";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Clear the selected-symbol list</summary>
+    /// <remarks>
+    /// Removes every symbol from the selected list. Symbols with open orders or open positions
+    /// stay in it while the manager application receives orders or positions, and the call then
+    /// fails with a platform error. Safe to repeat.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> SelectedDeleteAllAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SelectedDeleteAll";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Remove several symbols from the selected-symbol list</summary>
+    /// <remarks>
+    /// Removes every name in the body in one call. Symbols with open orders or open positions
+    /// stay in the list and make the platform reject the batch while the manager application
+    /// receives orders or positions. Names that are not in the list are ignored.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Symbols to remove.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> SelectedDeleteBatchAsync(MT5SymbolsRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SelectedDeleteBatch";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Read the selected-symbol list</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Returns the names in the list in list order, together with the list length at the moment
+    /// of the request. The window is positional: `from` is the position it starts at and
+    /// `count` its size.
+    /// 
+    /// &lt;br&gt;
+    /// This is the list whose prices the manager application receives. When the application is
+    /// connected with order or position updates, the symbols that have open orders or open
+    /// positions are in the list automatically.
+    /// 
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="from">Position the window starts at; the first symbol when omitted.</param>
+    /// <param name="count">Window size; 100 when omitted, at most 1000.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5SelectedPage?> SelectedNextAsync(int? @from = null, int? count = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SelectedNext";
+        var qs = new List<string>();
+        if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
+        if (count is not null) qs.Add("count=" + count.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5SelectedPageApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Move a symbol inside the selected-symbol list</summary>
+    /// <remarks>
+    /// Changes the order of the selected list without adding or removing anything. A negative
+    /// shift moves the symbol towards the top of the list, a positive one towards its end; a
+    /// position or shift outside the list fails with a platform error.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Position of the symbol and its offset.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> SelectedShiftAsync(MT5SelectedShiftRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SelectedShift";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Delete a settings file of the manager account</summary>
+    /// <remarks>
+    /// Removes the file with the given folder and name from the directory of the manager account on
+    /// the trade server. The deletion is not reversible; a file that does not exist is answered with
+    /// the platform error that explains it.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="section">Name of the subfolder of the manager directory.</param>
+    /// <param name="key">Name of the file.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> SettingDeleteAsync(string? section = null, string? key = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SettingDelete";
+        var qs = new List<string>();
+        if (section is not null) qs.Add("section=" + Uri.EscapeDataString(section));
+        if (key is not null) qs.Add("key=" + Uri.EscapeDataString(key));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Read a settings file of the manager account</summary>
+    /// <remarks>
+    /// Returns the settings file stored in the directory of the manager account on the trade
+    /// server. The path of the file is the manager name, followed by the folder and the file name
+    /// given here.
+    /// 
+    /// The server keeps the file as arbitrary data: its format is defined by whoever wrote it. A
+    /// file that does not exist is answered with the platform error that says so.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="section">Name of the subfolder of the manager directory.</param>
+    /// <param name="key">Name of the file.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5SettingFile?> SettingGetAsync(string? section = null, string? key = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SettingGet";
+        var qs = new List<string>();
+        if (section is not null) qs.Add("section=" + Uri.EscapeDataString(section));
+        if (key is not null) qs.Add("key=" + Uri.EscapeDataString(key));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5SettingFileApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Write a settings file of the manager account</summary>
+    /// <remarks>
+    /// Stores the file in the directory of the manager account on the trade server, replacing a
+    /// file of the same name wholly. The server does not track changes made by other applications:
+    /// only the last submitted version is kept, so the whole file is sent, not just the changed
+    /// values.
+    /// 
+    /// One level of nesting and at most 128 folders are available inside the manager directory, at
+    /// most 1024 files are kept, and each file is limited to 16 MB — a larger payload is refused as
+    /// invalid. Only the file name extensions the platform accepts may be used; it answers an
+    /// unknown one with the error that explains it. Send updates sparingly: the platform advises
+    /// no more than one update per five minutes.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">File to store: folder, name and content.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> SettingSetAsync(MT5SettingFile body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SettingSet";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Cancel a subscription of an account</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Cancels the subscription of the account the way the client terminal does: the management
+    /// mode of the configuration is honoured, and when unsubscribing is paid the money is
+    /// handled according to the configuration. The cancellation is written as an action and the
+    /// subscription record is removed.
+    /// 
+    /// &lt;br&gt;
+    /// The response carries the cancelled subscription record and the action record with the
+    /// payment, if there was one. The operation is not idempotent: a repeated request for an
+    /// already cancelled subscription fails with the platform error.
+    /// 
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Account login and subscription configuration identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5SubscriptionActionResult?> SubscriptionCancelAsync(MT5SubscriptionTarget body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionCancel";
+        var result = await _connection.SendAsync<MT5SubscriptionActionResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Cancel subscriptions of several accounts</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Cancels every subscription of the batch with the same checks and the same payment
+    /// handling as the single-account operation.
+    /// 
+    /// &lt;br&gt;
+    /// The response carries one result code per pair, in request order, together with the
+    /// cancelled subscription records and their action records. `Ok` in the top-level
+    /// envelope means every pair was cancelled, `ErrPartial` means only some were.
+    /// The operation is not idempotent.
+    /// 
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Account logins and subscription configuration identifiers.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5SubscriptionBatchResult?> SubscriptionCancelBatchAsync(IReadOnlyList<MT5SubscriptionTarget> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionCancelBatch";
+        var result = await _connection.SendAsync<MT5SubscriptionBatchResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Subscription configuration by name, from the streamed copy</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Returns the subscription configuration with the given name from the configuration copy
+    /// that the trade server streams to this connection. The call does not reach the server, so
+    /// it answers immediately and may lag behind the server by the time of the last update.
+    /// 
+    /// &lt;br&gt;
+    /// The copy exists only when the configuration stream is enabled for the connection;
+    /// otherwise the call fails with the platform error. Use the request form to read the
+    /// configuration directly from the server.
+    /// 
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="name">Name of the subscription configuration.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5ConSubscription?> SubscriptionCfgGetAsync(string name, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionCfgGet/{Uri.EscapeDataString(name)}";
+        var result = await _connection.SendAsync<MT5ConSubscriptionApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Subscription configuration by identifier, from the streamed copy</summary>
+    /// <remarks>
+    /// Same as the lookup by name, but the configuration is addressed by its identifier. The
+    /// call reads the copy streamed to this connection and does not reach the server; the copy
+    /// exists only when the configuration stream is enabled for the connection.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="id">Identifier of the subscription configuration.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5ConSubscription?> SubscriptionCfgGetByIDAsync(long id, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionCfgGetByID/{id.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5ConSubscriptionApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Subscription configuration by name, from the server</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Requests the subscription configuration with the given name directly from the trade
+    /// server, so the answer is current at the moment of the call. An unknown name is answered
+    /// with the platform error rather than with an empty configuration.
+    /// 
+    /// &lt;br&gt;
+    /// The configuration is returned with its whole content: the countries, groups, trading
+    /// instruments and news categories it covers, not only its general settings.
+    /// 
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="name">Name of the subscription configuration.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5ConSubscription?> SubscriptionCfgRequestAsync(string name, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionCfgRequest/{Uri.EscapeDataString(name)}";
+        var result = await _connection.SendAsync<MT5ConSubscriptionApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Subscription configuration by identifier, from the server</summary>
+    /// <remarks>
+    /// Same as the request by name, but the configuration is addressed by its identifier. The
+    /// answer is read from the trade server at the moment of the call and carries the whole
+    /// content of the configuration.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="id">Identifier of the subscription configuration.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5ConSubscription?> SubscriptionCfgRequestByIDAsync(long id, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionCfgRequestByID/{id.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5ConSubscriptionApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Delete a subscription record</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Removes the subscription record with the given `id` from the subscription database
+    /// of the trade server. The account is not notified and no refund is issued: this is a
+    /// database correction, not a cancellation, so nothing is checked against the management
+    /// mode of the configuration either.
+    /// 
+    /// &lt;br&gt;
+    /// The record can only be deleted on the trade server that owns it; a request that reaches
+    /// another server is refused with `MT_RET_ERR_NOTMAIN`, an unknown identifier with
+    /// `MT_RET_ERR_NOTFOUND`.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="id">Identifier of the subscription record.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> SubscriptionDeleteAsync(long id, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionDelete/{id.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Delete subscription records in bulk</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Removes every subscription record with the given identifiers, with the same semantics as
+    /// the single-record delete: no notification, no refund, no check against the management
+    /// mode of the configuration.
+    /// 
+    /// &lt;br&gt;
+    /// The response carries one result code per identifier, in request order. `Ok` in the
+    /// top-level envelope means every record was removed, `ErrPartial` means only some
+    /// were — inspect the array.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Identifiers of the subscription records to delete.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> SubscriptionDeleteBatchAsync(IReadOnlyList<long> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionDeleteBatch";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Delete a subscription action record</summary>
+    /// <remarks>
+    /// Removes the action record with the given `id` from the subscription database of the
+    /// trade server. The action is only a journal entry: deleting it does not return money and
+    /// does not restore the subscription. The record can only be deleted on the trade server
+    /// that owns it; a request that reaches another server is refused with
+    /// `MT_RET_ERR_NOTMAIN`, an unknown identifier with `MT_RET_ERR_NOTFOUND`.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="id">Identifier of the action record.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> SubscriptionHistoryDeleteAsync(long id, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionHistoryDelete/{id.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Delete subscription action records in bulk</summary>
+    /// <remarks>
+    /// Removes every action record with the given identifiers, with the same semantics as the
+    /// single-record delete: the journal entries disappear, money and subscriptions stay as
+    /// they are. The response carries one result code per identifier, in request order, with
+    /// the same `Ok` / `ErrPartial` reading as the subscription batch delete.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Identifiers of the action records to delete.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> SubscriptionHistoryDeleteBatchAsync(IReadOnlyList<long> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionHistoryDeleteBatch";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Subscription actions of an account for a period</summary>
+    /// <remarks>
+    /// Returns every action performed with the subscriptions of the account inside the given
+    /// time range: joins, renewals, cancellations and edits, each with the payment it carried.
+    /// Both bounds are seconds since 1970-01-01 and are inclusive; the range is required.
+    /// The result is not paginated.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="login">Login of the account.</param>
+    /// <param name="from">Start of the period, in seconds since 1970-01-01.</param>
+    /// <param name="to">End of the period, in seconds since 1970-01-01.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5SubscriptionHistory>> SubscriptionHistoryRequestAsync(long login, long? @from = null, long? @to = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionHistoryRequest/{login.ToString(CultureInfo.InvariantCulture)}";
+        var qs = new List<string>();
+        if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
+        if (@to is not null) qs.Add("to=" + @to.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5SubscriptionHistoryListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5SubscriptionHistory>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5SubscriptionHistory>();
+    }
+
+    /// <summary>Subscription actions of the accounts of a group for a period</summary>
+    /// <remarks>
+    /// Returns the actions performed with the subscriptions of every account that belongs to a
+    /// group matching the mask, inside the given time range. The mask takes full group names
+    /// including the path, several names separated by commas, and the wildcards `*` (any
+    /// value) and `!` (exclude). Both bounds are seconds since 1970-01-01 and are
+    /// inclusive; the range is required.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="mask">Group mask: one or more comma-separated names with optional wildcards.</param>
+    /// <param name="from">Start of the period, in seconds since 1970-01-01.</param>
+    /// <param name="to">End of the period, in seconds since 1970-01-01.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5SubscriptionHistory>> SubscriptionHistoryRequestByGroupAsync(string mask, long? @from = null, long? @to = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionHistoryRequestByGroup/{Uri.EscapeDataString(mask)}";
+        var qs = new List<string>();
+        if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
+        if (@to is not null) qs.Add("to=" + @to.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5SubscriptionHistoryListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5SubscriptionHistory>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5SubscriptionHistory>();
+    }
+
+    /// <summary>Subscription action record by identifier</summary>
+    /// <remarks>
+    /// Returns the action record with the given identifier. An unknown identifier is answered
+    /// with the platform error `MT_RET_ERR_NOTFOUND` rather than with an empty record.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="id">Identifier of the action record.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5SubscriptionHistory?> SubscriptionHistoryRequestByIDAsync(long id, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionHistoryRequestByID/{id.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5SubscriptionHistoryApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Subscription action records by identifiers</summary>
+    /// <remarks>
+    /// Returns the action records with the given identifiers. Identifiers that do not exist are
+    /// simply absent from the result.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="ids">Identifiers of the action records, repeated as `ids=…&amp;ids=…` query parameters.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5SubscriptionHistory>> SubscriptionHistoryRequestByIDsAsync(IReadOnlyList<long>? ids = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionHistoryRequestByIDs";
+        var qs = new List<string>();
+        if (ids is not null) foreach (var v in ids) qs.Add("ids=" + v.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5SubscriptionHistoryListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5SubscriptionHistory>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5SubscriptionHistory>();
+    }
+
+    /// <summary>Subscription actions of several accounts for a period</summary>
+    /// <remarks>
+    /// Returns the actions performed with the subscriptions of every listed account inside the
+    /// given time range. Both bounds are seconds since 1970-01-01 and are inclusive; the range
+    /// is required. The result is not paginated.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="logins">Account logins, repeated as `logins=…&amp;logins=…` query parameters.</param>
+    /// <param name="from">Start of the period, in seconds since 1970-01-01.</param>
+    /// <param name="to">End of the period, in seconds since 1970-01-01.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5SubscriptionHistory>> SubscriptionHistoryRequestByLoginsAsync(IReadOnlyList<long>? logins = null, long? @from = null, long? @to = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionHistoryRequestByLogins";
+        var qs = new List<string>();
+        if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
+        if (@from is not null) qs.Add("from=" + @from.Value.ToString(CultureInfo.InvariantCulture));
+        if (@to is not null) qs.Add("to=" + @to.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5SubscriptionHistoryListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5SubscriptionHistory>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5SubscriptionHistory>();
+    }
+
+    /// <summary>Update a subscription action record</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Changes an action record that already exists on the trade server. The record is
+    /// addressed by `id`, which is mandatory; only the fields present in the body are
+    /// written, and the remaining ones keep their stored values.
+    /// 
+    /// &lt;br&gt;
+    /// The record can only be changed on the trade server that owns it; a request that reaches
+    /// another server is refused with `MT_RET_ERR_NOTMAIN`, an unknown identifier with
+    /// `MT_RET_ERR_NOTFOUND`.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Action fields to write; `id` is mandatory.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> SubscriptionHistoryUpdateAsync(MT5SubscriptionHistory body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionHistoryUpdate";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Update subscription action records in bulk</summary>
+    /// <remarks>
+    /// Applies the same rules as the single-record update to every action of the batch. Each
+    /// action must carry its `id`; only the fields present in an action are written.
+    /// The response carries one result code per action, in request order, with the same
+    /// `Ok` / `ErrPartial` reading as the subscription batch update.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Action records to write; each needs a mandatory `id`.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> SubscriptionHistoryUpdateBatchAsync(IReadOnlyList<MT5SubscriptionHistory> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionHistoryUpdateBatch";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Update subscription action records in bulk (plain array form)</summary>
+    /// <remarks>
+    /// Same operation and same response as the batch form: every action is addressed by its
+    /// `id` and only the fields present in it are written. The two bulk routes are kept
+    /// apart because the trade server accepts the records in two shapes; over the API both
+    /// take the same JSON array and return the same result codes.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Action records to write; each needs a mandatory `id`.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> SubscriptionHistoryUpdateBatchArrayAsync(IReadOnlyList<MT5SubscriptionHistory> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionHistoryUpdateBatchArray";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Subscribe an account to a subscription configuration</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Adds the subscription for the account the same way the client terminal does: the
+    /// management mode of the configuration is honoured, and when the configuration is paid the
+    /// cost is debited from the account balance, creating the matching balance deal. A refused
+    /// subscription — disabled configuration, account not allowed, no money — is returned as
+    /// the platform error that explains it.
+    /// 
+    /// &lt;br&gt;
+    /// The response carries the subscription record as created and the action record with the
+    /// payment, if there was one. The operation is not idempotent: repeating a request that
+    /// succeeded but whose answer was lost subscribes the account again and charges it again.
+    /// 
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Account login and subscription configuration identifier.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5SubscriptionActionResult?> SubscriptionJoinAsync(MT5SubscriptionTarget body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionJoin";
+        var result = await _connection.SendAsync<MT5SubscriptionActionResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Subscribe several accounts to subscription configurations</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Performs the same subscription as the single-account operation for every pair of the
+    /// batch, with the same checks and the same debiting.
+    /// 
+    /// &lt;br&gt;
+    /// The response carries one result code per pair, in request order, together with the
+    /// created subscription records and their action records. `Ok` in the top-level
+    /// envelope means every pair was subscribed, `ErrPartial` means only some were.
+    /// The operation is not idempotent.
+    /// 
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Account logins and subscription configuration identifiers.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5SubscriptionBatchResult?> SubscriptionJoinBatchAsync(IReadOnlyList<MT5SubscriptionTarget> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionJoinBatch";
+        var result = await _connection.SendAsync<MT5SubscriptionBatchResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Subscriptions of an account</summary>
+    /// <remarks>
+    /// Returns every subscription of the account with the given login, including expired ones
+    /// that the server still keeps. The result is not paginated. An unknown login is answered
+    /// with the platform error rather than with an empty list.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="login">Login of the account.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Subscription>> SubscriptionRequestAsync(long login, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionRequest/{login.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5SubscriptionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Subscription>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Subscription>();
+    }
+
+    /// <summary>Subscriptions of the accounts of a group</summary>
+    /// <remarks>
+    /// Returns the subscriptions of every account that belongs to a group matching the mask.
+    /// The mask takes full group names including the path (`demo\demoforex`), several
+    /// names separated by commas, and the wildcards `*` (any value) and `!`
+    /// (exclude), for example `demo*,!demoforex`.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="mask">Group mask: one or more comma-separated names with optional wildcards.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Subscription>> SubscriptionRequestByGroupAsync(string mask, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionRequestByGroup/{Uri.EscapeDataString(mask)}";
+        var result = await _connection.SendAsync<MT5SubscriptionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Subscription>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Subscription>();
+    }
+
+    /// <summary>Subscription record by identifier</summary>
+    /// <remarks>
+    /// Returns the subscription record with the given identifier. An unknown identifier is
+    /// answered with the platform error `MT_RET_ERR_NOTFOUND` rather than with an empty
+    /// record.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="id">Identifier of the subscription record.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Subscription?> SubscriptionRequestByIDAsync(long id, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionRequestByID/{id.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5SubscriptionApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Subscription records by identifiers</summary>
+    /// <remarks>
+    /// Returns the subscription records with the given identifiers. Identifiers that do not
+    /// exist are simply absent from the result. For a list longer than fits in the query
+    /// string, request the records one by one or by account.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="ids">Identifiers of the subscription records, repeated as `ids=…&amp;ids=…` query parameters.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Subscription>> SubscriptionRequestByIDsAsync(IReadOnlyList<long>? ids = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionRequestByIDs";
+        var qs = new List<string>();
+        if (ids is not null) foreach (var v in ids) qs.Add("ids=" + v.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5SubscriptionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Subscription>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Subscription>();
+    }
+
+    /// <summary>Subscriptions of several accounts</summary>
+    /// <remarks>
+    /// Returns the subscriptions of every account whose login is listed. Logins that do not
+    /// exist are simply absent from the result. For a list longer than fits in the query
+    /// string, request the accounts one by one or by group.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="logins">Account logins, repeated as `logins=…&amp;logins=…` query parameters.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Subscription>> SubscriptionRequestByLoginsAsync(IReadOnlyList<long>? logins = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionRequestByLogins";
+        var qs = new List<string>();
+        if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5SubscriptionListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Subscription>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Subscription>();
+    }
+
+    /// <summary>Update a subscription record</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Changes a subscription record that already exists on the trade server. The record is
+    /// addressed by `id`, which is mandatory: the subscription link itself is created and
+    /// removed by the subscribe and cancel operations, never by this one.
+    /// 
+    /// &lt;br&gt;
+    /// Only the fields present in the body are written; a field left out keeps the value
+    /// currently stored. The whole record must still satisfy the rules of the subscription
+    /// configuration, so the usual order is: read the record, change the fields needed, send
+    /// the result back.
+    /// 
+    /// &lt;br&gt;
+    /// The change is written straight to the subscription database and is not checked against
+    /// the management mode of the configuration — the operation is meant for administrative
+    /// corrections. The record can only be changed on the trade server that owns it; a request
+    /// that reaches another server is refused with the platform error `MT_RET_ERR_NOTMAIN`.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Subscription fields to write; `id` is mandatory.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> SubscriptionUpdateAsync(MT5Subscription body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionUpdate";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Update subscription records in bulk</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Applies the same rules as the single-record update to every record of the batch. Each
+    /// record must carry its `id`; only the fields present in a record are written.
+    /// 
+    /// &lt;br&gt;
+    /// The response carries one result code per record, in request order. `Ok` in the
+    /// top-level envelope means every record was updated, `ErrPartial` means only some
+    /// were — inspect the array. When a record cannot be loaded or written at all, the call
+    /// ends with that error and no array is returned.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Subscription records to write; each needs a mandatory `id`.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> SubscriptionUpdateBatchAsync(IReadOnlyList<MT5Subscription> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionUpdateBatch";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Update subscription records in bulk (plain array form)</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Same operation and same response as the batch form: every record is addressed by its
+    /// `id` and only the fields present in it are written. The two bulk routes are kept
+    /// apart because the trade server accepts the records in two shapes; over the API both
+    /// take the same JSON array and return the same result codes.
+    /// 
+    /// &lt;br&gt;
+    /// The response carries one result code per record, in request order, with the same
+    /// `Ok` / `ErrPartial` reading as the batch form.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Subscription records to write; each needs a mandatory `id`.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Result>> SubscriptionUpdateBatchArrayAsync(IReadOnlyList<MT5Subscription> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SubscriptionUpdateBatchArray";
+        var result = await _connection.SendAsync<MT5ResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Result>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Result>();
+    }
+
+    /// <summary>Summary currency of the trade server</summary>
+    /// <remarks>
+    /// Returns the currency the profit of the summary positions is expressed in. The value is a
+    /// property of the trade server connection, not of a single request, and it applies to both
+    /// the summary and the exposure tables.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<string?> SummaryCurrencyGetAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SummaryCurrency";
+        var result = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Set the summary currency of the trade server</summary>
+    /// <remarks>
+    /// Sets the currency the profit of the summary positions is expressed in. The value is a
+    /// property of the trade server connection, not of a single request, so the change is visible
+    /// to every reader of the summary and the exposure tables until it is set back. The trade
+    /// server accepts only currencies it knows; an unknown one is answered with a platform error.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Currency code to calculate the summary profit in, as a JSON string.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> SummaryCurrencyPostAsync(string body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SummaryCurrency";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Summary of client and hedging positions for one symbol</summary>
+    /// <remarks>
+    /// Returns the summary record of the symbol: the client open interest, the hedging position of
+    /// the company and the profit of both. An unknown symbol answers with the platform error that
+    /// explains it rather than an empty record.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="symbol">Symbol the record is calculated for.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Summary?> SummaryGetAsync(string symbol, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SummaryGet/{Uri.EscapeDataString(symbol)}";
+        var result = await _connection.SendAsync<MT5SummaryApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Summary of client and hedging positions for every symbol</summary>
+    /// <remarks>
+    /// Returns the whole summary table: one record per symbol with the client open interest, the
+    /// hedging position of the company and the profit of both. The table ends with the total
+    /// record, which carries an empty symbol name. Profit figures of accounts whose deposit
+    /// currency differs from the summary currency become available only after the trade server
+    /// has received a quote of the symbol needed for the conversion.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Summary>> SummaryGetAllAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SummaryGetAll";
+        var result = await _connection.SendAsync<MT5SummaryListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Summary>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Summary>();
+    }
+
+    /// <summary>Check whether a group allows a symbol</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Checks whether the settings of the given client group allow working with the given symbol,
+    /// and returns both the answer and the platform code it came with: the symbol is available when
+    /// the code is the platform success code.
+    /// 
+    /// &lt;br&gt;
+    /// Both the symbol record and the group record are read from the trade server first; a read
+    /// that fails is answered with its platform code instead of the check result. The call changes
+    /// nothing.
+    /// 
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="symbol">Symbol name, e.g. `EURUSD`.</param>
+    /// <param name="group">Group name, including the path.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5SymbolExistResult?> SymbolExistAsync(string symbol, string? group = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SymbolExist/{Uri.EscapeDataString(symbol)}";
+        var qs = new List<string>();
+        if (group is not null) qs.Add("group=" + Uri.EscapeDataString(group));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5SymbolExistResultApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
     /// <summary>Get a symbol by name</summary>
@@ -944,6 +5199,34 @@ public sealed partial class MT5Endpoints
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/SymbolRecord/{Uri.EscapeDataString(symbol)}";
         var result = await _connection.SendAsync<MT5SymbolApiResponse>(new HttpMethod("PATCH"), url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Get a symbol as it is configured for a group</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Returns the symbol configuration with the trade settings that apply to the clients of the
+    /// given group, that is, the base symbol record with the group overrides applied. Without a
+    /// group the base record is returned, which is the same answer as the plain symbol read.
+    /// 
+    /// &lt;br&gt;
+    /// The read goes to the trade server and changes nothing.
+    /// 
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="symbol">Symbol name, e.g. `EURUSD`.</param>
+    /// <param name="group">Group whose overrides are applied; omitted means the base record.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Symbol?> SymbolRequestAsync(string symbol, string? group = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SymbolRequest/{Uri.EscapeDataString(symbol)}";
+        var qs = new List<string>();
+        if (group is not null) qs.Add("group=" + Uri.EscapeDataString(group));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5SymbolApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -1005,6 +5288,316 @@ public sealed partial class MT5Endpoints
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/SymbolUpdate/{Uri.EscapeDataString(symbol)}";
         var result = await _connection.SendAsync<MT5SymbolApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Change several symbol configurations in one call</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Each entry names a symbol and carries the fields to change; only the fields present in an
+    /// entry are written, and a field left out keeps its current server value. Entries are read and
+    /// prepared one by one and then sent to the trade server together; the answer lists the outcome
+    /// of every entry in the order it was sent.
+    /// 
+    /// &lt;br&gt;
+    /// A symbol that cannot be read, or an entry that cannot be prepared, is reported with its own
+    /// result code and does not block the others. When the platform refuses the whole batch, the
+    /// error code of the call is returned instead of the list. Duplicate symbol names in one request
+    /// are rejected. The call requires the right to change symbol settings and is accepted only by
+    /// the main trade server.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Entries to apply: symbol name and the fields to change.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BatchUpdateResult>> SymbolUpdateBatchAsync(IReadOnlyList<MT5SymbolBatchUpdateItem> body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/SymbolUpdateBatch";
+        var result = await _connection.SendAsync<MT5BatchUpdateResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BatchUpdateResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BatchUpdateResult>();
+    }
+
+    /// <summary>Add a quote into the price stream</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Publishes a quote into the live price stream of the trade server, where terminals and
+    /// subscribers receive it like a quote from a data provider. The quote is not written into
+    /// the stored tick history — use `TickHistoryAdd` for that.
+    /// 
+    /// &lt;br&gt;
+    /// The symbol is part of the body: the route carries none, and a body without a symbol is
+    /// rejected. Times left out are filled by the server with its current trading time; when both
+    /// the second and the millisecond time are given, the millisecond one wins.
+    /// 
+    /// &lt;br&gt;
+    /// The call changes the stream other participants see. It is not reversible: a quote cannot be
+    /// withdrawn once published, and a wrong price reaches every connected terminal at once. The
+    /// response confirms the trade server accepted the quote; it does not mean a terminal has
+    /// already received it.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">The quote to publish; its symbol is mandatory.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> TickAddAsync(MT5MarketTick body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TickAdd";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Add several quotes into the price stream</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Publishes a batch of quotes into the live price stream of the trade server in one call.
+    /// Each record carries its own symbol, so one batch may feed several instruments. Records are
+    /// published in the order they are sent, and no sorting or window check is performed by the
+    /// service.
+    /// 
+    /// &lt;br&gt;
+    /// The call changes the stream other participants see and is not reversible — a wrong price
+    /// reaches every connected terminal at once. The trade server applies the batch as a whole:
+    /// the response reports the outcome of the call, and a platform error code means the batch
+    /// was refused, not partially applied.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Quotes to publish; every record must carry its symbol.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> TickAddBatchAsync(MT5MarketTickAddBatchRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TickAddBatch";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Publish statistical information about the price</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Publishes session statistics for the symbol of the given quote: the extremes of the bid,
+    /// the ask and the last deal price, the extremes of the deal volume and the session totals.
+    /// The figures replace the ones the trade server currently holds for the symbol, so send the
+    /// complete set — a field left out is published as zero.
+    /// 
+    /// &lt;br&gt;
+    /// The call changes the figures terminals and subscribers display and is not reversible: the
+    /// previous statistics are not kept anywhere and cannot be restored through the API.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">The quote and the statistics to publish.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> TickAddStatAsync(MT5MarketTickAddStatRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TickAddStat";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Add ticks into the stored tick history</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Writes quotes directly into the tick history of the symbol, where they become part of the
+    /// stored history terminals load. Unlike `TickAdd`, the quotes are not published into the
+    /// live stream. The symbol comes from the route; the records carry no symbol of their own, and
+    /// they are written in the order they are sent — the service neither sorts them nor checks
+    /// them against the stored window.
+    /// 
+    /// &lt;br&gt;
+    /// The call changes the history of the trade server and is not reversible: an added tick can
+    /// be removed only by replacing the whole window with `TickHistoryReplace`, so keep a
+    /// backup of the trade server before writing. The response confirms the trade server accepted
+    /// the records, not that terminals have already reloaded the history.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="symbol">Symbol name whose history is written, e.g. "EURUSD".</param>
+    /// <param name="body">Ticks to add.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> TickHistoryAddAsync(string symbol, MT5MarketTickWriteRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TickHistoryAdd/{Uri.EscapeDataString(symbol)}";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Replace the stored ticks of a period</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Replaces the whole tick history of the symbol inside the given window with the records
+    /// sent: every stored tick whose time falls into the window is removed, and the sent ones are
+    /// written instead. A window left out is rejected — an empty body of records would otherwise
+    /// erase the whole history of the symbol.
+    /// 
+    /// &lt;br&gt;
+    /// The window is given in the trading time of the trade server and is inclusive of its
+    /// bounds. At least one record is required: the call replaces the window with what it is
+    /// given, so an empty list would only erase the period.
+    /// 
+    /// &lt;br&gt;
+    /// The call changes the history of the trade server and is not reversible: the removed ticks
+    /// are not kept anywhere, so keep a backup of the trade server before writing. The response
+    /// confirms the trade server accepted the call, not that terminals have already reloaded the
+    /// history.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="symbol">Symbol name whose history is replaced, e.g. "EURUSD".</param>
+    /// <param name="body">Ticks to write into the window.</param>
+    /// <param name="from">Window start, as a trading time of the trade server. Required.</param>
+    /// <param name="to">Window end, as a trading time of the trade server. Required.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> TickHistoryReplaceAsync(string symbol, MT5MarketTickWriteRequest body, DateTimeOffset @from, DateTimeOffset @to, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TickHistoryReplace/{Uri.EscapeDataString(symbol)}";
+        var qs = new List<string>();
+        qs.Add("from=" + Uri.EscapeDataString(@from.ToString("O", CultureInfo.InvariantCulture)));
+        qs.Add("to=" + Uri.EscapeDataString(@to.ToString("O", CultureInfo.InvariantCulture)));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Get the raw tick stream of a symbol</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Returns the stored quotes of the symbol for a time window, both the raw ones and the
+    /// processed ones the symbol configuration produces, ordered by time ascending. When the
+    /// symbol stores raw quotes, the stream is denser than the one `TicksHistory` returns.
+    /// 
+    /// &lt;br&gt;
+    /// Times are the trading times of the trade server, not UTC. `from` is required — a
+    /// window without a start would scan the whole stored history. `to` is optional and
+    /// defaults to the current server time. `limit` is 0 by default and returns the whole
+    /// window; a positive value caps the returned ticks and sets `truncated`. There is no
+    /// pagination: to read further, repeat the request with `from` moved past the last
+    /// returned tick.
+    /// 
+    /// &lt;br&gt;
+    /// The call only reads and changes nothing. When the platform has not received the requested
+    /// history yet, the call fails with the platform code `MT_RET_OK_NONE` and a message
+    /// saying the history is not synchronized — such a request may be repeated later.
+    /// 
+    /// &lt;br&gt;
+    /// The window is limited to one day and the answer to one million ticks, because the whole
+    /// history of that window is materialised by the trade server interface before the
+    /// `limit` is applied. Ask for a day at a time and continue from the last tick returned;
+    /// a longer window is refused rather than served at the risk of the service's memory.
+    /// 
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="symbol">Symbol name the quotes are requested for.</param>
+    /// <param name="from">Window start, as a trading time of the trade server. Required.</param>
+    /// <param name="to">Window end, as a trading time of the trade server. Optional — the current server time when omitted.</param>
+    /// <param name="limit">Maximum number of ticks returned; 0 means no limit within the window. Defaults to 0.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5TickPage?> TickHistoryRequestRawAsync(string symbol, DateTimeOffset @from, DateTimeOffset? @to = null, int? limit = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TickHistoryRequestRaw/{Uri.EscapeDataString(symbol)}";
+        var qs = new List<string>();
+        qs.Add("from=" + Uri.EscapeDataString(@from.ToString("O", CultureInfo.InvariantCulture)));
+        if (@to is not null) qs.Add("to=" + Uri.EscapeDataString(@to.Value.ToString("O", CultureInfo.InvariantCulture)));
+        if (limit is not null) qs.Add("limit=" + limit.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5TickPageApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Get the last quote of a symbol</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Returns the latest quote of the symbol as the trade server currently holds it, with the
+    /// spread difference of the manager's group already applied — the same figure the terminals
+    /// of that group see. Use `TickLastRaw` for the quote exactly as the data provider sent it.
+    /// 
+    /// &lt;br&gt;
+    /// The call only reads and changes nothing. It requires a connection to the trade platform;
+    /// without one the call is answered with a "not connected" error. The symbol must be part of
+    /// the quotes the connection receives, otherwise the trade server answers with an error.
+    /// 
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="symbol">Symbol name, e.g. "EURUSD".</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5MarketTickShort?> TickLastAsync(string symbol, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TickLast/{Uri.EscapeDataString(symbol)}";
+        var result = await _connection.SendAsync<MT5MarketTickShortApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Get the last raw quote of a symbol</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Returns the latest quote of the symbol exactly as the history server received it from the
+    /// data provider: no spread difference of any group is applied, unlike `TickLast`.
+    /// 
+    /// &lt;br&gt;
+    /// The call only reads and changes nothing. It requires a connection to the trade platform
+    /// and the right to read raw quotes; without the right the trade server answers with a
+    /// permission error. The symbol must be part of the quotes the connection receives.
+    /// 
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="symbol">Symbol name, e.g. "EURUSD".</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5MarketTickShort?> TickLastRawAsync(string symbol, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TickLastRaw/{Uri.EscapeDataString(symbol)}";
+        var result = await _connection.SendAsync<MT5MarketTickShortApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Get statistical information about the quotes of a symbol</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Returns the session figures of the symbol: the extremes of the bid, the ask and the last
+    /// deal price, the extremes of the deal volume, and the totals of the session — the number of
+    /// deals, their volume and turnover, and the buy and sell orders received. Fields the trade
+    /// server does not fill are returned as zero.
+    /// 
+    /// &lt;br&gt;
+    /// The call only reads and changes nothing. It requires a connection to the trade platform,
+    /// and the symbol must be part of the quotes the connection receives.
+    /// 
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="symbol">Symbol name, e.g. "EURUSD".</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5MarketTickStat?> TickStatAsync(string symbol, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TickStat/{Uri.EscapeDataString(symbol)}";
+        var result = await _connection.SendAsync<MT5MarketTickStatApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -1090,6 +5683,195 @@ public sealed partial class MT5Endpoints
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
     }
 
+    /// <summary>Get the current trading time from the server</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Asks the trade server for its current trading time and returns it. Unlike the calculated
+    /// time, which the service derives from its own clock and the server time zone, this value is
+    /// the server's own answer and costs a round trip to it.
+    /// 
+    /// &lt;br&gt;
+    /// The call only reads and changes nothing.
+    /// 
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<DateTimeOffset> TimeServerRequestAsync(CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TimeServerRequest";
+        var result = await _connection.SendAsync<DateTimeApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Bring orders, positions and balance of an account in line with an external system</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Makes the orders, positions and balance of the account match the passed state. The trade
+    /// server compares the lists with its own data and performs the difference as deals with the
+    /// `sync` reason: positions missing on one side are opened or closed, positions whose
+    /// direction, price or contract size changed are reopened, a volume change is corrected, and
+    /// a balance difference becomes a balance or correction deal. All of it stays in the trading
+    /// history of the client.
+    /// 
+    /// &lt;br&gt;
+    /// The operation is heavy and changes money and positions: it must be used by the system that
+    /// owns the account, not as a general-purpose edit. An omitted order or position list leaves
+    /// that part untouched; an empty list states that the account has none and closes the
+    /// existing ones. The call answers as soon as the trade server has accepted it, and the
+    /// resulting state of the account is reported to the platform journal.
+    /// 
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Account state to apply.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<bool> TradeAccountSetAsync(TradeAccountSetRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TradeAccountSet";
+        var result = await _connection.SendAsync<BooleanApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? default;
+    }
+
+    /// <summary>Check whether an account has the margin an order requires</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Checks whether the given account can place the described order, and returns the state of
+    /// the account before and after it. The margin of the hypothetical order is estimated from
+    /// the current state of the account and the current prices of its group, so the after state
+    /// is approximate.
+    /// 
+    /// &lt;br&gt;
+    /// Nothing is created or changed. An account without enough free margin is a normal answer
+    /// (`allowed` is `false`) and not an error. The volume uses four decimal places of
+    /// a lot; for the extended accuracy use the variant with the `Ext` suffix.
+    /// 
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="body">Order whose margin requirement is checked.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<TradeMarginCheckResult?> TradeMarginCheckAsync(TradeMarginCheckRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TradeMarginCheck";
+        var result = await _connection.SendAsync<TradeMarginCheckResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Check the margin of an order with extended volume accuracy</summary>
+    /// <remarks>
+    /// The same check as `TradeMarginCheck`, with the volume given in eight decimal places
+    /// of a lot instead of four. Nothing is created or changed; an account without enough free
+    /// margin is a normal answer and not an error.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="body">Order whose margin requirement is checked.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<TradeMarginCheckResult?> TradeMarginCheckExtAsync(TradeMarginCheckRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TradeMarginCheckExt";
+        var result = await _connection.SendAsync<TradeMarginCheckResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Calculate the profit of a position</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Calculates the profit a position with the given direction, volume and prices would bring,
+    /// in the deposit currency of the group, together with the rate that converts the profit
+    /// currency of the symbol into that currency. The calculation uses the current market prices
+    /// of the group, so the symbol must be available to that group.
+    /// 
+    /// &lt;br&gt;
+    /// Nothing is created or changed: the result describes a hypothetical position only. The
+    /// volume uses four decimal places of a lot; for the extended accuracy use the variant with
+    /// the `Ext` suffix.
+    /// 
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="body">Conditions of the calculation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<TradeProfitResult?> TradeProfitAsync(TradeProfitRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TradeProfit";
+        var result = await _connection.SendAsync<TradeProfitResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Calculate the profit of a position with extended volume accuracy</summary>
+    /// <remarks>
+    /// The same calculation as `TradeProfit`, with the volume given in eight decimal places
+    /// of a lot instead of four. Nothing is created or changed.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="body">Conditions of the calculation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<TradeProfitResult?> TradeProfitExtAsync(TradeProfitRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TradeProfitExt";
+        var result = await _connection.SendAsync<TradeProfitResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Calculate the rate of buying a currency for another one</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Calculates how much of the calculation currency pays for one unit of the base currency
+    /// when it is bought. With a group the spread adjustment of that group is applied; without
+    /// it the market prices are used. A symbol and its price replace the market quote of that
+    /// symbol in the calculation, unless the symbol is always converted at the market price.
+    /// 
+    /// &lt;br&gt;
+    /// Nothing is created or changed. The rate is built from current market data, so the
+    /// connection must have the orders and positions of the platform loaded.
+    /// 
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="body">Conditions of the calculation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<TradeRateResult?> TradeRateBuyAsync(TradeRateRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TradeRateBuy";
+        var result = await _connection.SendAsync<TradeRateResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Calculate the rate of selling a currency for another one</summary>
+    /// <remarks>
+    /// The same calculation as `TradeRateBuy` for a sale: how much of the calculation
+    /// currency is received for one unit of the base currency. Nothing is created or changed.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="body">Conditions of the calculation.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<TradeRateResult?> TradeRateSellAsync(TradeRateRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/TradeRateSell";
+        var result = await _connection.SendAsync<TradeRateResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
     /// <summary>Read the account state from the pump cache</summary>
     /// <remarks>
     /// Returns the trading state of the account — balance, credit, margin, equity and
@@ -1111,6 +5893,54 @@ public sealed partial class MT5Endpoints
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
+    /// <summary>Read the trading state of a group of accounts from the pump cache</summary>
+    /// <remarks>
+    /// Returns the cached trading states — balance, credit, margin, equity and stop-out — of every
+    /// account that matches the group mask, in one call. The data is as fresh as the last update
+    /// delivered by the server.
+    /// &lt;br&gt;
+    /// The mask accepts one group, several groups separated by commas, and the `*` (any value)
+    /// and `!` (exception) characters, for example `demo*,!demoforex`. The call only
+    /// reads and changes nothing. It requires the pumping connection of users, orders and
+    /// positions.
+    /// 
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="mask">Group, comma-separated groups or a group mask.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Account>> UserAccountGetByGroupAsync(string mask, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserAccountGetByGroup/{Uri.EscapeDataString(mask)}";
+        var result = await _connection.SendAsync<MT5AccountListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Account>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Account>();
+    }
+
+    /// <summary>Read the trading state of several accounts from the pump cache</summary>
+    /// <remarks>
+    /// Returns the cached trading states of the submitted logins in one call, which is cheaper
+    /// than reading them one by one. Logins the cache does not hold are absent from the result.
+    /// The call only reads and changes nothing. It requires the pumping connection of users,
+    /// orders and positions.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="logins">Logins to read.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Account>> UserAccountGetByLoginsAsync(IReadOnlyList<long>? logins = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserAccountGetByLogins";
+        var qs = new List<string>();
+        if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5AccountListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Account>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Account>();
+    }
+
     /// <summary>Read the account state from the trade server</summary>
     /// <remarks>
     /// Returns the trading state of the account — balance, credit, margin, equity and
@@ -1129,6 +5959,51 @@ public sealed partial class MT5Endpoints
         var result = await _connection.SendAsync<MT5AccountApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Request the trading state of a group of accounts from the trade server</summary>
+    /// <remarks>
+    /// Returns the trading states of every account of the group, requested from the trade server
+    /// instead of the local cache, so the values are current. The group name is given in full,
+    /// including the path; several groups are separated by commas.
+    /// &lt;br&gt;
+    /// The call only reads and changes nothing. It requires the pumping connection of users,
+    /// orders and positions.
+    /// 
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="group">Group name, or several groups separated by commas.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Account>> UserAccountRequestArrayAsync(string group, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserAccountRequestArray/{Uri.EscapeDataString(group)}";
+        var result = await _connection.SendAsync<MT5AccountListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Account>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Account>();
+    }
+
+    /// <summary>Request the trading state of several accounts from the trade server</summary>
+    /// <remarks>
+    /// Returns the trading states of the submitted logins, requested from the trade server instead
+    /// of the local cache. Logins that do not exist make the call fail as a whole. The call only
+    /// reads and changes nothing.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="logins">Logins to read.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5Account>> UserAccountRequestByLoginsAsync(IReadOnlyList<long>? logins = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserAccountRequestByLogins";
+        var qs = new List<string>();
+        if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5AccountListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5Account>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5Account>();
     }
 
     /// <summary>Create a user account</summary>
@@ -1172,6 +6047,158 @@ public sealed partial class MT5Endpoints
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
+    /// <summary>Check the balance and credit of an account against its deals history</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Adds up the deals of the account and compares the result with the balance and credit held
+    /// by the account record. The response carries both pairs of values, so the caller sees the
+    /// size of a discrepancy even when no correction was requested.
+    /// 
+    /// &lt;br&gt;
+    /// With `fix` set, the record is corrected to match the history before the response is
+    /// built; without it nothing is written. A mismatch is not an error: it is reported by the
+    /// `mismatch` flag of the response, while the platform error is returned for an unknown
+    /// account or a failed check.
+    /// 
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="login">User login (account number).</param>
+    /// <param name="fix">Whether the account is corrected to match its deals history.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5BalanceCheckResult?> UserBalanceCheckAsync(long login, bool? fix = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserBalanceCheck/{login.ToString(CultureInfo.InvariantCulture)}";
+        var qs = new List<string>();
+        if (fix is not null) qs.Add("fix=" + (fix.Value ? "true" : "false"));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5BalanceCheckResultApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Check the balance and credit of several accounts against their deals history</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Checks every submitted login in one call, with the same comparison and the same optional
+    /// correction as the single-account check. The response lists the accounts in the order they
+    /// were submitted.
+    /// 
+    /// &lt;br&gt;
+    /// The per-account outcome is available only when every account was checked: a partly
+    /// completed batch does not return the individual results to the caller, and the whole call
+    /// is answered with the platform error so that a partial correction is never mistaken for a
+    /// complete one. Without the correction flag no account is written to.
+    /// 
+    /// 
+    /// **Timeout:** 5 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Logins to check and the correction flag.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5BalanceCheckResult>> UserBalanceCheckBatchAsync(MT5BalanceCheckBatchRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserBalanceCheckBatch";
+        var result = await _connection.SendAsync<MT5BalanceCheckResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 5).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5BalanceCheckResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5BalanceCheckResult>();
+    }
+
+    /// <summary>Confirm the certificate of an account</summary>
+    /// <remarks>
+    /// Marks the issued certificate as trusted, which is what allows the account to authorize
+    /// with it in the extended authorization mode. The call only changes the confirmation state
+    /// of the certificate and is idempotent: confirming a confirmed certificate keeps it
+    /// confirmed.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="login">User login (account number).</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> UserCertConfirmAsync(long login, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserCertConfirm/{login.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Reset the certificate of an account</summary>
+    /// <remarks>
+    /// Removes the certificate the account uses for authorization in an extended authorization
+    /// mode. Authorization with the certificate becomes impossible; the server issues a new one
+    /// on the next connection attempt of the account. The call does not touch the account
+    /// record itself, and repeated calls do not restore the certificate.
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="login">User login (account number).</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> UserCertDeleteAsync(long login, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserCertDelete/{login.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Read the certificate of an account</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Returns the certificate issued to the account under the extended authorization mode of
+    /// its group: serial number, validity period, the names of the subject and of the issuer, and
+    /// whether the certificate belongs to a certification authority. The key material is not
+    /// part of the response.
+    /// 
+    /// &lt;br&gt;
+    /// The call only reads and changes nothing. An account without a certificate answers with
+    /// the platform error rather than an empty record.
+    /// 
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="login">User login (account number).</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Certificate?> UserCertGetAsync(long login, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserCertGet/{login.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5CertificateApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Install or replace the certificate of an account</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Replaces the certificate of the account with the submitted one; an account that has no
+    /// certificate yet gets it installed. The submitted file must be a certificate the trade
+    /// server accepts, otherwise the platform error is returned and the stored certificate stays
+    /// as it was.
+    /// 
+    /// &lt;br&gt;
+    /// The change applies only when the caller is connected to the trade server that holds the
+    /// account. Until the certificate is confirmed it cannot be used for authorization. The
+    /// certificate body is neither returned nor logged by the service.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="login">User login (account number).</param>
+    /// <param name="body">Certificate file contents.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> UserCertUpdateAsync(long login, MT5CertificateRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserCertUpdate/{login.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
     /// <summary>Delete a user</summary>
     /// <remarks>
     /// Removes the trading account with the given login from the trade server database. The
@@ -1188,6 +6215,126 @@ public sealed partial class MT5Endpoints
     {
         var url = $"api/v2/MT5/{_tradePlatform:D}/UserDelete/{login.ToString(CultureInfo.InvariantCulture)}";
         var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, null, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Remove several accounts</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Removes every submitted account from the trade server database in one call. The operation
+    /// is not reversible: the records are gone.
+    /// 
+    /// &lt;br&gt;
+    /// The per-account outcome is available only when every account was removed; a partly
+    /// completed batch is answered with the platform error naming the partial failure, because the
+    /// platform does not hand the individual results back to the caller in that case. Accounts
+    /// that do not exist make the call fail as a whole.
+    /// 
+    /// &lt;br&gt;
+    /// The operation is not idempotent — a repeated delete reports the record as absent instead of
+    /// deleting twice.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Logins of the accounts to remove.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5UserBatchResult>> UserDeleteBatchAsync(MT5UserDeleteBatchRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserDeleteBatch";
+        var result = await _connection.SendAsync<MT5UserBatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5UserBatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5UserBatchResult>();
+    }
+
+    /// <summary>Read an account by its number in an external trading system, from the pump cache</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Finds the account whose record carries the given number of an external trading system and
+    /// returns it as held by the local pump cache. When several accounts carry the same number, the
+    /// nearest record is returned.
+    /// 
+    /// &lt;br&gt;
+    /// The gateway identifier is optional: without it the number is matched against every gateway.
+    /// The call only reads and changes nothing. It requires the pumping connection of users.
+    /// 
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="account">Account number in the external trading system.</param>
+    /// <param name="gatewayId">Gateway identifier the number belongs to; optional.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5User?> UserExternalGetAsync(string account, long? gatewayId = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserExternalGet/{Uri.EscapeDataString(account)}";
+        var qs = new List<string>();
+        if (gatewayId is not null) qs.Add("gatewayId=" + gatewayId.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5UserApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Read an account by its number in an external trading system, from the trade server</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Same lookup as the cached read, but the record is requested from the trade server instead
+    /// of the local cache, so it reflects changes made on the server immediately. When several
+    /// accounts carry the same external number, the nearest record is returned.
+    /// 
+    /// &lt;br&gt;
+    /// The gateway identifier is optional: without it the number is matched against every gateway.
+    /// The call only reads and changes nothing.
+    /// 
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="account">Account number in the external trading system.</param>
+    /// <param name="gatewayId">Gateway identifier the number belongs to; optional.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5User?> UserExternalRequestAsync(string account, long? gatewayId = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserExternalRequest/{Uri.EscapeDataString(account)}";
+        var qs = new List<string>();
+        if (gatewayId is not null) qs.Add("gatewayId=" + gatewayId.Value.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5UserApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Synchronize an account with an external trading system</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Asks the gateway to bring the trading state of the account in line with the external
+    /// trading system it is linked to, and creates the correcting operations that follow from
+    /// the difference. Such operations appear in the trading history of the account.
+    /// 
+    /// &lt;br&gt;
+    /// The scope of the synchronization is chosen by the request: the whole state, the balance,
+    /// the open positions or the pending orders. The call works only when the gateway in use
+    /// provides trading-state synchronization and the account is linked to the external system;
+    /// otherwise the platform error is returned and nothing changes.
+    /// 
+    /// &lt;br&gt;
+    /// The operation is not idempotent — a repeat after an unclear outcome may create the
+    /// correcting operations a second time.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="login">User login (account number).</param>
+    /// <param name="body">Gateway, external account and scope of the synchronization.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<MT5Result?> UserExternalSyncAsync(long login, MT5ExternalSyncRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserExternalSync/{login.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<MT5ResultApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
@@ -1252,6 +6399,44 @@ public sealed partial class MT5Endpoints
         var result = await _connection.SendAsync<MT5UserListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
         var env = result.Envelope;
         return (IReadOnlyList<MT5User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5User>();
+    }
+
+    /// <summary>Read the group of an account</summary>
+    /// <remarks>
+    /// Returns the name of the group the account belongs to, as held by the local pump cache of
+    /// users. The call only reads and changes nothing, and requires the pumping connection of
+    /// users. An unknown login answers with the platform error.
+    /// 
+    /// **Timeout:** 10 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="login">User login (account number).</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<string?> UserGroupAsync(long login, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserGroup/{login.ToString(CultureInfo.InvariantCulture)}";
+        var result = await _connection.SendAsync<StringApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 10).ConfigureAwait(false);
+        var env = result.Envelope;
+        return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>List the logins of a group</summary>
+    /// <remarks>
+    /// Returns the logins of every account that belongs to the group, without their records. The
+    /// group name is given in full, including the path. The call only reads and changes nothing,
+    /// and requires the pumping connection of users.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="group">Group name.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<long>> UserLoginsAsync(string group, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserLogins/{Uri.EscapeDataString(group)}";
+        var result = await _connection.SendAsync<UInt64ListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<long>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<long>();
     }
 
     /// <summary>Change a user password</summary>
@@ -1337,6 +6522,51 @@ public sealed partial class MT5Endpoints
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
     }
 
+    /// <summary>Request the records of a group of accounts from the trade server</summary>
+    /// <remarks>
+    /// Returns the full records of every account of the group, requested from the trade server.
+    /// The mask accepts one group, several groups separated by commas, and the `*` (any
+    /// value) and `!` (exception) characters, for example `demo*,!demoforex`.
+    /// &lt;br&gt;
+    /// The call only reads and changes nothing. It can be expensive on a large group: prefer the
+    /// cached read when the freshness of the server is not required.
+    /// 
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="group">Group, comma-separated groups or a group mask.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5User>> UserRequestArrayAsync(string group, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserRequestArray/{Uri.EscapeDataString(group)}";
+        var result = await _connection.SendAsync<MT5UserListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5User>();
+    }
+
+    /// <summary>Request the records of several accounts from the trade server</summary>
+    /// <remarks>
+    /// Returns the full records of the submitted logins, requested from the trade server, so they
+    /// reflect changes made on the server immediately. Logins that do not exist make the call fail
+    /// as a whole. The call only reads and changes nothing.
+    /// 
+    /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
+    /// </remarks>
+    /// <param name="logins">Logins to read.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5User>> UserRequestByLoginsAsync(IReadOnlyList<long>? logins = null, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserRequestByLogins";
+        var qs = new List<string>();
+        if (logins is not null) foreach (var v in logins) qs.Add("logins=" + v.ToString(CultureInfo.InvariantCulture));
+        if (qs.Count > 0) url += "?" + string.Join("&", qs);
+        var result = await _connection.SendAsync<MT5UserListApiResponse>(HttpMethod.Get, url, null, options, default, defaultRequestTimeoutSeconds: 30).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5User>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5User>();
+    }
+
     /// <summary>Update a user record</summary>
     /// <remarks>
     /// &lt;br&gt;
@@ -1369,6 +6599,58 @@ public sealed partial class MT5Endpoints
         var result = await _connection.SendAsync<MT5UserApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
         var env = result.Envelope;
         return EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info);
+    }
+
+    /// <summary>Change several accounts</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Applies a partial record to every submitted account in one call. Each account is read from
+    /// the trade server first, the submitted fields are applied, and the resulting record is
+    /// written back, so a field left out keeps the value the server holds.
+    /// 
+    /// &lt;br&gt;
+    /// An account that cannot be read or changed fails the whole call before anything is written;
+    /// a partly completed batch is answered with the platform error naming the partial failure,
+    /// because the platform does not hand the individual results back to the caller in that case.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Accounts to change and the fields to apply to each.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5UserBatchResult>> UserUpdateBatchAsync(MT5UserUpdateBatchRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserUpdateBatch";
+        var result = await _connection.SendAsync<MT5UserBatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5UserBatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5UserBatchResult>();
+    }
+
+    /// <summary>Change several accounts, submitted as separate records</summary>
+    /// <remarks>
+    /// &lt;br&gt;
+    /// Same operation as the batch update and the same rules for the body: each account is read
+    /// from the trade server, the submitted fields are applied and the resulting record is written
+    /// back. The two routes differ only in how the records are handed to the trade server, and a
+    /// client normally needs one of them.
+    /// 
+    /// &lt;br&gt;
+    /// An account that cannot be read or changed fails the whole call before anything is written;
+    /// a partly completed batch is answered with the platform error naming the partial failure.
+    /// 
+    /// 
+    /// **Timeout:** 15 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: The operation may still be completed by the server (`X-Request-Outcome: unknown`): check its result before repeating it.
+    /// </remarks>
+    /// <param name="body">Accounts to change and the fields to apply to each.</param>
+    /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
+    /// <exception cref="ApiError">The response envelope carried an error.</exception>
+    public async Task<IReadOnlyList<MT5UserBatchResult>> UserUpdateBatchArrayAsync(MT5UserUpdateBatchRequest body, CallOptions? options = null)
+    {
+        var url = $"api/v2/MT5/{_tradePlatform:D}/UserUpdateBatchArray";
+        var result = await _connection.SendAsync<MT5UserBatchResultListApiResponse>(HttpMethod.Post, url, body, options, default, defaultRequestTimeoutSeconds: 15).ConfigureAwait(false);
+        var env = result.Envelope;
+        return (IReadOnlyList<MT5UserBatchResult>?)EnvelopeGuard.Unwrap(env.Data, env.Error, env.Meta, result.Info) ?? Array.Empty<MT5UserBatchResult>();
     }
 
 }

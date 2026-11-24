@@ -569,6 +569,35 @@ namespace CPlugin.SaaSWebApi.Models
 
     }
 
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class DoubleApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public double? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public enum EducationLevel
     {
@@ -3862,6 +3891,98 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
+    /// Broker exposure in one currency — the platform's `ExposureValue`
+    /// <br/>record. Both volumes are expressed in the base currency of the pair
+    /// <br/>that produced them, converted to the record's currency.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT4ExposureValue
+    {
+
+        /// <summary>
+        /// Currency code the exposure is reported in (e.g. USD)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("currency")]
+        public string? Currency { get; set; } = default!;
+
+        /// <summary>
+        /// Net client volume held by the broker in this currency
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("clients")]
+        public double? Clients { get; set; } = default!;
+
+        /// <summary>
+        /// Net coverage volume the broker carries in this currency
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("coverage")]
+        public double? Coverage { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT4ExposureValueApiResponse
+    {
+
+        /// <summary>
+        /// Broker exposure in one currency — the platform's `ExposureValue`
+        /// <br/>record. Both volumes are expressed in the base currency of the pair
+        /// <br/>that produced them, converted to the record's currency.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT4ExposureValue? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT4ExposureValueListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT4ExposureValue>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
     /// v2 DTO for a single MT4 quote/news feeder configuration. Curated
     /// <br/>subset of the platform's ConFeeder — drops the platform's Unused
     /// <br/>reserved blob AND the `Password` field (datafeed credentials).
@@ -5444,6 +5565,52 @@ namespace CPlugin.SaaSWebApi.Models
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Logging mode of the connection that serves the request.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT4LogsModeRequest
+    {
+
+        /// <summary>
+        /// `Enabled` keeps the Manager API log of this connection, `Disabled` stops it.
+        /// <br/>            The mode applies to the connection, not to the whole trade server, and survives only
+        /// <br/>            for the lifetime of that connection.&lt;br/&gt;One of: Enabled, Disabled. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("mode")]
+        public string? Mode { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// One record written to the trade server's Manager API log. The entry is
+    /// <br/>filed under the connection that serves the request, with the result code
+    /// <br/>and source text supplied by the caller.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT4LogsOutRequest
+    {
+
+        /// <summary>
+        /// Result code recorded with the entry, reported by name (e.g. `Ok`).&lt;br/&gt;One of: Ok, OkNone, Error, InvalidData, TechProblem, OldVersion, NoConnect, NotEnoughRights, TooFrequent, Malfunction, GenerateKey, SecuritySession, InvalidCompany, AccountDisabled, BadAccountInfo, PublicKeyMissing, TradeTimeout, TradeBadPrices, TradeBadStops, TradeBadVolume, TradeMarketClosed, TradeDisable, TradeNoMoney, TradePriceChanged, TradeOffquotes, TradeBrokerBusy, TradeRequote, TradeOrderLocked, TradeLongOnly, TradeTooManyReq, TradeAccepted, TradeProcess, TradeUserCancel, TradeModifyDenied, TradeContextBusy, TradeExpirationDenied, TradeTooManyOrders, TradeHedgeProhibited, TradeProhibitedByFIFO, UnhandledException. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("code")]
+        public string? Code { get; set; } = default!;
+
+        /// <summary>
+        /// Source of the entry — the subsystem or integration the record is attributed to
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("source")]
+        public string? Source { get; set; } = default!;
+
+        /// <summary>
+        /// Text of the entry
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("message")]
+        public string? Message { get; set; } = default!;
 
     }
 
@@ -7161,6 +7328,184 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
+    /// Aggregated position of all client and coverage orders in one symbol —
+    /// <br/>the platform's `SymbolSummary` record.
+    /// <br/>&lt;br&gt;
+    /// <br/>The values are calculated by the trade server over the orders it holds
+    /// <br/>at the moment of the call, not over the trade history: a summary of a
+    /// <br/>symbol with no open orders carries zero volumes and zero profit.
+    /// <br/>
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT4SymbolSummary
+    {
+
+        /// <summary>
+        /// Symbol name (e.g. EURUSD)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbol")]
+        public string? Symbol { get; set; } = default!;
+
+        /// <summary>
+        /// Symbol counter — the position of the symbol in the server's symbol list
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("count")]
+        public int? Count { get; set; } = default!;
+
+        /// <summary>
+        /// Symbol precision (number of digits after the decimal point)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("digits")]
+        public int? Digits { get; set; } = default!;
+
+        /// <summary>
+        /// Symbol group index the symbol belongs to
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("type")]
+        public int? Type { get; set; } = default!;
+
+        /// <summary>
+        /// Number of client orders in the symbol
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("orders")]
+        public int? Orders { get; set; } = default!;
+
+        /// <summary>
+        /// Client buy volume in lots ×100 (e.g. 150 means 1.50 lots)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("buyLots")]
+        public long? BuyLots { get; set; } = default!;
+
+        /// <summary>
+        /// Client sell volume in lots ×100
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("sellLots")]
+        public long? SellLots { get; set; } = default!;
+
+        /// <summary>
+        /// Average client buy price
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("buyPrice")]
+        public double? BuyPrice { get; set; } = default!;
+
+        /// <summary>
+        /// Average client sell price
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("sellPrice")]
+        public double? SellPrice { get; set; } = default!;
+
+        /// <summary>
+        /// Client profit in the account currency at the moment of the call
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("profit")]
+        public double? Profit { get; set; } = default!;
+
+        /// <summary>
+        /// Number of coverage (broker-side) orders in the symbol
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("covOrders")]
+        public int? CovOrders { get; set; } = default!;
+
+        /// <summary>
+        /// Coverage buy volume in lots ×100
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("covBuyLots")]
+        public long? CovBuyLots { get; set; } = default!;
+
+        /// <summary>
+        /// Coverage sell volume in lots ×100
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("covSellLots")]
+        public long? CovSellLots { get; set; } = default!;
+
+        /// <summary>
+        /// Average coverage buy price
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("covBuyPrice")]
+        public double? CovBuyPrice { get; set; } = default!;
+
+        /// <summary>
+        /// Average coverage sell price
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("covSellPrice")]
+        public double? CovSellPrice { get; set; } = default!;
+
+        /// <summary>
+        /// Coverage profit at the moment of the call
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("covProfit")]
+        public double? CovProfit { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT4SymbolSummaryApiResponse
+    {
+
+        /// <summary>
+        /// Aggregated position of all client and coverage orders in one symbol —
+        /// <br/>the platform's `SymbolSummary` record.
+        /// <br/>&lt;br&gt;
+        /// <br/>The values are calculated by the trade server over the orders it holds
+        /// <br/>at the moment of the call, not over the trade history: a summary of a
+        /// <br/>symbol with no open orders carries zero volumes and zero profit.
+        /// <br/>
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT4SymbolSummary? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT4SymbolSummaryListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT4SymbolSummary>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
     /// v2 DTO for a single MT4 chart-history synchronization rule. Curated
     /// <br/>subset of the platform's ConSync — drops the Reserved padding, the
     /// <br/>Next pointer chain, the unused port slot, AND the `Password`
@@ -7670,6 +8015,58 @@ namespace CPlugin.SaaSWebApi.Models
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Input of the profit calculation: the trade fields the calculation reads.
+    /// <br/>Only these fields take part in the result — stops, magic number, comment
+    /// <br/>and timestamps do not change it.
+    /// <br/>&lt;br&gt;
+    /// <br/>Nothing is written anywhere: the trade record is assembled in memory,
+    /// <br/>priced against the symbol's current conversion rates, and only the
+    /// <br/>resulting profit is returned.
+    /// <br/>
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT4TradeCalcProfitRequest
+    {
+
+        /// <summary>
+        /// Account login the trade would belong to
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("login")]
+        public int? Login { get; set; } = default!;
+
+        /// <summary>
+        /// Symbol of the trade (e.g. EURUSD)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbol")]
+        public string? Symbol { get; set; } = default!;
+
+        /// <summary>
+        /// Trade direction: `Buy` or `Sell`.&lt;br/&gt;One of: Buy, Sell, BuyLimit, SellLimit, BuyStop, SellStop, Balance, Credit. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tradeCommand")]
+        public string? TradeCommand { get; set; } = default!;
+
+        /// <summary>
+        /// Volume in MT4 internal units. 1 lot = 100, so e.g. 250 = 2.5 lots.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volume")]
+        public int? Volume { get; set; } = default!;
+
+        /// <summary>
+        /// Open price of the trade
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("openPrice")]
+        public double? OpenPrice { get; set; } = default!;
+
+        /// <summary>
+        /// Close price of the trade
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("closePrice")]
+        public double? ClosePrice { get; set; } = default!;
 
     }
 
@@ -8908,6 +9305,653 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5AccountListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5Account>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// File attached to a client, a document or a comment.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5Attachment
+    {
+
+        /// <summary>
+        /// Attachment identifier. Assigned by the server when the file is stored.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("recordID")]
+        public long? RecordID { get; set; } = default!;
+
+        /// <summary>
+        /// Identifier of the client the attachment belongs to (required when a file is stored).
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("relatedClient")]
+        public long? RelatedClient { get; set; } = default!;
+
+        /// <summary>
+        /// File type name.&lt;br/&gt;One of: FILE_TYPE_OTHER, FILE_TYPE_FIRST, FILE_TYPE_TXT, FILE_TYPE_DOC, FILE_TYPE_PDF, FILE_TYPE_JPG, FILE_TYPE_PNG, FILE_TYPE_BMP, FILE_TYPE_ZIP, FILE_TYPE_LAST. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("fileType")]
+        public string? FileType { get; set; } = default!;
+
+        /// <summary>
+        /// File name.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("fileName")]
+        public string? FileName { get; set; } = default!;
+
+        /// <summary>
+        /// File content. Sent as base64 in JSON; the whole file travels in the request and the response.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("fileContent")]
+        public byte[]? FileContent { get; set; } = default!;
+
+        /// <summary>
+        /// Size of the file in bytes. Read-only: filled by the server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("fileSize")]
+        public int? FileSize { get; set; } = default!;
+
+        /// <summary>
+        /// File flags as a string of the set flag names.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("fileFlags")]
+        public string? FileFlags { get; set; } = default!;
+
+        /// <summary>
+        /// Document the file is linked to. Used only when a file is stored; empty means no document link.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("documentID")]
+        public long? DocumentID { get; set; } = default!;
+
+        /// <summary>
+        /// Comment the file is linked to. Used only when a file is stored; empty means no comment link.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("commentID")]
+        public long? CommentID { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5AttachmentApiResponse
+    {
+
+        /// <summary>
+        /// File attached to a client, a document or a comment.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5Attachment? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Reference to a file attached to a document or a comment: identifier, name and size, without the content.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5AttachmentInfo
+    {
+
+        /// <summary>
+        /// Attachment identifier.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("recordID")]
+        public long? RecordID { get; set; } = default!;
+
+        /// <summary>
+        /// File name.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("fileName")]
+        public string? FileName { get; set; } = default!;
+
+        /// <summary>
+        /// Size of the file in bytes.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("fileSize")]
+        public int? FileSize { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5AttachmentListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5Attachment>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Request to check, and optionally correct, the balance and credit of several accounts.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5BalanceCheckBatchRequest
+    {
+
+        /// <summary>
+        /// Account logins to check.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("logins")]
+        public System.Collections.Generic.List<long>? Logins { get; set; } = default!;
+
+        /// <summary>
+        /// Whether the accounts are corrected to match their deals history after the check.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("fix")]
+        public bool? Fix { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Result of comparing the stored balance and credit of one account with its deals history.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5BalanceCheckResult
+    {
+
+        /// <summary>
+        /// Account login the result belongs to.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("login")]
+        public long? Login { get; set; } = default!;
+
+        /// <summary>
+        /// Balance stored in the account record at the time of the check.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("balanceUser")]
+        public double? BalanceUser { get; set; } = default!;
+
+        /// <summary>
+        /// Balance the deals history adds up to.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("balanceHistory")]
+        public double? BalanceHistory { get; set; } = default!;
+
+        /// <summary>
+        /// Credit stored in the account record at the time of the check.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("creditUser")]
+        public double? CreditUser { get; set; } = default!;
+
+        /// <summary>
+        /// Credit the deals history adds up to.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("creditHistory")]
+        public double? CreditHistory { get; set; } = default!;
+
+        /// <summary>
+        /// Whether the stored balance or credit differs from the history.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("mismatch")]
+        public bool? Mismatch { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5BalanceCheckResultApiResponse
+    {
+
+        /// <summary>
+        /// Result of comparing the stored balance and credit of one account with its deals history.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5BalanceCheckResult? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5BalanceCheckResultListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5BalanceCheckResult>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Outcome of one entry of a batch operation. The entries are returned in the order of the request.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5BatchResult
+    {
+
+        /// <summary>
+        /// Identifier the entry was addressed to or created for: the record identifier on the document,
+        /// <br/>comment and attachment routes, and the account login on the account-binding routes.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public long? Id { get; set; } = default!;
+
+        /// <summary>
+        /// Platform result code of the entry.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("result")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5Result>))]
+        public MT5Result? Result { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5BatchResultListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5BatchResult>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Outcome of one entry of a batch update, in the order the entries were sent.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5BatchUpdateResult
+    {
+
+        /// <summary>
+        /// Group name or symbol name the entry refers to.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string? Name { get; set; } = default!;
+
+        /// <summary>
+        /// True when the trade server applied the entry.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("ok")]
+        public bool? Ok { get; set; } = default!;
+
+        /// <summary>
+        /// Platform result code of the entry, as its name.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("code")]
+        public string? Code { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5BatchUpdateResultListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5BatchUpdateResult>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Full Depth of Market of one symbol, v2 read DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5Book
+    {
+
+        /// <summary>
+        /// Symbol the Depth of Market belongs to.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbol")]
+        public string? Symbol { get; set; } = default!;
+
+        /// <summary>
+        /// Depth of Market flags, comma-separated: `None`, `PreAuction` or `Snapshot`.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("flags")]
+        public string? Flags { get; set; } = default!;
+
+        /// <summary>
+        /// Time of the last Depth of Market change, as the trade server counts it. Absent when the server sent no time.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("time")]
+        public System.DateTimeOffset? Time { get; set; } = default!;
+
+        /// <summary>
+        /// Time of the last Depth of Market change with millisecond precision. Absent when the server sent no time.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("timeMsc")]
+        public System.DateTimeOffset? TimeMsc { get; set; } = default!;
+
+        /// <summary>
+        /// Depth of Market entries.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("items")]
+        public System.Collections.Generic.List<MT5BookItem>? Items { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5BookApiResponse
+    {
+
+        /// <summary>
+        /// Full Depth of Market of one symbol, v2 read DTO.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5Book? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// One entry of the Depth of Market, v2 read DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5BookItem
+    {
+
+        /// <summary>
+        /// Kind of the request: `Sell`, `Buy`, `SellMarket` or `BuyMarket`.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("type")]
+        public string? Type { get; set; } = default!;
+
+        /// <summary>
+        /// Price of the entry.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("price")]
+        public double? Price { get; set; } = default!;
+
+        /// <summary>
+        /// Volume in the units the data provider supplies, as the trade server shows it.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volume")]
+        public long? Volume { get; set; } = default!;
+
+        /// <summary>
+        /// Volume with extended precision — eight decimal places.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeExt")]
+        public long? VolumeExt { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Certificate issued to a trading account under an extended authorization mode.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5Certificate
+    {
+
+        /// <summary>
+        /// Serial number of the certificate.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("serialNumber")]
+        public long? SerialNumber { get; set; } = default!;
+
+        /// <summary>
+        /// Start of the validity period, or `null` when the certificate is not opened.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("validFrom")]
+        public System.DateTimeOffset? ValidFrom { get; set; } = default!;
+
+        /// <summary>
+        /// End of the validity period, or `null` when the certificate is not opened.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("validTo")]
+        public System.DateTimeOffset? ValidTo { get; set; } = default!;
+
+        /// <summary>
+        /// Common name (CN) of the certificate subject.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("nameCommon")]
+        public string? NameCommon { get; set; } = default!;
+
+        /// <summary>
+        /// Common name (CN) of the issuing authority.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("nameIssuer")]
+        public string? NameIssuer { get; set; } = default!;
+
+        /// <summary>
+        /// Organization (O) of the certificate subject.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("nameOrganization")]
+        public string? NameOrganization { get; set; } = default!;
+
+        /// <summary>
+        /// Organizational unit (OU) of the certificate subject.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("nameOrganizationUnit")]
+        public string? NameOrganizationUnit { get; set; } = default!;
+
+        /// <summary>
+        /// Given name of the certificate subject.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("nameGiven")]
+        public string? NameGiven { get; set; } = default!;
+
+        /// <summary>
+        /// Whether the certificate is a root certificate of a certification authority.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("isRoot")]
+        public bool? IsRoot { get; set; } = default!;
+
+        /// <summary>
+        /// Whether the certificate belongs to a certification authority.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("isCA")]
+        public bool? IsCA { get; set; } = default!;
+
+        /// <summary>
+        /// Whether the stored blob could be parsed as a certificate.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("isOpened")]
+        public bool? IsOpened { get; set; } = default!;
+
+        /// <summary>
+        /// Size of the stored certificate blob in bytes.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("rawSize")]
+        public int? RawSize { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5CertificateApiResponse
+    {
+
+        /// <summary>
+        /// Certificate issued to a trading account under an extended authorization mode.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5Certificate? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Replacement certificate for an account, sent as the file contents.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5CertificateRequest
+    {
+
+        /// <summary>
+        /// Contents of the certificate file (Base64 in JSON).
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public byte[]? Data { get; set; } = default!;
+
+    }
+
+    /// <summary>
     /// Bars of one chart history request, v2 read DTO.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -9067,6 +10111,24 @@ namespace CPlugin.SaaSWebApi.Models
 
         [System.Runtime.Serialization.EnumMember(Value = @"MN1")]
         MN1 = 8,
+
+    }
+
+    /// <summary>
+    /// Rounding rule applied to prices converted by a split.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5ChartRoundingRule
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Standard")]
+        Standard = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Down")]
+        Down = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Up")]
+        Up = 2,
 
     }
 
@@ -9499,6 +10561,160 @@ namespace CPlugin.SaaSWebApi.Models
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
         public MT5Client? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5ClientListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5Client>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Comment on a client or on a client document — input and output of the comment routes.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5Comment
+    {
+
+        /// <summary>
+        /// Comment identifier. Assigned by the server on creation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("recordID")]
+        public long? RecordID { get; set; } = default!;
+
+        /// <summary>
+        /// Identifier of the client the comment belongs to (required).
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("relatedClient")]
+        public long? RelatedClient { get; set; } = default!;
+
+        /// <summary>
+        /// Identifier of the document the comment belongs to; empty means the comment is on the client.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("relatedDocument")]
+        public long? RelatedDocument { get; set; } = default!;
+
+        /// <summary>
+        /// Comment flags as a string of the set flag names.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("flags")]
+        public string? Flags { get; set; } = default!;
+
+        /// <summary>
+        /// Reserved extra data of the comment.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("extra")]
+        public string? Extra { get; set; } = default!;
+
+        /// <summary>
+        /// Comment text.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("text")]
+        public string? Text { get; set; } = default!;
+
+        /// <summary>
+        /// Comment type name.&lt;br/&gt;One of: COMMENT_TYPE_UNDEFINED, COMMENT_TYPE_FIRST, COMMENT_TYPE_LOGRECORD, COMMENT_TYPE_CALLRECORD, COMMENT_TYPE_ROBOTRECORD, COMMENT_TYPE_LAST. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("commentType")]
+        public string? CommentType { get; set; } = default!;
+
+        /// <summary>
+        /// Result of the client contact the comment records.&lt;br/&gt;One of: COMMENT_RESULT_UNDEFINED, COMMENT_RESULT_FIRST, COMMENT_RESULT_CALL_NO_ANSWER, COMMENT_RESULT_CALL_WRONG_NUMBER, COMMENT_RESULT_CALL_NOT_INTERESTED, COMMENT_RESULT_CALL_SUCCESSFUL, COMMENT_RESULT_LAST. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("commentResult")]
+        public string? CommentResult { get; set; } = default!;
+
+        /// <summary>
+        /// Attachments linked to the comment. Read-only: a link is created by the attachment routes, and a value
+        /// <br/>sent here is ignored.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("attachments")]
+        public System.Collections.Generic.List<MT5AttachmentInfo>? Attachments { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5CommentApiResponse
+    {
+
+        /// <summary>
+        /// Comment on a client or on a client document — input and output of the comment routes.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5Comment? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5CommentListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5Comment>? Data { get; set; } = default!;
 
         /// <summary>
         /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
@@ -10076,6 +11292,688 @@ namespace CPlugin.SaaSWebApi.Models
 
     }
 
+    /// <summary>
+    /// A subscription configuration of the trade server.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5ConSubscription
+    {
+
+        /// <summary>
+        /// Unique configuration identifier assigned by the server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public long? Id { get; set; } = default!;
+
+        /// <summary>
+        /// Identifier of the directory the configuration is placed in; zero means the root directory.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("parentId")]
+        public long? ParentId { get; set; } = default!;
+
+        /// <summary>
+        /// Identifier of the configuration this one depends on; zero means no dependency.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dependsId")]
+        public long? DependsId { get; set; } = default!;
+
+        /// <summary>
+        /// Configuration name.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string? Name { get; set; } = default!;
+
+        /// <summary>
+        /// Subscription type.&lt;br/&gt;One of: Subscription, Folder. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("type")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5SubscriptionType>))]
+        public MT5SubscriptionType? Type { get; set; } = default!;
+
+        /// <summary>
+        /// Logo shown for the subscription.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("image")]
+        public int? Image { get; set; } = default!;
+
+        /// <summary>
+        /// Description of the subscription.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string? Description { get; set; } = default!;
+
+        /// <summary>
+        /// Link to an additional description of the subscription.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("urlDescription")]
+        public string? UrlDescription { get; set; } = default!;
+
+        /// <summary>
+        /// Link to the subscription agreement.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("urlAgreement")]
+        public string? UrlAgreement { get; set; } = default!;
+
+        /// <summary>
+        /// Actions the client terminals are allowed to perform with the subscription.&lt;br/&gt;One of: Full, Unsubscribe, View, Hidden. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("controlMode")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5SubscriptionControlMode>))]
+        public MT5SubscriptionControlMode? ControlMode { get; set; } = default!;
+
+        /// <summary>
+        /// Subscription period.&lt;br/&gt;One of: Once, Daily, Weekly, Monthly, Quarterly, Annual, Custom. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("periodMode")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5SubscriptionPeriod>))]
+        public MT5SubscriptionPeriod? PeriodMode { get; set; } = default!;
+
+        /// <summary>
+        /// Custom subscription period in days, used when `periodMode` selects a custom period.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("periodCustom")]
+        public int? PeriodCustom { get; set; } = default!;
+
+        /// <summary>
+        /// Trial (free) period.&lt;br/&gt;One of: None, Day, Week, Month, Quarter, Year, Custom. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("periodFreeMode")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5SubscriptionFreePeriod>))]
+        public MT5SubscriptionFreePeriod? PeriodFreeMode { get; set; } = default!;
+
+        /// <summary>
+        /// Custom trial period value, used when `periodFreeMode` selects a custom trial period.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("periodFreeCustom")]
+        public int? PeriodFreeCustom { get; set; } = default!;
+
+        /// <summary>
+        /// Additional subscription property flags.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("flags")]
+        public string? Flags { get; set; } = default!;
+
+        /// <summary>
+        /// Subscription price for non-professional traders.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("price")]
+        public double? Price { get; set; } = default!;
+
+        /// <summary>
+        /// Subscription price for professional traders.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("pricePro")]
+        public double? PricePro { get; set; } = default!;
+
+        /// <summary>
+        /// Real cost of the subscription, the amount the client is actually charged.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceCost")]
+        public double? PriceCost { get; set; } = default!;
+
+        /// <summary>
+        /// Currency of the subscription price.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceCurrency")]
+        public string? PriceCurrency { get; set; } = default!;
+
+        /// <summary>
+        /// Countries the subscription is available in.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("countries")]
+        public System.Collections.Generic.List<string>? Countries { get; set; } = default!;
+
+        /// <summary>
+        /// Account groups the subscription is available in.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("groups")]
+        public System.Collections.Generic.List<string>? Groups { get; set; } = default!;
+
+        /// <summary>
+        /// Trading instruments the subscription covers.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbols")]
+        public System.Collections.Generic.List<MT5ConSubscriptionSymbol>? Symbols { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5ConSubscriptionApiResponse
+    {
+
+        /// <summary>
+        /// A subscription configuration of the trade server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5ConSubscription? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// A trading instrument covered by a subscription configuration.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5ConSubscriptionSymbol
+    {
+
+        /// <summary>
+        /// Name of the trading instrument, including its group path.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbol")]
+        public string? Symbol { get; set; } = default!;
+
+        /// <summary>
+        /// Depth of the price history available by the subscription.&lt;br/&gt;One of: Delayed, RealtimeLevel1, RealtimeLevel2. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("level")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5SubscriptionSymbolLevel>))]
+        public MT5SubscriptionSymbolLevel? Level { get; set; } = default!;
+
+        /// <summary>
+        /// Depth of the tick history available by the subscription.&lt;br/&gt;One of: None, LastDay, LastWeek, LastMonth, Last3Months, Last6Months, LastYear, Last2Years, Last3Years, Last5Years, All. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tickHistory")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5SubscriptionTickHistory>))]
+        public MT5SubscriptionTickHistory? TickHistory { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5Confirm
+    {
+
+        /// <summary>
+        /// request id
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int? Id { get; set; } = default!;
+
+        /// <summary>
+        /// confirmation retcode
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("retCode")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5Result>))]
+        public MT5Result? RetCode { get; set; } = default!;
+
+        /// <summary>
+        /// confirmed volume
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volume")]
+        public long? Volume { get; set; } = default!;
+
+        /// <summary>
+        /// confirmed price
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("price")]
+        public double? Price { get; set; } = default!;
+
+        /// <summary>
+        /// confirmed tick bid
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tickBid")]
+        public double? TickBid { get; set; } = default!;
+
+        /// <summary>
+        /// confirmed tick ask
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tickAsk")]
+        public double? TickAsk { get; set; } = default!;
+
+        /// <summary>
+        /// confirmed tick last
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tickLast")]
+        public double? TickLast { get; set; } = default!;
+
+        /// <summary>
+        /// confirmation comment
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("comment")]
+        public string? Comment { get; set; } = default!;
+
+        /// <summary>
+        /// flags
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("flags")]
+        public int? Flags { get; set; } = default!;
+
+        /// <summary>
+        /// linked deal id in external system
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dealID")]
+        public string? DealID { get; set; } = default!;
+
+        /// <summary>
+        /// linked order id in external system
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("orderID")]
+        public string? OrderID { get; set; } = default!;
+
+        /// <summary>
+        /// execution price on gateway
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceGateway")]
+        public double? PriceGateway { get; set; } = default!;
+
+        /// <summary>
+        /// linked  position ticket in external system
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("positionExternalID")]
+        public string? PositionExternalID { get; set; } = default!;
+
+        /// <summary>
+        /// external trade system return code
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("externalRetCode")]
+        public int? ExternalRetCode { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("volumeExt")]
+        public long? VolumeExt { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Custom command for a plugin installed on the trade server.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5CustomCommandRequest
+    {
+
+        /// <summary>
+        /// Data sent to the server. Transferred whole, without interpretation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public byte[]? Data { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Answer of the trade server to a custom command.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5CustomCommandResult
+    {
+
+        /// <summary>
+        /// Data returned by the server. Transferred whole, without interpretation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public byte[]? Data { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5CustomCommandResultApiResponse
+    {
+
+        /// <summary>
+        /// Answer of the trade server to a custom command.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5CustomCommandResult? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Daily report of one client account, v2 read DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5Daily
+    {
+
+        /// <summary>
+        /// Time the report was generated, in seconds since 01.01.1970 as the trade server counts them.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("datetime")]
+        public long? Datetime { get; set; } = default!;
+
+        /// <summary>
+        /// Time of the previous report of the same account, in seconds since 01.01.1970.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("datetimePrev")]
+        public long? DatetimePrev { get; set; } = default!;
+
+        /// <summary>
+        /// Login of the account the report belongs to.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("login")]
+        public long? Login { get; set; } = default!;
+
+        /// <summary>
+        /// Name of the account holder as stored in the account.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string? Name { get; set; } = default!;
+
+        /// <summary>
+        /// Group of the account.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("group")]
+        public string? Group { get; set; } = default!;
+
+        /// <summary>
+        /// Deposit currency of the account.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("currency")]
+        public string? Currency { get; set; } = default!;
+
+        /// <summary>
+        /// Number of decimal places of the deposit currency.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("currencyDigits")]
+        public int? CurrencyDigits { get; set; } = default!;
+
+        /// <summary>
+        /// Company serving the account.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("company")]
+        public string? Company { get; set; } = default!;
+
+        /// <summary>
+        /// Email of the account holder.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("eMail")]
+        public string? EMail { get; set; } = default!;
+
+        /// <summary>
+        /// Balance of the account at the report time.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("balance")]
+        public double? Balance { get; set; } = default!;
+
+        /// <summary>
+        /// Amount of credit funds of the account at the report time.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("credit")]
+        public double? Credit { get; set; } = default!;
+
+        /// <summary>
+        /// Annual interest rate of the account, in percent.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("interestRate")]
+        public double? InterestRate { get; set; } = default!;
+
+        /// <summary>
+        /// Commissions charged from the account during the reported day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("commissionDaily")]
+        public double? CommissionDaily { get; set; } = default!;
+
+        /// <summary>
+        /// Commissions charged from the account during the current month.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("commissionMonthly")]
+        public double? CommissionMonthly { get; set; } = default!;
+
+        /// <summary>
+        /// Agent commission charged for the trade operations of the reported day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("agentDaily")]
+        public double? AgentDaily { get; set; } = default!;
+
+        /// <summary>
+        /// Agent commission charged for the trade operations of the current month.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("agentMonthly")]
+        public double? AgentMonthly { get; set; } = default!;
+
+        /// <summary>
+        /// Balance of the account at the end of the previous day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("balancePrevDay")]
+        public double? BalancePrevDay { get; set; } = default!;
+
+        /// <summary>
+        /// Balance of the account at the end of the previous month.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("balancePrevMonth")]
+        public double? BalancePrevMonth { get; set; } = default!;
+
+        /// <summary>
+        /// Equity of the account at the end of the previous day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("equityPrevDay")]
+        public double? EquityPrevDay { get; set; } = default!;
+
+        /// <summary>
+        /// Equity of the account at the end of the previous month.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("equityPrevMonth")]
+        public double? EquityPrevMonth { get; set; } = default!;
+
+        /// <summary>
+        /// Margin reserved for the open positions of the account.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("margin")]
+        public double? Margin { get; set; } = default!;
+
+        /// <summary>
+        /// Free margin of the account.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("marginFree")]
+        public double? MarginFree { get; set; } = default!;
+
+        /// <summary>
+        /// Margin level of the account, in percent.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("marginLevel")]
+        public double? MarginLevel { get; set; } = default!;
+
+        /// <summary>
+        /// Margin leverage of the account.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("marginLeverage")]
+        public int? MarginLeverage { get; set; } = default!;
+
+        /// <summary>
+        /// Current profit of all open positions of the account.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("profit")]
+        public double? Profit { get; set; } = default!;
+
+        /// <summary>
+        /// Swaps charged for the open positions of the account but not yet reflected in the balance.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("profitStorage")]
+        public double? ProfitStorage { get; set; } = default!;
+
+        /// <summary>
+        /// Current floating equity of the account.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("profitEquity")]
+        public double? ProfitEquity { get; set; } = default!;
+
+        /// <summary>
+        /// Current assets of the account.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("profitAssets")]
+        public double? ProfitAssets { get; set; } = default!;
+
+        /// <summary>
+        /// Current liabilities of the account.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("profitLiabilities")]
+        public double? ProfitLiabilities { get; set; } = default!;
+
+        /// <summary>
+        /// Profit of the account for the reported day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dailyProfit")]
+        public double? DailyProfit { get; set; } = default!;
+
+        /// <summary>
+        /// Amount accrued to the balance of the account during the reported day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dailyBalance")]
+        public double? DailyBalance { get; set; } = default!;
+
+        /// <summary>
+        /// Credit given to the account during the reported day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dailyCredit")]
+        public double? DailyCredit { get; set; } = default!;
+
+        /// <summary>
+        /// Other charges from the balance of the account during the reported day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dailyCharge")]
+        public double? DailyCharge { get; set; } = default!;
+
+        /// <summary>
+        /// Corrective balance operations of the reported day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dailyCorrection")]
+        public double? DailyCorrection { get; set; } = default!;
+
+        /// <summary>
+        /// Bonuses added to the balance of the account during the reported day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dailyBonus")]
+        public double? DailyBonus { get; set; } = default!;
+
+        /// <summary>
+        /// Swaps calculated for the account for the reported day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dailyStorage")]
+        public double? DailyStorage { get; set; } = default!;
+
+        /// <summary>
+        /// Instant commissions charged from the account during the reported day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dailyCommInstant")]
+        public double? DailyCommInstant { get; set; } = default!;
+
+        /// <summary>
+        /// Turnover commissions charged from the account during the reported day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dailyCommRound")]
+        public double? DailyCommRound { get; set; } = default!;
+
+        /// <summary>
+        /// Fee charged for the deals of the account during the reported day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dailyCommFee")]
+        public double? DailyCommFee { get; set; } = default!;
+
+        /// <summary>
+        /// Dividends accrued to the account for the reported day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dailyDividend")]
+        public double? DailyDividend { get; set; } = default!;
+
+        /// <summary>
+        /// Taxes withheld from the funds of the account for the reported day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dailyTaxes")]
+        public double? DailyTaxes { get; set; } = default!;
+
+        /// <summary>
+        /// Negative balance compensation accrued to the account for the reported day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dailySOCompensation")]
+        public double? DailySOCompensation { get; set; } = default!;
+
+        /// <summary>
+        /// Credit funds withdrawn during the reported day as a result of a negative balance compensation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dailySOCompensationCredit")]
+        public double? DailySOCompensationCredit { get; set; } = default!;
+
+        /// <summary>
+        /// Agent commission charged for the trade operations of the reported day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dailyAgent")]
+        public double? DailyAgent { get; set; } = default!;
+
+        /// <summary>
+        /// Amount accrued to the account under the annual interest rate for the reported day.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dailyInterest")]
+        public double? DailyInterest { get; set; } = default!;
+
+        /// <summary>
+        /// Open positions of the account; `null` in a lightweight report.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("positions")]
+        public System.Collections.Generic.List<MT5Position>? Positions { get; set; } = default!;
+
+        /// <summary>
+        /// Pending orders of the account; `null` in a lightweight report.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("orders")]
+        public System.Collections.Generic.List<MT5Order>? Orders { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5DailyListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5Daily>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT5Deal
     {
@@ -10419,6 +12317,2131 @@ namespace CPlugin.SaaSWebApi.Models
 
     }
 
+    /// <summary>
+    /// Client document record — input and output of the document routes.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5Document
+    {
+
+        /// <summary>
+        /// Document identifier. Assigned by the server on creation; sent to address an existing document.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("recordID")]
+        public long? RecordID { get; set; } = default!;
+
+        /// <summary>
+        /// Identifier of the client the document belongs to (required).
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("relatedClient")]
+        public long? RelatedClient { get; set; } = default!;
+
+        /// <summary>
+        /// Date the document was approved.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("approvedDate")]
+        public System.DateTimeOffset? ApprovedDate { get; set; } = default!;
+
+        /// <summary>
+        /// Login of the manager account that approved the document.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("approvedBy")]
+        public long? ApprovedBy { get; set; } = default!;
+
+        /// <summary>
+        /// Document type name.&lt;br/&gt;One of: DOCUMENT_TYPE_OTHER, DOCUMENT_TYPE_FIRST, DOCUMENT_TYPE_PERSONAL_IDENTITY, DOCUMENT_TYPE_PERSONAL_ADDRESS, DOCUMENT_TYPE_REGISTERED_ADDRESS, DOCUMENT_TYPE_DIRECTORS_PASSPORT, DOCUMENT_TYPE_CERTIFICATE_OF_INCORPORATION, DOCUMENT_TYPE_CERTIFICATE_OF_DIRECTORS, DOCUMENT_TYPE_CERTIFICATE_OF_GOOD_STANDING, DOCUMENT_TYPE_LAST. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("documentType")]
+        public string? DocumentType { get; set; } = default!;
+
+        /// <summary>
+        /// Document subtype name.&lt;br/&gt;One of: DOCUMENT_SUBTYPE_OTHER, DOCUMENT_SUBTYPE_FIRST, DOCUMENT_SUBTYPE_ID_CARD, DOCUMENT_SUBTYPE_PASSPORT, DOCUMENT_SUBTYPE_DRIVERS, DOCUMENT_SUBTYPE_BANK_CARD, DOCUMENT_SUBTYPE_UTILITY_BILL, DOCUMENT_SUBTYPE_BANK_STATEMENT, DOCUMENT_SUBTYPE_TAX_STATEMENT, DOCUMENT_SUBTYPE_SELFIE, DOCUMENT_SUBTYPE_PROFILE_IMAGE, DOCUMENT_SUBTYPE_ID_DOC_PHOTO, DOCUMENT_SUBTYPE_AGREEMENT, DOCUMENT_SUBTYPE_CONTRACT, DOCUMENT_SUBTYPE_RESIDENCE_PERMIT, DOCUMENT_SUBTYPE_EMPLOYMENT_CERTIFICATE, DOCUMENT_SUBTYPE_DRIVERS_TRANSLATION, DOCUMENT_SUBTYPE_INVESTOR_DOC, DOCUMENT_SUBTYPE_VEHICLE_REG_CERTIFICATE, DOCUMENT_SUBTYPE_INCOME_SOURCE, DOCUMENT_SUBTYPE_PAYMENT_METHOD, DOCUMENT_SUBTYPE_LAST. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("documentSubtype")]
+        public string? DocumentSubtype { get; set; } = default!;
+
+        /// <summary>
+        /// Document status name.&lt;br/&gt;One of: DOCUMENT_STATUS_NEW, DOCUMENT_STATUS_FIRST, DOCUMENT_STATUS_APPROVED, DOCUMENT_STATUS_REJECTED, DOCUMENT_STATUS_ARCHIVED, DOCUMENT_STATUS_DELETED, DOCUMENT_STATUS_LAST. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("documentStatus")]
+        public string? DocumentStatus { get; set; } = default!;
+
+        /// <summary>
+        /// Date the document was issued.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dateIssue")]
+        public System.DateTimeOffset? DateIssue { get; set; } = default!;
+
+        /// <summary>
+        /// Date the document expires.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dateExpiration")]
+        public System.DateTimeOffset? DateExpiration { get; set; } = default!;
+
+        /// <summary>
+        /// File name of the document.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("documentName")]
+        public string? DocumentName { get; set; } = default!;
+
+        /// <summary>
+        /// Comment on the document.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("documentComment")]
+        public string? DocumentComment { get; set; } = default!;
+
+        /// <summary>
+        /// Attachments linked to the document. Read-only: a link is created by the attachment routes, and a value
+        /// <br/>sent here is ignored.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("attachments")]
+        public System.Collections.Generic.List<MT5AttachmentInfo>? Attachments { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5DocumentApiResponse
+    {
+
+        /// <summary>
+        /// Client document record — input and output of the document routes.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5Document? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5DocumentListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5Document>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// An email to send through one of the mail configurations of the trade server.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5EmailSendRequest
+    {
+
+        /// <summary>
+        /// Name of the mail configuration used for sending.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("account")]
+        public string? Account { get; set; } = default!;
+
+        /// <summary>
+        /// Recipient address.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("to")]
+        public string? To { get; set; } = default!;
+
+        /// <summary>
+        /// Recipient name shown by the mail client.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("toName")]
+        public string? ToName { get; set; } = default!;
+
+        /// <summary>
+        /// Subject line.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("subject")]
+        public string? Subject { get; set; } = default!;
+
+        /// <summary>
+        /// Message body.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("body")]
+        public string? Body { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Exposure of the company on one asset, v2 read DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5Exposure
+    {
+
+        /// <summary>
+        /// Name of the asset; empty in the net total record.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbol")]
+        public string? Symbol { get; set; } = default!;
+
+        /// <summary>
+        /// Number of decimal places in the price of the asset.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("digits")]
+        public int? Digits { get; set; } = default!;
+
+        /// <summary>
+        /// Volume of client positions on the asset.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeClients")]
+        public double? VolumeClients { get; set; } = default!;
+
+        /// <summary>
+        /// Volume of positions on the hedging account for the asset.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeCoverage")]
+        public double? VolumeCoverage { get; set; } = default!;
+
+        /// <summary>
+        /// Rate of conversion of the net total to the summary currency.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceRate")]
+        public double? PriceRate { get; set; } = default!;
+
+        /// <summary>
+        /// Difference between the client volume and the hedged volume.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeNet")]
+        public double? VolumeNet { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5ExposureApiResponse
+    {
+
+        /// <summary>
+        /// Exposure of the company on one asset, v2 read DTO.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5Exposure? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5ExposureListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5Exposure>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Request to synchronize an account with an external trading system through a gateway.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5ExternalSyncRequest
+    {
+
+        /// <summary>
+        /// Identifier of the gateway configuration.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("gatewayId")]
+        public long? GatewayId { get; set; } = default!;
+
+        /// <summary>
+        /// Account number in the external trading system.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("account")]
+        public string? Account { get; set; } = default!;
+
+        /// <summary>
+        /// Part of the trading state to synchronize.&lt;br/&gt;One of: All, Balance, Positions, Orders. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("syncMode")]
+        public string? SyncMode { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Description of an IP address resolved by the trade server.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5GeoRecord
+    {
+
+        /// <summary>
+        /// Beginning of the address range the address belongs to, in dotted IPv4 notation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("iPv4From")]
+        public string? IPv4From { get; set; } = default!;
+
+        /// <summary>
+        /// End of the address range the address belongs to, in dotted IPv4 notation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("iPv4To")]
+        public string? IPv4To { get; set; } = default!;
+
+        /// <summary>
+        /// Continent.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("continent")]
+        public string? Continent { get; set; } = default!;
+
+        /// <summary>
+        /// Country.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("country")]
+        public string? Country { get; set; } = default!;
+
+        /// <summary>
+        /// City.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("city")]
+        public string? City { get; set; } = default!;
+
+        /// <summary>
+        /// Region or state.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("region")]
+        public string? Region { get; set; } = default!;
+
+        /// <summary>
+        /// Province or district.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("province")]
+        public string? Province { get; set; } = default!;
+
+        /// <summary>
+        /// Autonomous system number.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("asn")]
+        public long? Asn { get; set; } = default!;
+
+        /// <summary>
+        /// Name of the autonomous system.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("asnOrganization")]
+        public string? AsnOrganization { get; set; } = default!;
+
+        /// <summary>
+        /// Internet service provider.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("isp")]
+        public string? Isp { get; set; } = default!;
+
+        /// <summary>
+        /// Organization that owns the address.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("ispOrganization")]
+        public string? IspOrganization { get; set; } = default!;
+
+        /// <summary>
+        /// Geographical latitude.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("latitude")]
+        public double? Latitude { get; set; } = default!;
+
+        /// <summary>
+        /// Geographical longitude.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("longitude")]
+        public double? Longitude { get; set; } = default!;
+
+        /// <summary>
+        /// Additional characteristics of the address as a bit mask: proxy, VPN, data centre, host of
+        /// <br/>attacks or spam, botnet member, search engine bot, blacklisted address, headless browser.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("details")]
+        public long? Details { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5GeoRecordApiResponse
+    {
+
+        /// <summary>
+        /// Description of an IP address resolved by the trade server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5GeoRecord? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Outcome of resolving one address of a batch.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5GeoResolveResult
+    {
+
+        /// <summary>
+        /// The address as it was submitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("address")]
+        public string? Address { get; set; } = default!;
+
+        /// <summary>
+        /// Platform result code of this address. The entries are returned in request order.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("result")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5Result>))]
+        public MT5Result? Result { get; set; } = default!;
+
+        /// <summary>
+        /// Description of the address; absent when the address was not resolved.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("record")]
+        public MT5GeoRecord? Record { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5GeoResolveResultListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5GeoResolveResult>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// One entry of a batch group update: the group to change and the fields to write.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5GroupBatchUpdateItem
+    {
+
+        /// <summary>
+        /// Full group name including the path, e.g. `demo\demoforex`.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("group")]
+        public string? Group { get; set; } = default!;
+
+        /// <summary>
+        /// Fields to change; fields left out keep their current server value.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("update")]
+        public MT5GroupUpdateRequest? Update { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Fields of a group configuration to change. Every field is optional: a field left out keeps
+    /// <br/>its current server value, so the same body is safe to send repeatedly.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5GroupUpdateRequest
+    {
+
+        /// <summary>
+        /// Margin call level, percent of the margin.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("marginCall")]
+        public double? MarginCall { get; set; } = default!;
+
+        /// <summary>
+        /// Stop out level, percent of the margin.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("marginStopOut")]
+        public double? MarginStopOut { get; set; } = default!;
+
+        /// <summary>
+        /// Mode of checking the margin call and stop out levels.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("marginSOMode")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<EnStopOutMode>))]
+        public EnStopOutMode? MarginSOMode { get; set; } = default!;
+
+        /// <summary>
+        /// Group trade options.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tradeFlags")]
+        public string? TradeFlags { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Floating margin configuration: a named set of rules that decides which margin rate applies to a
+    /// <br/>position, depending on the volume or the value the account carries in the symbol.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5Leverage
+    {
+
+        /// <summary>
+        /// Configuration name; it identifies the record on the trade server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string? Name { get; set; } = default!;
+
+        /// <summary>
+        /// Rules of the configuration, in the order the trade server applies them.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("rules")]
+        public System.Collections.Generic.List<MT5LeverageRule>? Rules { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5LeverageApiResponse
+    {
+
+        /// <summary>
+        /// Floating margin configuration: a named set of rules that decides which margin rate applies to a
+        /// <br/>position, depending on the volume or the value the account carries in the symbol.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5Leverage? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5LeverageListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5Leverage>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// What the tier ranges of a floating margin rule are measured in.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5LeverageRangeMode
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Volume")]
+        Volume = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"VolumePerSymbol")]
+        VolumePerSymbol = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Value")]
+        Value = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ValuePerSymbol")]
+        ValuePerSymbol = 3,
+
+    }
+
+    /// <summary>
+    /// One rule of a floating margin configuration.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5LeverageRule
+    {
+
+        /// <summary>
+        /// Rule name, unique inside its configuration.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string? Name { get; set; } = default!;
+
+        /// <summary>
+        /// Free-form description of the rule.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+        public string? Description { get; set; } = default!;
+
+        /// <summary>
+        /// Path the rule is limited to: a symbol or a group, including the subgroup (`Forex\EURUSD`).
+        /// <br/>Empty means the rule applies to every symbol.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("path")]
+        public string? Path { get; set; } = default!;
+
+        /// <summary>
+        /// What the tier ranges of the rule are measured in.&lt;br/&gt;One of: Volume, VolumePerSymbol, Value, ValuePerSymbol. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("rangeMode")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5LeverageRangeMode>))]
+        public MT5LeverageRangeMode? RangeMode { get; set; } = default!;
+
+        /// <summary>
+        /// Currency used when the ranges are measured by value; empty for volume ranges.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("rangeValueCurrency")]
+        public string? RangeValueCurrency { get; set; } = default!;
+
+        /// <summary>
+        /// Tiers of the rule, ordered by range start.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tiers")]
+        public System.Collections.Generic.List<MT5LeverageTier>? Tiers { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Tier of a floating margin rule: one range and the margin rates inside it.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5LeverageTier
+    {
+
+        /// <summary>
+        /// Start of the range (volume or value, as the rule measures it).
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("rangeFrom")]
+        public double? RangeFrom { get; set; } = default!;
+
+        /// <summary>
+        /// End of the range; zero means the range is open-ended.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("rangeTo")]
+        public double? RangeTo { get; set; } = default!;
+
+        /// <summary>
+        /// Initial margin rate charged inside the range.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("marginRateInitial")]
+        public double? MarginRateInitial { get; set; } = default!;
+
+        /// <summary>
+        /// Maintenance margin rate charged inside the range.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("marginRateMaintenance")]
+        public double? MarginRateMaintenance { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Application license to verify against the license of the trade server.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5LicenseCheckRequest
+    {
+
+        /// <summary>
+        /// Name of the application as it appears in the platform license, up to 128 characters.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string? Name { get; set; } = default!;
+
+        /// <summary>
+        /// Random sequence, up to 256 bytes. Transferred whole, without interpretation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("random")]
+        public byte[]? Random { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Answer of the trade server to a license check.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5LicenseCheckResult
+    {
+
+        /// <summary>
+        /// Result of the check.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("retcode")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5Result>))]
+        public MT5Result? Retcode { get; set; } = default!;
+
+        /// <summary>
+        /// Signature of the result code, the application name and the random sequence, produced by the
+        /// <br/>platform with its private key. Empty when the check failed.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("sign")]
+        public byte[]? Sign { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5LicenseCheckResultApiResponse
+    {
+
+        /// <summary>
+        /// Answer of the trade server to a license check.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5LicenseCheckResult? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Entry of the journal of a trade server.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5LogRecord
+    {
+
+        /// <summary>
+        /// Entry flags as a bit mask.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("flags")]
+        public int? Flags { get; set; } = default!;
+
+        /// <summary>
+        /// Platform code of the event.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("code")]
+        public int? Code { get; set; } = default!;
+
+        /// <summary>
+        /// Platform type of the event.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("type")]
+        public int? Type { get; set; } = default!;
+
+        /// <summary>
+        /// Time of the entry, in UTC.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("time")]
+        public System.DateTimeOffset? Time { get; set; } = default!;
+
+        /// <summary>
+        /// Time of the entry with millisecond precision, in UTC.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("timeMsc")]
+        public System.DateTimeOffset? TimeMsc { get; set; } = default!;
+
+        /// <summary>
+        /// Source of the entry: the component of the trade server that recorded it.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("source")]
+        public string? Source { get; set; } = default!;
+
+        /// <summary>
+        /// Text of the entry.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("message")]
+        public string? Message { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5LogRecordListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5LogRecord>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Message to write into the local journal of the manager interface.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5LoggerMessage
+    {
+
+        /// <summary>
+        /// Platform code of the event.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("code")]
+        public int? Code { get; set; } = default!;
+
+        /// <summary>
+        /// Text of the entry. Line feed and carriage return are refused: the platform computes the
+        /// <br/>journal checksum line by line, and a multi-line entry breaks it.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("message")]
+        public string? Message { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Message of the internal mail system of the trade server.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5Mail
+    {
+
+        /// <summary>
+        /// Message identifier.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public long? Id { get; set; } = default!;
+
+        /// <summary>
+        /// Identifier of the message this one answers; zero when it starts a thread.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("parent")]
+        public long? Parent { get; set; } = default!;
+
+        /// <summary>
+        /// Subject of the message.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("subject")]
+        public string? Subject { get; set; } = default!;
+
+        /// <summary>
+        /// Login of the sender.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("from")]
+        public long? From { get; set; } = default!;
+
+        /// <summary>
+        /// Name of the sender.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("fromName")]
+        public string? FromName { get; set; } = default!;
+
+        /// <summary>
+        /// Login of the recipient.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("to")]
+        public long? To { get; set; } = default!;
+
+        /// <summary>
+        /// Name of the recipient.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("toName")]
+        public string? ToName { get; set; } = default!;
+
+        /// <summary>
+        /// Time the message was sent, in UTC.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("time")]
+        public System.DateTimeOffset? Time { get; set; } = default!;
+
+        /// <summary>
+        /// Size of the body in bytes.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("bodySize")]
+        public int? BodySize { get; set; } = default!;
+
+        /// <summary>
+        /// Number of files attached to the message.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("attachmentsTotal")]
+        public int? AttachmentsTotal { get; set; } = default!;
+
+        /// <summary>
+        /// Body of the message as stored by the trade server. Absent in the list route; request the
+        /// <br/>message by its identifier to receive it. The platform treats the body as arbitrary data,
+        /// <br/>so it is transferred without interpretation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("body")]
+        public byte[]? Body { get; set; } = default!;
+
+        /// <summary>
+        /// Files attached to the message, with their content. Absent in the list route.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("attachments")]
+        public System.Collections.Generic.List<MT5MailAttachment>? Attachments { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5MailApiResponse
+    {
+
+        /// <summary>
+        /// Message of the internal mail system of the trade server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5Mail? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// File attached to a message of the internal mail system.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5MailAttachment
+    {
+
+        /// <summary>
+        /// File name as it is shown to the recipient.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string? Name { get; set; } = default!;
+
+        /// <summary>
+        /// Size of the file in bytes.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("size")]
+        public int? Size { get; set; } = default!;
+
+        /// <summary>
+        /// Content of the file. Transferred whole, without interpretation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("content")]
+        public byte[]? Content { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5MailListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5Mail>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Message to send through the internal mail system of the trade server.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5MailSendRequest
+    {
+
+        /// <summary>
+        /// Login of the recipient.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("to")]
+        public long? To { get; set; } = default!;
+
+        /// <summary>
+        /// Name of the recipient.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("toName")]
+        public string? ToName { get; set; } = default!;
+
+        /// <summary>
+        /// Subject of the message.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("subject")]
+        public string? Subject { get; set; } = default!;
+
+        /// <summary>
+        /// Body of the message. Transferred whole, without interpretation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("body")]
+        public byte[]? Body { get; set; } = default!;
+
+        /// <summary>
+        /// Files to attach to the message.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("attachments")]
+        public System.Collections.Generic.List<MT5MailAttachment>? Attachments { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// One minute bar of a symbol, as sent for a history change.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5MarketChartBar
+    {
+
+        /// <summary>
+        /// Bar opening time as a trading time of the trade server. Mandatory.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("time")]
+        public System.DateTimeOffset? Time { get; set; } = default!;
+
+        /// <summary>
+        /// Open price. A value of zero deletes the stored bar with the same time.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("open")]
+        public double? Open { get; set; } = default!;
+
+        /// <summary>
+        /// Highest price of the minute.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("high")]
+        public double? High { get; set; } = default!;
+
+        /// <summary>
+        /// Lowest price of the minute.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("low")]
+        public double? Low { get; set; } = default!;
+
+        /// <summary>
+        /// Close price of the minute.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("close")]
+        public double? Close { get; set; } = default!;
+
+        /// <summary>
+        /// Tick volume — the number of incoming ticks that moved the quote during the minute.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tickVolume")]
+        public long? TickVolume { get; set; } = default!;
+
+        /// <summary>
+        /// Lowest spread, in points, recorded while the minute was forming.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("spread")]
+        public int? Spread { get; set; } = default!;
+
+        /// <summary>
+        /// Real traded volume executed during the minute.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volume")]
+        public long? Volume { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Bars to delete from the chart history of a symbol.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5MarketChartDeleteRequest
+    {
+
+        /// <summary>
+        /// Opening times of the bars to delete, in seconds since 01.01.1970. Must be non-empty.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("times")]
+        public System.Collections.Generic.List<long>? Times { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Minute bars to write into the chart history of a symbol.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5MarketChartWriteRequest
+    {
+
+        /// <summary>
+        /// Bars to write. Must be non-empty.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("bars")]
+        public System.Collections.Generic.List<MT5MarketChartBar>? Bars { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// A full quote record of a symbol.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5MarketTick
+    {
+
+        /// <summary>
+        /// Name of the trading instrument the quote belongs to. Mandatory.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbol")]
+        public string? Symbol { get; set; } = default!;
+
+        /// <summary>
+        /// Name of the price source (liquidity provider) as the sender reports it.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("bank")]
+        public string? Bank { get; set; } = default!;
+
+        /// <summary>
+        /// Quote time — seconds since 01.01.1970 in the trading time of the trade server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("time")]
+        public long? Time { get; set; } = default!;
+
+        /// <summary>
+        /// Quote time — milliseconds since 01.01.1970 in the trading time of the trade server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("timeMsc")]
+        public long? TimeMsc { get; set; } = default!;
+
+        /// <summary>
+        /// Bid price.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("bid")]
+        public double? Bid { get; set; } = default!;
+
+        /// <summary>
+        /// Ask price.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("ask")]
+        public double? Ask { get; set; } = default!;
+
+        /// <summary>
+        /// Price of the last committed deal.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("last")]
+        public double? Last { get; set; } = default!;
+
+        /// <summary>
+        /// Volume of the last deal, as the data provider passed it.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volume")]
+        public long? Volume { get; set; } = default!;
+
+        /// <summary>
+        /// Volume of the last deal with extended accuracy; wins over `volume` when both are given.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeExt")]
+        public long? VolumeExt { get; set; } = default!;
+
+        /// <summary>
+        /// Direction of the last deal: `None`, `Buy` or `Sell`.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("flags")]
+        public string? Flags { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Quotes to add into the price stream in one call.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5MarketTickAddBatchRequest
+    {
+
+        /// <summary>
+        /// Quotes to add. Must be non-empty.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("ticks")]
+        public System.Collections.Generic.List<MT5MarketTick>? Ticks { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// A quote together with the statistical information to publish with it.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5MarketTickAddStatRequest
+    {
+
+        /// <summary>
+        /// The quote the statistics belong to. Mandatory.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tick")]
+        public MT5MarketTick? Tick { get; set; } = default!;
+
+        /// <summary>
+        /// The statistical information to publish. Mandatory.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("stat")]
+        public MT5MarketTickStat? Stat { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// A summary quote record of a symbol.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5MarketTickShort
+    {
+
+        /// <summary>
+        /// Quote time — seconds since 01.01.1970 in the trading time of the trade server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("time")]
+        public long? Time { get; set; } = default!;
+
+        /// <summary>
+        /// Quote time — milliseconds since 01.01.1970 in the trading time of the trade server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("timeMsc")]
+        public long? TimeMsc { get; set; } = default!;
+
+        /// <summary>
+        /// The same quote time as a date-time without offset, for direct reading.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dateTime")]
+        public System.DateTimeOffset? DateTime { get; set; } = default!;
+
+        /// <summary>
+        /// Bid price.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("bid")]
+        public double? Bid { get; set; } = default!;
+
+        /// <summary>
+        /// Ask price.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("ask")]
+        public double? Ask { get; set; } = default!;
+
+        /// <summary>
+        /// Price of the last committed deal.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("last")]
+        public double? Last { get; set; } = default!;
+
+        /// <summary>
+        /// Volume of the last deal, as the data provider passed it.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volume")]
+        public long? Volume { get; set; } = default!;
+
+        /// <summary>
+        /// Volume of the last deal with extended accuracy.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeExt")]
+        public long? VolumeExt { get; set; } = default!;
+
+        /// <summary>
+        /// Kind of the tick as the names of the set flags, for example `"Bid, Volume"`.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("flags")]
+        public string? Flags { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5MarketTickShortApiResponse
+    {
+
+        /// <summary>
+        /// A summary quote record of a symbol.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5MarketTickShort? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Statistical information about the quotes of a symbol.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5MarketTickStat
+    {
+
+        /// <summary>
+        /// Name of the trading instrument the statistics belong to.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbol")]
+        public string? Symbol { get; set; } = default!;
+
+        /// <summary>
+        /// Time the statistics refer to — seconds since 01.01.1970 in the trading time of the trade server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("time")]
+        public long? Time { get; set; } = default!;
+
+        /// <summary>
+        /// The same time in milliseconds since 01.01.1970.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("timeMsc")]
+        public long? TimeMsc { get; set; } = default!;
+
+        /// <summary>
+        /// The same time as a date-time without offset, for direct reading.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("dateTime")]
+        public System.DateTimeOffset? DateTime { get; set; } = default!;
+
+        /// <summary>
+        /// Highest bid of the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("bidHigh")]
+        public double? BidHigh { get; set; } = default!;
+
+        /// <summary>
+        /// Lowest bid of the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("bidLow")]
+        public double? BidLow { get; set; } = default!;
+
+        /// <summary>
+        /// Highest ask of the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("askHigh")]
+        public double? AskHigh { get; set; } = default!;
+
+        /// <summary>
+        /// Lowest ask of the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("askLow")]
+        public double? AskLow { get; set; } = default!;
+
+        /// <summary>
+        /// Highest last deal price of the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("lastHigh")]
+        public double? LastHigh { get; set; } = default!;
+
+        /// <summary>
+        /// Lowest last deal price of the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("lastLow")]
+        public double? LastLow { get; set; } = default!;
+
+        /// <summary>
+        /// Highest deal volume of the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeHigh")]
+        public long? VolumeHigh { get; set; } = default!;
+
+        /// <summary>
+        /// Lowest deal volume of the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeLow")]
+        public long? VolumeLow { get; set; } = default!;
+
+        /// <summary>
+        /// Highest deal volume of the session with extended accuracy.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeHighExt")]
+        public long? VolumeHighExt { get; set; } = default!;
+
+        /// <summary>
+        /// Lowest deal volume of the session with extended accuracy.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeLowExt")]
+        public long? VolumeLowExt { get; set; } = default!;
+
+        /// <summary>
+        /// Number of deals of the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tradeDeals")]
+        public long? TradeDeals { get; set; } = default!;
+
+        /// <summary>
+        /// Volume of the deals of the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tradeVolume")]
+        public long? TradeVolume { get; set; } = default!;
+
+        /// <summary>
+        /// Turnover of the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tradeTurnover")]
+        public long? TradeTurnover { get; set; } = default!;
+
+        /// <summary>
+        /// Volume of the effective contracts of the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tradeInterest")]
+        public long? TradeInterest { get; set; } = default!;
+
+        /// <summary>
+        /// Number of buy orders received during the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tradeBuyOrders")]
+        public long? TradeBuyOrders { get; set; } = default!;
+
+        /// <summary>
+        /// Volume of buy orders received during the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tradeBuyVolume")]
+        public long? TradeBuyVolume { get; set; } = default!;
+
+        /// <summary>
+        /// Number of sell orders received during the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tradeSellOrders")]
+        public long? TradeSellOrders { get; set; } = default!;
+
+        /// <summary>
+        /// Volume of sell orders received during the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tradeSellVolume")]
+        public long? TradeSellVolume { get; set; } = default!;
+
+        /// <summary>
+        /// Volume of the deals of the session with extended accuracy.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tradeVolumeExt")]
+        public long? TradeVolumeExt { get; set; } = default!;
+
+        /// <summary>
+        /// Volume of buy orders of the session with extended accuracy.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tradeBuyVolumeExt")]
+        public long? TradeBuyVolumeExt { get; set; } = default!;
+
+        /// <summary>
+        /// Volume of sell orders of the session with extended accuracy.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tradeSellVolumeExt")]
+        public long? TradeSellVolumeExt { get; set; } = default!;
+
+        /// <summary>
+        /// Opening price of the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceOpen")]
+        public double? PriceOpen { get; set; } = default!;
+
+        /// <summary>
+        /// Closing price of the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceClose")]
+        public double? PriceClose { get; set; } = default!;
+
+        /// <summary>
+        /// Average weighted price of the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceAw")]
+        public double? PriceAw { get; set; } = default!;
+
+        /// <summary>
+        /// Price volatility of the session.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceVolatility")]
+        public double? PriceVolatility { get; set; } = default!;
+
+        /// <summary>
+        /// Theoretical option price.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceTheoretical")]
+        public double? PriceTheoretical { get; set; } = default!;
+
+        /// <summary>
+        /// Option delta — sensitivity of the theoretical price to the underlying price.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceGreeksDelta")]
+        public double? PriceGreeksDelta { get; set; } = default!;
+
+        /// <summary>
+        /// Option theta — sensitivity of the theoretical price to the time to expiry.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceGreeksTheta")]
+        public double? PriceGreeksTheta { get; set; } = default!;
+
+        /// <summary>
+        /// Option gamma — sensitivity of delta to the underlying price.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceGreeksGamma")]
+        public double? PriceGreeksGamma { get; set; } = default!;
+
+        /// <summary>
+        /// Option vega — sensitivity of the theoretical price to volatility.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceGreeksVega")]
+        public double? PriceGreeksVega { get; set; } = default!;
+
+        /// <summary>
+        /// Option rho — sensitivity of the theoretical price to the interest rate.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceGreeksRho")]
+        public double? PriceGreeksRho { get; set; } = default!;
+
+        /// <summary>
+        /// Option omega — elasticity of the theoretical price to the underlying price.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceGreeksOmega")]
+        public double? PriceGreeksOmega { get; set; } = default!;
+
+        /// <summary>
+        /// Sensitivity of the theoretical price used by the pricing model of the server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceSensitivity")]
+        public double? PriceSensitivity { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5MarketTickStatApiResponse
+    {
+
+        /// <summary>
+        /// Statistical information about the quotes of a symbol.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5MarketTickStat? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Ticks to write into the tick history of a symbol.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5MarketTickWriteRequest
+    {
+
+        /// <summary>
+        /// Ticks to write. Must be non-empty.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("ticks")]
+        public System.Collections.Generic.List<MT5MarketTickShort>? Ticks { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// An SMS to send through the messenger integration of the trade server.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5MessengerSendRequest
+    {
+
+        /// <summary>
+        /// Recipient phone number in international format, for example `+74951113594`.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("destination")]
+        public string? Destination { get; set; } = default!;
+
+        /// <summary>
+        /// Group whose provider serves the message; optional.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("group")]
+        public string? Group { get; set; } = default!;
+
+        /// <summary>
+        /// Sender name, where the provider supports one; optional.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("sender")]
+        public string? Sender { get; set; } = default!;
+
+        /// <summary>
+        /// Message text.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("text")]
+        public string? Text { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// News item received by the manager account of the trade server.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5News
+    {
+
+        /// <summary>
+        /// News item identifier.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public long? Id { get; set; } = default!;
+
+        /// <summary>
+        /// Subject of the news item.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("subject")]
+        public string? Subject { get; set; } = default!;
+
+        /// <summary>
+        /// Category of the news item, as set by the sender.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("category")]
+        public string? Category { get; set; } = default!;
+
+        /// <summary>
+        /// Time the news item was sent, in the time zone of the trade server. The platform stores the
+        /// <br/>value without a zone, so it is returned as a wall-clock time.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("time")]
+        public System.DateTimeOffset? Time { get; set; } = default!;
+
+        /// <summary>
+        /// Language identifier of the news item.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("language")]
+        public int? Language { get; set; } = default!;
+
+        /// <summary>
+        /// News item flags as a bit mask: priority, read state, absence of a body, economic calendar.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("flags")]
+        public int? Flags { get; set; } = default!;
+
+        /// <summary>
+        /// Size of the body in bytes.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("bodySize")]
+        public int? BodySize { get; set; } = default!;
+
+        /// <summary>
+        /// Body of the news item as stored by the trade server. Absent in the list route. The platform
+        /// <br/>treats the body as arbitrary data, so it is transferred without interpretation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("body")]
+        public byte[]? Body { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5NewsApiResponse
+    {
+
+        /// <summary>
+        /// News item received by the manager account of the trade server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5News? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5NewsListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5News>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// News item to publish through the trade server.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5NewsSendRequest
+    {
+
+        /// <summary>
+        /// Subject of the news item.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("subject")]
+        public string? Subject { get; set; } = default!;
+
+        /// <summary>
+        /// Category of the news item.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("category")]
+        public string? Category { get; set; } = default!;
+
+        /// <summary>
+        /// Publication time, in the time zone of the trade server. Omitted uses the current time of
+        /// <br/>the trade server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("time")]
+        public System.DateTimeOffset? Time { get; set; } = default!;
+
+        /// <summary>
+        /// Language identifier of the news item.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("language")]
+        public int? Language { get; set; } = default!;
+
+        /// <summary>
+        /// News item flags as a bit mask: priority, read state, absence of a body, economic calendar.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("flags")]
+        public int? Flags { get; set; } = default!;
+
+        /// <summary>
+        /// Body of the news item. Transferred whole, without interpretation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("body")]
+        public byte[]? Body { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// A push notification to send to the mobile terminals of a set of accounts.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5NotificationsSendRequest
+    {
+
+        /// <summary>
+        /// Logins of the accounts to notify; used instead of `MetaQuotesIds`.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("logins")]
+        public System.Collections.Generic.List<long>? Logins { get; set; } = default!;
+
+        /// <summary>
+        /// Comma-separated MetaQuotes identifiers of the mobile terminals; used instead of `Logins`.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("metaQuotesIds")]
+        public string? MetaQuotesIds { get; set; } = default!;
+
+        /// <summary>
+        /// Text of the notification.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("message")]
+        public string? Message { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// One open connection to the trade server, v2 read DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5Online
+    {
+
+        /// <summary>
+        /// Session identifier, unique for the trade server while the session lives.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("sessionId")]
+        public long? SessionId { get; set; } = default!;
+
+        /// <summary>
+        /// Login of the account the session belongs to.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("login")]
+        public long? Login { get; set; } = default!;
+
+        /// <summary>
+        /// Group of the account at the time of the connection.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("group")]
+        public string? Group { get; set; } = default!;
+
+        /// <summary>
+        /// Address the client connected from.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("address")]
+        public string? Address { get; set; } = default!;
+
+        /// <summary>
+        /// Kind of the connected application — a trading terminal, a mobile app, a manager terminal or an API client.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("connectionType")]
+        public string? ConnectionType { get; set; } = default!;
+
+        /// <summary>
+        /// Build number of the connected application.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("build")]
+        public int? Build { get; set; } = default!;
+
+        /// <summary>
+        /// Connection time, as the trade server counts it. Absent when the server sent no time.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("time")]
+        public System.DateTimeOffset? Time { get; set; } = default!;
+
+        /// <summary>
+        /// Identifier of the computer the session was opened from.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("computerId")]
+        public string? ComputerId { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Outcome of the forced disconnection of one login, v2 write DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5OnlineDisconnectResult
+    {
+
+        /// <summary>
+        /// Login whose connections were dropped.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("login")]
+        public long? Login { get; set; } = default!;
+
+        /// <summary>
+        /// True when every open session of the login was dropped.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("ok")]
+        public bool? Ok { get; set; } = default!;
+
+        /// <summary>
+        /// Numeric result of the first session that could not be dropped; zero when the login was dropped in full.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("code")]
+        public int? Code { get; set; } = default!;
+
+        /// <summary>
+        /// Name of the result code in `Code`.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("status")]
+        public string? Status { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5OnlineDisconnectResultListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5OnlineDisconnectResult>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5OnlineListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5Online>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// One positional window of the live connection list, v2 read DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5OnlinePage
+    {
+
+        /// <summary>
+        /// Connections of this window.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("items")]
+        public System.Collections.Generic.List<MT5Online>? Items { get; set; } = default!;
+
+        /// <summary>
+        /// Total number of connections on the trade server at the moment of the request.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("total")]
+        public int? Total { get; set; } = default!;
+
+        /// <summary>
+        /// Position the window starts at, echoed from the request.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("from")]
+        public int? From { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5OnlinePageApiResponse
+    {
+
+        /// <summary>
+        /// One positional window of the live connection list, v2 read DTO.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5OnlinePage? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT5Order
     {
@@ -10728,6 +14751,183 @@ namespace CPlugin.SaaSWebApi.Models
 
     }
 
+    /// <summary>
+    /// Plugin configuration: the module loaded on a trade server together with the parameters it reads on
+    /// <br/>start.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5Plugin
+    {
+
+        /// <summary>
+        /// Configuration name; it identifies the record on the trade server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string? Name { get; set; } = default!;
+
+        /// <summary>
+        /// Identifier of the trade server the module runs on.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("server")]
+        public long? Server { get; set; } = default!;
+
+        /// <summary>
+        /// Module the configuration belongs to, as the plugin file names it.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("module")]
+        public string? Module { get; set; } = default!;
+
+        /// <summary>
+        /// Whether the platform keeps the configuration loaded.&lt;br/&gt;One of: Disabled, Enabled. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("mode")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5PluginMode>))]
+        public MT5PluginMode? Mode { get; set; } = default!;
+
+        /// <summary>
+        /// Behaviour flags of the module.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("flags")]
+        public string? Flags { get; set; } = default!;
+
+        /// <summary>
+        /// Parameters of the module, in storage order.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("parameters")]
+        public System.Collections.Generic.List<MT5PluginParameter>? Parameters { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5PluginApiResponse
+    {
+
+        /// <summary>
+        /// Plugin configuration: the module loaded on a trade server together with the parameters it reads on
+        /// <br/>start.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5Plugin? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Whether the platform keeps a plugin configuration loaded.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5PluginMode
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Disabled")]
+        Disabled = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Enabled")]
+        Enabled = 1,
+
+    }
+
+    /// <summary>
+    /// One parameter of a plugin configuration.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5PluginParameter
+    {
+
+        /// <summary>
+        /// Parameter name, unique inside its configuration.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string? Name { get; set; } = default!;
+
+        /// <summary>
+        /// Type the module expects for the value.&lt;br/&gt;One of: String, Int, Float, Time, Date, DateTime, Groups, Symbols, Bool, Color, Gateway, UltencyMatchingEngine, UltencyProvider, UltencySymbols, Period. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("type")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5PluginParameterType>))]
+        public MT5PluginParameterType? Type { get; set; } = default!;
+
+        /// <summary>
+        /// Value in its text form: numbers as decimal strings, times as UNIX seconds.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("value")]
+        public string? Value { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Type a plugin module expects for a parameter value.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5PluginParameterType
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"String")]
+        String = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Int")]
+        Int = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Float")]
+        Float = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Time")]
+        Time = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Date")]
+        Date = 4,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DateTime")]
+        DateTime = 5,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Groups")]
+        Groups = 6,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Symbols")]
+        Symbols = 7,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Bool")]
+        Bool = 8,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Color")]
+        Color = 9,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Gateway")]
+        Gateway = 10,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UltencyMatchingEngine")]
+        UltencyMatchingEngine = 11,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UltencyProvider")]
+        UltencyProvider = 12,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UltencySymbols")]
+        UltencySymbols = 13,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Period")]
+        Period = 14,
+
+    }
+
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT5Position
     {
@@ -10925,6 +15125,35 @@ namespace CPlugin.SaaSWebApi.Models
     /// <br/>(activityId and optional paging). HTTP status is always 200.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5PositionApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5Position? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT5PositionListApiResponse
     {
 
@@ -10945,6 +15174,93 @@ namespace CPlugin.SaaSWebApi.Models
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Request body of the position split: the positions to convert, the conversion ratio and the
+    /// <br/>rounding rules applied to the recalculated prices and volumes.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5PositionSplitRequest
+    {
+
+        /// <summary>
+        /// Tickets of the positions to split or consolidate. Every ticket must belong to the trade
+        /// <br/>server the request is addressed to.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("tickets")]
+        public System.Collections.Generic.List<long>? Tickets { get; set; } = default!;
+
+        /// <summary>
+        /// Balance adjustments, one per ticket and in the same order. Omit the whole array to let the
+        /// <br/>server calculate the adjustments; send an array of zeros when no adjustment is needed.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("adjustments")]
+        public System.Collections.Generic.List<double>? Adjustments { get; set; } = default!;
+
+        /// <summary>
+        /// Number of shares after the conversion (the numerator of the ratio).
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("newShares")]
+        public int? NewShares { get; set; } = default!;
+
+        /// <summary>
+        /// Number of shares before the conversion (the denominator of the ratio).
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("oldShares")]
+        public int? OldShares { get; set; } = default!;
+
+        /// <summary>
+        /// Price rounding rule when the recalculated price has more digits than the symbol allows.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("roundRulePrice")]
+        public int? RoundRulePrice { get; set; } = default!;
+
+        /// <summary>
+        /// Volume rounding rule when the conversion leaves a fractional number of shares.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("roundRuleVolume")]
+        public int? RoundRuleVolume { get; set; } = default!;
+
+        /// <summary>
+        /// Additional split options.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("flags")]
+        public int? Flags { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Proxy server through which the manager connection to the trade server is established.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5ProxySettings
+    {
+
+        /// <summary>
+        /// Whether the connection goes through a proxy server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("enabled")]
+        public bool? Enabled { get; set; } = default!;
+
+        /// <summary>
+        /// Proxy protocol name.&lt;br/&gt;One of: Socks4, Socks5, Http. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("type")]
+        public string? Type { get; set; } = default!;
+
+        /// <summary>
+        /// Address of the proxy server, up to 64 characters.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("address")]
+        public string? Address { get; set; } = default!;
+
+        /// <summary>
+        /// Authentication string of the proxy server, up to 64 characters.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("auth")]
+        public string? Auth { get; set; } = default!;
 
     }
 
@@ -11290,6 +15606,35 @@ namespace CPlugin.SaaSWebApi.Models
 
         [System.Text.Json.Serialization.JsonPropertyName("data")]
         public MT5Request? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5RequestListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5Request>? Data { get; set; } = default!;
 
         /// <summary>
         /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
@@ -11950,6 +16295,951 @@ namespace CPlugin.SaaSWebApi.Models
         [System.Text.Json.Serialization.JsonPropertyName("data")]
         // TODO(system.text.json): Add ItemConverterType with enum converter when supported
         public System.Collections.Generic.List<MT5Result>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Request body removing one symbol from the selected list, v2 write DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SelectedDeleteRequest
+    {
+
+        /// <summary>
+        /// Symbol name to remove.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbol")]
+        public string? Symbol { get; set; } = default!;
+
+        /// <summary>
+        /// Position of the symbol in the list, starting from zero.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("pos")]
+        public int? Pos { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// One positional window of the selected-symbol list, v2 read DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SelectedPage
+    {
+
+        /// <summary>
+        /// Symbol names of this window, in list order.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbols")]
+        public System.Collections.Generic.List<string>? Symbols { get; set; } = default!;
+
+        /// <summary>
+        /// Total number of symbols in the list at the moment of the request.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("total")]
+        public int? Total { get; set; } = default!;
+
+        /// <summary>
+        /// Position the window starts at, echoed from the request.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("from")]
+        public int? From { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SelectedPageApiResponse
+    {
+
+        /// <summary>
+        /// One positional window of the selected-symbol list, v2 read DTO.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5SelectedPage? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Request body moving one symbol inside the selected list, v2 write DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SelectedShiftRequest
+    {
+
+        /// <summary>
+        /// Position of the symbol in the list, starting from zero.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("pos")]
+        public int? Pos { get; set; } = default!;
+
+        /// <summary>
+        /// Offset from the current position: a negative value moves the symbol towards the top of
+        /// <br/>the list, a positive one towards its end.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("shift")]
+        public int? Shift { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Settings file stored in the directory of the manager account on the trade server.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SettingFile
+    {
+
+        /// <summary>
+        /// Name of the subfolder of the manager directory.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("section")]
+        public string? Section { get; set; } = default!;
+
+        /// <summary>
+        /// Name of the file.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("key")]
+        public string? Key { get; set; } = default!;
+
+        /// <summary>
+        /// Content of the file. Transferred whole, without interpretation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public byte[]? Data { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SettingFileApiResponse
+    {
+
+        /// <summary>
+        /// Settings file stored in the directory of the manager account on the trade server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5SettingFile? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// A subscription of a trading account, as stored by the trade server.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5Subscription
+    {
+
+        /// <summary>
+        /// Identifier of the subscription record. Required when an existing record is updated.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public long? Id { get; set; } = default!;
+
+        /// <summary>
+        /// Login of the account the subscription belongs to.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("login")]
+        public long? Login { get; set; } = default!;
+
+        /// <summary>
+        /// Identifier of the subscription configuration the account is subscribed to.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("subscription")]
+        public long? Subscription { get; set; } = default!;
+
+        /// <summary>
+        /// Subscription state.&lt;br/&gt;One of: Active, Suspended, Canceled. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("status")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5SubscriptionStatus>))]
+        public MT5SubscriptionStatus? Status { get; set; } = default!;
+
+        /// <summary>
+        /// Additional subscription property flags.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("flags")]
+        public string? Flags { get; set; } = default!;
+
+        /// <summary>
+        /// Start of the subscription, in seconds since 1970-01-01.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("timeSubscribe")]
+        public long? TimeSubscribe { get; set; } = default!;
+
+        /// <summary>
+        /// Time of the last subscription renewal, in seconds since 1970-01-01.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("timeRenewal")]
+        public long? TimeRenewal { get; set; } = default!;
+
+        /// <summary>
+        /// End of the subscription, in seconds since 1970-01-01.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("timeExpire")]
+        public long? TimeExpire { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// An action performed with a subscription.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5SubscriptionAction
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Subscribe")]
+        Subscribe = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Renewal")]
+        Renewal = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Suspend")]
+        Suspend = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Cancel")]
+        Cancel = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Deleted")]
+        Deleted = 4,
+
+    }
+
+    /// <summary>
+    /// The subscription record and the action record produced by one subscription change.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SubscriptionActionResult
+    {
+
+        /// <summary>
+        /// The subscription record as the trade server stored it.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("record")]
+        public MT5Subscription? Record { get; set; } = default!;
+
+        /// <summary>
+        /// The action record the change was written as.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("history")]
+        public MT5SubscriptionHistory? History { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SubscriptionActionResultApiResponse
+    {
+
+        /// <summary>
+        /// The subscription record and the action record produced by one subscription change.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5SubscriptionActionResult? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SubscriptionApiResponse
+    {
+
+        /// <summary>
+        /// A subscription of a trading account, as stored by the trade server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5Subscription? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// The per-item outcome of a bulk subscription change.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SubscriptionBatchResult
+    {
+
+        /// <summary>
+        /// Result code of each requested change, in request order.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("results")]
+        // TODO(system.text.json): Add ItemConverterType with enum converter when supported
+        public System.Collections.Generic.List<MT5Result>? Results { get; set; } = default!;
+
+        /// <summary>
+        /// The subscription records the server produced, in request order.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("records")]
+        public System.Collections.Generic.List<MT5Subscription>? Records { get; set; } = default!;
+
+        /// <summary>
+        /// The action records the changes were written as, in request order.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("history")]
+        public System.Collections.Generic.List<MT5SubscriptionHistory>? History { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SubscriptionBatchResultApiResponse
+    {
+
+        /// <summary>
+        /// The per-item outcome of a bulk subscription change.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5SubscriptionBatchResult? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// What a client is allowed to do with a subscription.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5SubscriptionControlMode
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Full")]
+        Full = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Unsubscribe")]
+        Unsubscribe = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"View")]
+        View = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Hidden")]
+        Hidden = 3,
+
+    }
+
+    /// <summary>
+    /// Free period granted before the first charge.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5SubscriptionFreePeriod
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"None")]
+        None = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Day")]
+        Day = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Week")]
+        Week = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Month")]
+        Month = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Quarter")]
+        Quarter = 4,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Year")]
+        Year = 5,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Custom")]
+        Custom = 6,
+
+    }
+
+    /// <summary>
+    /// An action performed with a subscription of a trading account.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SubscriptionHistory
+    {
+
+        /// <summary>
+        /// Identifier of the action record. Required when an existing action is updated.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public long? Id { get; set; } = default!;
+
+        /// <summary>
+        /// Login of the account the subscription belongs to.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("login")]
+        public long? Login { get; set; } = default!;
+
+        /// <summary>
+        /// Identifier of the subscription configuration the action was performed with.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("subscription")]
+        public long? Subscription { get; set; } = default!;
+
+        /// <summary>
+        /// Identifier of the subscription record the action was performed on.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("record")]
+        public long? Record { get; set; } = default!;
+
+        /// <summary>
+        /// Action performed with the subscription.&lt;br/&gt;One of: Subscribe, Renewal, Suspend, Cancel, Deleted. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("action")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5SubscriptionAction>))]
+        public MT5SubscriptionAction? Action { get; set; } = default!;
+
+        /// <summary>
+        /// Time of the action, in seconds since 1970-01-01.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("time")]
+        public long? Time { get; set; } = default!;
+
+        /// <summary>
+        /// Amount charged or returned by the action.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("amount")]
+        public double? Amount { get; set; } = default!;
+
+        /// <summary>
+        /// Number of decimal places in `amount`.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("amountDigits")]
+        public int? AmountDigits { get; set; } = default!;
+
+        /// <summary>
+        /// Ticket of the balance deal through which the payment was made; zero when there was no payment.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("amountDeal")]
+        public long? AmountDeal { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SubscriptionHistoryApiResponse
+    {
+
+        /// <summary>
+        /// An action performed with a subscription of a trading account.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5SubscriptionHistory? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SubscriptionHistoryListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5SubscriptionHistory>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SubscriptionListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5Subscription>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Billing period of a subscription.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5SubscriptionPeriod
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Once")]
+        Once = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Daily")]
+        Daily = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Weekly")]
+        Weekly = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Monthly")]
+        Monthly = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Quarterly")]
+        Quarterly = 4,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Annual")]
+        Annual = 5,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Custom")]
+        Custom = 6,
+
+    }
+
+    /// <summary>
+    /// State of a subscription.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5SubscriptionStatus
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Active")]
+        Active = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Suspended")]
+        Suspended = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Canceled")]
+        Canceled = 2,
+
+    }
+
+    /// <summary>
+    /// Depth of the market data a subscription delivers for one symbol.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5SubscriptionSymbolLevel
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Delayed")]
+        Delayed = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RealtimeLevel1")]
+        RealtimeLevel1 = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RealtimeLevel2")]
+        RealtimeLevel2 = 2,
+
+    }
+
+    /// <summary>
+    /// An account and a subscription configuration to act on.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SubscriptionTarget
+    {
+
+        /// <summary>
+        /// Login of the account.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("login")]
+        public long? Login { get; set; } = default!;
+
+        /// <summary>
+        /// Identifier of the subscription configuration.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("subscription")]
+        public long? Subscription { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// How much tick history a subscription delivers for one symbol.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5SubscriptionTickHistory
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"None")]
+        None = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"LastDay")]
+        LastDay = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"LastWeek")]
+        LastWeek = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"LastMonth")]
+        LastMonth = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Last3Months")]
+        Last3Months = 4,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Last6Months")]
+        Last6Months = 5,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"LastYear")]
+        LastYear = 6,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Last2Years")]
+        Last2Years = 7,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Last3Years")]
+        Last3Years = 8,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Last5Years")]
+        Last5Years = 9,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"All")]
+        All = 10,
+
+    }
+
+    /// <summary>
+    /// Kind of a subscription configuration record.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5SubscriptionType
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Subscription")]
+        Subscription = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Folder")]
+        Folder = 1,
+
+    }
+
+    /// <summary>
+    /// Summary of the client and hedging positions of one symbol, v2 read DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5Summary
+    {
+
+        /// <summary>
+        /// Symbol the record is calculated for; empty in the total record.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbol")]
+        public string? Symbol { get; set; } = default!;
+
+        /// <summary>
+        /// Number of decimal places in the weighted average prices.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("digits")]
+        public int? Digits { get; set; } = default!;
+
+        /// <summary>
+        /// Number of open client positions on the symbol.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("positionClients")]
+        public int? PositionClients { get; set; } = default!;
+
+        /// <summary>
+        /// Number of hedging positions on the symbol.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("positionCoverage")]
+        public int? PositionCoverage { get; set; } = default!;
+
+        /// <summary>
+        /// Total volume of client buy positions.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeBuyClients")]
+        public long? VolumeBuyClients { get; set; } = default!;
+
+        /// <summary>
+        /// Total volume of client buy positions with extended precision.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeBuyClientsExt")]
+        public long? VolumeBuyClientsExt { get; set; } = default!;
+
+        /// <summary>
+        /// Total volume of hedging buy positions.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeBuyCoverage")]
+        public long? VolumeBuyCoverage { get; set; } = default!;
+
+        /// <summary>
+        /// Total volume of hedging buy positions with extended precision.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeBuyCoverageExt")]
+        public long? VolumeBuyCoverageExt { get; set; } = default!;
+
+        /// <summary>
+        /// Total volume of client sell positions.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeSellClients")]
+        public long? VolumeSellClients { get; set; } = default!;
+
+        /// <summary>
+        /// Total volume of client sell positions with extended precision.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeSellClientsExt")]
+        public long? VolumeSellClientsExt { get; set; } = default!;
+
+        /// <summary>
+        /// Total volume of hedging sell positions.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeSellCoverage")]
+        public long? VolumeSellCoverage { get; set; } = default!;
+
+        /// <summary>
+        /// Total volume of hedging sell positions with extended precision.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeSellCoverageExt")]
+        public long? VolumeSellCoverageExt { get; set; } = default!;
+
+        /// <summary>
+        /// Net total: client buy volume minus client sell volume, with the hedged amount deducted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeNet")]
+        public double? VolumeNet { get; set; } = default!;
+
+        /// <summary>
+        /// Weighted average open price of client buy positions.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceBuyClients")]
+        public double? PriceBuyClients { get; set; } = default!;
+
+        /// <summary>
+        /// Weighted average open price of hedging buy positions.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceBuyCoverage")]
+        public double? PriceBuyCoverage { get; set; } = default!;
+
+        /// <summary>
+        /// Weighted average open price of client sell positions.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceSellClients")]
+        public double? PriceSellClients { get; set; } = default!;
+
+        /// <summary>
+        /// Weighted average open price of hedging sell positions.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceSellCoverage")]
+        public double? PriceSellCoverage { get; set; } = default!;
+
+        /// <summary>
+        /// Total profit or loss of client positions, excluding swaps and commissions.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("profitClients")]
+        public double? ProfitClients { get; set; } = default!;
+
+        /// <summary>
+        /// Total profit or loss of hedging positions, excluding swaps and commissions.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("profitCoverage")]
+        public double? ProfitCoverage { get; set; } = default!;
+
+        /// <summary>
+        /// Total profit or loss of client positions, including swaps and commissions.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("profitFullClients")]
+        public double? ProfitFullClients { get; set; } = default!;
+
+        /// <summary>
+        /// Total profit or loss of hedging positions, including swaps and commissions.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("profitFullCoverage")]
+        public double? ProfitFullCoverage { get; set; } = default!;
+
+        /// <summary>
+        /// Difference between the client and the hedging profit, excluding swaps and commissions.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("profitUncovered")]
+        public double? ProfitUncovered { get; set; } = default!;
+
+        /// <summary>
+        /// Difference between the client and the hedging profit, including swaps and commissions.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("profitUncoveredFull")]
+        public double? ProfitUncoveredFull { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SummaryApiResponse
+    {
+
+        /// <summary>
+        /// Summary of the client and hedging positions of one symbol, v2 read DTO.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5Summary? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SummaryListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5Summary>? Data { get; set; } = default!;
 
         /// <summary>
         /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
@@ -12706,6 +17996,94 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
+    /// One entry of a batch symbol update: the symbol to change and the fields to write.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SymbolBatchUpdateItem
+    {
+
+        /// <summary>
+        /// Symbol name, e.g. `EURUSD`.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbol")]
+        public string? Symbol { get; set; } = default!;
+
+        /// <summary>
+        /// Fields to change; fields left out keep their current server value.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("update")]
+        public MT5SymbolUpdate? Update { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Answer to the availability check of a symbol for a group: the platform result code and
+    /// <br/>whether the group settings allow the symbol.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SymbolExistResult
+    {
+
+        /// <summary>
+        /// Symbol name that was checked.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbol")]
+        public string? Symbol { get; set; } = default!;
+
+        /// <summary>
+        /// Group name the check was made for.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("group")]
+        public string? Group { get; set; } = default!;
+
+        /// <summary>
+        /// True when the group settings allow working with the symbol.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("available")]
+        public bool? Available { get; set; } = default!;
+
+        /// <summary>
+        /// Platform result code of the check, as its name.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("code")]
+        public string? Code { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SymbolExistResultApiResponse
+    {
+
+        /// <summary>
+        /// Answer to the availability check of a symbol for a group: the platform result code and
+        /// <br/>whether the group settings allow the symbol.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5SymbolExistResult? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
     /// Unified v2 response envelope: data is the payload (null on error); error is the
     /// <br/>error object (null on success, always serialised); meta contains response metadata
     /// <br/>(activityId and optional paging). HTTP status is always 200.
@@ -12731,6 +18109,21 @@ namespace CPlugin.SaaSWebApi.Models
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("meta")]
         public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Request body naming one symbol, v2 write DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SymbolRequest
+    {
+
+        /// <summary>
+        /// Symbol name exactly as the trade server holds it.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbol")]
+        public string? Symbol { get; set; } = default!;
 
     }
 
@@ -12875,6 +18268,21 @@ namespace CPlugin.SaaSWebApi.Models
         [System.Text.Json.Serialization.JsonPropertyName("execMode")]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<EnExecutionMode>))]
         public EnExecutionMode? ExecMode { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Request body naming several symbols, v2 write DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5SymbolsRequest
+    {
+
+        /// <summary>
+        /// Symbol names exactly as the trade server holds them.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbols")]
+        public System.Collections.Generic.List<string>? Symbols { get; set; } = default!;
 
     }
 
@@ -13621,6 +19029,72 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
+    /// Outcome of a batch operation for one account.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5UserBatchResult
+    {
+
+        /// <summary>
+        /// Login of the account the result belongs to.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("login")]
+        public long? Login { get; set; } = default!;
+
+        /// <summary>
+        /// Result of the operation for this account.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("code")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5Result>))]
+        public MT5Result? Code { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5UserBatchResultListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT5UserBatchResult>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Request to remove several trading accounts in one call.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5UserDeleteBatchRequest
+    {
+
+        /// <summary>
+        /// Logins of the accounts to remove.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("logins")]
+        public System.Collections.Generic.List<long>? Logins { get; set; } = default!;
+
+    }
+
+    /// <summary>
     /// Unified v2 response envelope: data is the payload (null on error); error is the
     /// <br/>error object (null on success, always serialised); meta contains response metadata
     /// <br/>(activityId and optional paging). HTTP status is always 200.
@@ -13805,6 +19279,42 @@ namespace CPlugin.SaaSWebApi.Models
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("middleName")]
         public string? MiddleName { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// One account of a batch update: the login it belongs to and the fields to change.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5UserUpdateBatchItem
+    {
+
+        /// <summary>
+        /// Login of the account to change.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("login")]
+        public long? Login { get; set; } = default!;
+
+        /// <summary>
+        /// Fields to change on that account.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("user")]
+        public MT5UserUpdate? User { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Request to change several trading accounts in one call.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5UserUpdateBatchRequest
+    {
+
+        /// <summary>
+        /// Accounts to change; each is applied on its own and reported on its own.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("users")]
+        public System.Collections.Generic.List<MT5UserUpdateBatchItem>? Users { get; set; } = default!;
 
     }
 
@@ -14543,6 +20053,45 @@ namespace CPlugin.SaaSWebApi.Models
 
     }
 
+    /// <summary>
+    /// State of an account taken from an external trading system, v2 request DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TradeAccountSetRequest
+    {
+
+        /// <summary>
+        /// Caller-side identifier used to tie the call to its completion event; optional.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("requestId")]
+        public long? RequestId { get; set; } = default!;
+
+        /// <summary>
+        /// Login of the account whose data is synchronised.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("login")]
+        public long? Login { get; set; } = default!;
+
+        /// <summary>
+        /// Balance the account must have after the synchronisation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("balance")]
+        public double? Balance { get; set; } = default!;
+
+        /// <summary>
+        /// Orders the account must have; omitted means the orders are not synchronised.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("orders")]
+        public System.Collections.Generic.List<MT5Order>? Orders { get; set; } = default!;
+
+        /// <summary>
+        /// Positions the account must have; omitted means the positions are not synchronised.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("positions")]
+        public System.Collections.Generic.List<MT5Position>? Positions { get; set; } = default!;
+
+    }
+
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public enum TradeActions
     {
@@ -14663,6 +20212,106 @@ namespace CPlugin.SaaSWebApi.Models
 
     }
 
+    /// <summary>
+    /// Order whose margin requirement is checked, v2 request DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TradeMarginCheckRequest
+    {
+
+        /// <summary>
+        /// Login of the account the hypothetical order would be placed on.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("login")]
+        public long? Login { get; set; } = default!;
+
+        /// <summary>
+        /// Symbol of the hypothetical order.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbol")]
+        public string? Symbol { get; set; } = default!;
+
+        /// <summary>
+        /// Type of the hypothetical order.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("type")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<OrderType>))]
+        public OrderType? Type { get; set; } = default!;
+
+        /// <summary>
+        /// Order volume; one unit is 1/10000 lot in the standard variant and 1/100000000 in the extended one.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volume")]
+        public long? Volume { get; set; } = default!;
+
+        /// <summary>
+        /// Execution price of the hypothetical order.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("price")]
+        public double? Price { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Answer of a margin check, v2 response DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TradeMarginCheckResult
+    {
+
+        /// <summary>
+        /// Whether the account has enough free margin for the order. `false` is a normal
+        /// <br/>answer, not an error: the order would be rejected by the trade server.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("allowed")]
+        public bool? Allowed { get; set; } = default!;
+
+        /// <summary>
+        /// Estimated state of the account after the order; empty when the server did not fill it.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("accountNew")]
+        public MT5Account? AccountNew { get; set; } = default!;
+
+        /// <summary>
+        /// State of the account at the moment of the check.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("accountCurrent")]
+        public MT5Account? AccountCurrent { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TradeMarginCheckResultApiResponse
+    {
+
+        /// <summary>
+        /// Answer of a margin check, v2 response DTO.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public TradeMarginCheckResult? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public enum TradeMode
     {
@@ -14675,6 +20324,191 @@ namespace CPlugin.SaaSWebApi.Models
 
         [System.Runtime.Serialization.EnumMember(Value = @"Full")]
         Full = 2,
+
+    }
+
+    /// <summary>
+    /// Conditions of a profit calculation, v2 request DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TradeProfitRequest
+    {
+
+        /// <summary>
+        /// Group whose deposit currency and prices are used for the calculation.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("group")]
+        public string? Group { get; set; } = default!;
+
+        /// <summary>
+        /// Symbol the calculation is performed for.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbol")]
+        public string? Symbol { get; set; } = default!;
+
+        /// <summary>
+        /// Direction of the hypothetical position; only buy and sell are meaningful here.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("type")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<OrderType>))]
+        public OrderType? Type { get; set; } = default!;
+
+        /// <summary>
+        /// Position volume; one unit is 1/10000 lot in the standard variant and 1/100000000 in the extended one.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volume")]
+        public long? Volume { get; set; } = default!;
+
+        /// <summary>
+        /// Open price of the hypothetical position.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceOpen")]
+        public double? PriceOpen { get; set; } = default!;
+
+        /// <summary>
+        /// Close price of the hypothetical position.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceClose")]
+        public double? PriceClose { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Result of a profit calculation, v2 response DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TradeProfitResult
+    {
+
+        /// <summary>
+        /// Profit of the hypothetical position in the deposit currency of the group.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("profit")]
+        public double? Profit { get; set; } = default!;
+
+        /// <summary>
+        /// Rate that converts the profit of the symbol into the deposit currency of the group.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("profitRate")]
+        public double? ProfitRate { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TradeProfitResultApiResponse
+    {
+
+        /// <summary>
+        /// Result of a profit calculation, v2 response DTO.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public TradeProfitResult? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Conditions of a conversion rate calculation, v2 request DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TradeRateRequest
+    {
+
+        /// <summary>
+        /// Currency bought or sold, a three-letter code such as `EUR`.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("base")]
+        public string? Base { get; set; } = default!;
+
+        /// <summary>
+        /// Currency the base currency is paid with, a three-letter code such as `USD`.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("currency")]
+        public string? Currency { get; set; } = default!;
+
+        /// <summary>
+        /// Group whose spread adjustment is applied; omitted means market prices.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("group")]
+        public string? Group { get; set; } = default!;
+
+        /// <summary>
+        /// Symbol to use in place of the market one.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbol")]
+        public string? Symbol { get; set; } = default!;
+
+        /// <summary>
+        /// Price of the symbol above; ignored for the symbols always converted at the market price.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("price")]
+        public double? Price { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Result of a conversion rate calculation, v2 response DTO.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TradeRateResult
+    {
+
+        /// <summary>
+        /// Rate of buying or selling the base currency for the calculation currency.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("rate")]
+        public double? Rate { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class TradeRateResultApiResponse
+    {
+
+        /// <summary>
+        /// Result of a conversion rate calculation, v2 response DTO.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public TradeRateResult? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
 
     }
 
@@ -14761,6 +20595,35 @@ namespace CPlugin.SaaSWebApi.Models
 
         [System.Text.Json.Serialization.JsonPropertyName("data")]
         public long? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class UInt64ListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<long>? Data { get; set; } = default!;
 
         /// <summary>
         /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
@@ -14891,35 +20754,127 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// v2 DTO for binary `ExternalCommand` roundtrips (sidecar-only).
-    /// <br/>The MT4 server's plugin API has no enforced wire-format — clients
-    /// <br/>agree with their plugin on the binary layout and pass arbitrary
-    /// <br/>bytes through this endpoint.
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4ExternalCommandBinaryRequest
+    public partial class MT4PluginListApiResponse
     {
 
-        /// <summary>
-        /// Binary payload to send to the plugin (base64-encoded)
-        /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
-        public byte[]? Data { get; set; } = default!;
+        public System.Collections.Generic.List<MT4Plugin>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
 
     }
 
     /// <summary>
-    /// v2 DTO for the response of `ExternalCommandBinary` (sidecar-only).
+    /// v2 DTO for MT4 plugin metadata (sidecar-only). Mirrors the platform's
+    /// <br/>`ConPlugin` with its embedded `PluginInfo` flattened.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4ExternalCommandBinaryResponse
+    public partial class MT4Plugin
     {
 
         /// <summary>
-        /// Binary payload received from the first plugin that returned RET_OK (base64-encoded)
+        /// Plugin DLL filename (max 256 chars on the platform side)
         /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("data")]
-        public byte[]? Data { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonPropertyName("file")]
+        public string? File { get; set; } = default!;
+
+        /// <summary>
+        /// Plugin display name (from `PluginInfo.Name`)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string? Name { get; set; } = default!;
+
+        /// <summary>
+        /// Plugin version (from `PluginInfo.Version`)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("version")]
+        public int? Version { get; set; } = default!;
+
+        /// <summary>
+        /// Plugin copyright string
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("copyright")]
+        public string? Copyright { get; set; } = default!;
+
+        /// <summary>
+        /// Enabled flag (raw int — 0 = disabled, non-zero = enabled)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("enabled")]
+        public int? Enabled { get; set; } = default!;
+
+        /// <summary>
+        /// Configurable flag (plugin exposes editable parameters)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("configurable")]
+        public int? Configurable { get; set; } = default!;
+
+        /// <summary>
+        /// Manager-terminal-accessible flag
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("managerAccess")]
+        public int? ManagerAccess { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// v2 DTO for an MT4 plugin together with its parameter set (sidecar-only).
+    /// <br/>Mirrors the platform's `ConPluginParam`.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT4PluginParam
+    {
+
+        /// <summary>
+        /// Plugin metadata
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("plugin")]
+        public MT4Plugin? Plugin { get; set; } = default!;
+
+        /// <summary>
+        /// Plugin parameter array (name/value pairs)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("params")]
+        public System.Collections.Generic.List<MT4PluginConfig>? Params { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// v2 DTO for a single plugin parameter pair (sidecar-only).
+    /// <br/>Mirrors the platform's `PluginCfg`.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT4PluginConfig
+    {
+
+        /// <summary>
+        /// Parameter name
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string? Name { get; set; } = default!;
+
+        /// <summary>
+        /// Parameter value (free-form string)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("value")]
+        public string? Value { get; set; } = default!;
 
     }
 
@@ -14929,14 +20884,79 @@ namespace CPlugin.SaaSWebApi.Models
     /// <br/>(activityId and optional paging). HTTP status is always 200.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4ExternalCommandBinaryResponseApiResponse
+    public partial class MT4PluginParamApiResponse
     {
 
         /// <summary>
-        /// v2 DTO for the response of `ExternalCommandBinary` (sidecar-only).
+        /// v2 DTO for an MT4 plugin together with its parameter set (sidecar-only).
+        /// <br/>Mirrors the platform's `ConPluginParam`.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
-        public MT4ExternalCommandBinaryResponse? Data { get; set; } = default!;
+        public MT4PluginParam? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// v2 request DTO for `POST NewsSend` — pushes a single news item
+    /// <br/>to the MT4 server, which fans it out to all connected client
+    /// <br/>terminals. Platform signature: `ResultCode NewsSend(NewsTopic news)`.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT4NewsSendRequest
+    {
+
+        /// <summary>
+        /// News headline (required, up to 256 chars)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("topic")]
+        public string? Topic { get; set; } = default!;
+
+        /// <summary>
+        /// News category (optional, up to 64 chars)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("category")]
+        public string? Category { get; set; } = default!;
+
+        /// <summary>
+        /// News body text (required)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("body")]
+        public string? Body { get; set; } = default!;
+
+        /// <summary>
+        /// High-priority flag (`true` = priority 1, `false` = priority 0)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("highPriority")]
+        public bool? HighPriority { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT4MailBoxListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public System.Collections.Generic.List<MT4MailBox>? Data { get; set; } = default!;
 
         /// <summary>
         /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
@@ -14998,35 +21018,6 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// Unified v2 response envelope: data is the payload (null on error); error is the
-    /// <br/>error object (null on success, always serialised); meta contains response metadata
-    /// <br/>(activityId and optional paging). HTTP status is always 200.
-    /// </summary>
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4MailBoxListApiResponse
-    {
-
-        [System.Text.Json.Serialization.JsonPropertyName("data")]
-        public System.Collections.Generic.List<MT4MailBox>? Data { get; set; } = default!;
-
-        /// <summary>
-        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
-        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
-        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("error")]
-        public ApiError? Error { get; set; } = default!;
-
-        /// <summary>
-        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("meta")]
-        public ApiMeta? Meta { get; set; } = default!;
-
-    }
-
-    /// <summary>
     /// v2 request DTO for `POST MailSend` (sidecar-only). Sends an
     /// <br/>email to one or more client logins. Platform signature:
     /// <br/>`ResultCode MailSend(MailBox mail, ICollection&lt;int&gt; logins)`.
@@ -15068,125 +21059,19 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// v2 request DTO for `POST NewsSend` — pushes a single news item
-    /// <br/>to the MT4 server, which fans it out to all connected client
-    /// <br/>terminals. Platform signature: `ResultCode NewsSend(NewsTopic news)`.
-    /// </summary>
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4NewsSendRequest
-    {
-
-        /// <summary>
-        /// News headline (required, up to 256 chars)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("topic")]
-        public string? Topic { get; set; } = default!;
-
-        /// <summary>
-        /// News category (optional, up to 64 chars)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("category")]
-        public string? Category { get; set; } = default!;
-
-        /// <summary>
-        /// News body text (required)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("body")]
-        public string? Body { get; set; } = default!;
-
-        /// <summary>
-        /// High-priority flag (`true` = priority 1, `false` = priority 0)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("highPriority")]
-        public bool? HighPriority { get; set; } = default!;
-
-    }
-
-    /// <summary>
-    /// v2 DTO for MT4 plugin metadata (sidecar-only). Mirrors the platform's
-    /// <br/>`ConPlugin` with its embedded `PluginInfo` flattened.
-    /// </summary>
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4Plugin
-    {
-
-        /// <summary>
-        /// Plugin DLL filename (max 256 chars on the platform side)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("file")]
-        public string? File { get; set; } = default!;
-
-        /// <summary>
-        /// Plugin display name (from `PluginInfo.Name`)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("name")]
-        public string? Name { get; set; } = default!;
-
-        /// <summary>
-        /// Plugin version (from `PluginInfo.Version`)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("version")]
-        public int? Version { get; set; } = default!;
-
-        /// <summary>
-        /// Plugin copyright string
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("copyright")]
-        public string? Copyright { get; set; } = default!;
-
-        /// <summary>
-        /// Enabled flag (raw int — 0 = disabled, non-zero = enabled)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("enabled")]
-        public int? Enabled { get; set; } = default!;
-
-        /// <summary>
-        /// Configurable flag (plugin exposes editable parameters)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("configurable")]
-        public int? Configurable { get; set; } = default!;
-
-        /// <summary>
-        /// Manager-terminal-accessible flag
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("managerAccess")]
-        public int? ManagerAccess { get; set; } = default!;
-
-    }
-
-    /// <summary>
-    /// v2 DTO for a single plugin parameter pair (sidecar-only).
-    /// <br/>Mirrors the platform's `PluginCfg`.
-    /// </summary>
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4PluginConfig
-    {
-
-        /// <summary>
-        /// Parameter name
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("name")]
-        public string? Name { get; set; } = default!;
-
-        /// <summary>
-        /// Parameter value (free-form string)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("value")]
-        public string? Value { get; set; } = default!;
-
-    }
-
-    /// <summary>
     /// Unified v2 response envelope: data is the payload (null on error); error is the
     /// <br/>error object (null on success, always serialised); meta contains response metadata
     /// <br/>(activityId and optional paging). HTTP status is always 200.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4PluginListApiResponse
+    public partial class MT4ExternalCommandBinaryResponseApiResponse
     {
 
+        /// <summary>
+        /// v2 DTO for the response of `ExternalCommandBinary` (sidecar-only).
+        /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
-        public System.Collections.Generic.List<MT4Plugin>? Data { get; set; } = default!;
+        public MT4ExternalCommandBinaryResponse? Data { get; set; } = default!;
 
         /// <summary>
         /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
@@ -15206,57 +21091,35 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     /// <summary>
-    /// v2 DTO for an MT4 plugin together with its parameter set (sidecar-only).
-    /// <br/>Mirrors the platform's `ConPluginParam`.
+    /// v2 DTO for the response of `ExternalCommandBinary` (sidecar-only).
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4PluginParam
+    public partial class MT4ExternalCommandBinaryResponse
     {
 
         /// <summary>
-        /// Plugin metadata
+        /// Binary payload received from the first plugin that returned RET_OK (base64-encoded)
         /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("plugin")]
-        public MT4Plugin? Plugin { get; set; } = default!;
-
-        /// <summary>
-        /// Plugin parameter array (name/value pairs)
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("params")]
-        public System.Collections.Generic.List<MT4PluginConfig>? Params { get; set; } = default!;
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public byte[]? Data { get; set; } = default!;
 
     }
 
     /// <summary>
-    /// Unified v2 response envelope: data is the payload (null on error); error is the
-    /// <br/>error object (null on success, always serialised); meta contains response metadata
-    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// v2 DTO for binary `ExternalCommand` roundtrips (sidecar-only).
+    /// <br/>The MT4 server's plugin API has no enforced wire-format — clients
+    /// <br/>agree with their plugin on the binary layout and pass arbitrary
+    /// <br/>bytes through this endpoint.
     /// </summary>
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class MT4PluginParamApiResponse
+    public partial class MT4ExternalCommandBinaryRequest
     {
 
         /// <summary>
-        /// v2 DTO for an MT4 plugin together with its parameter set (sidecar-only).
-        /// <br/>Mirrors the platform's `ConPluginParam`.
+        /// Binary payload to send to the plugin (base64-encoded)
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("data")]
-        public MT4PluginParam? Data { get; set; } = default!;
-
-        /// <summary>
-        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
-        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
-        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("error")]
-        public ApiError? Error { get; set; } = default!;
-
-        /// <summary>
-        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
-        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
-        /// </summary>
-        [System.Text.Json.Serialization.JsonPropertyName("meta")]
-        public ApiMeta? Meta { get; set; } = default!;
+        public byte[]? Data { get; set; } = default!;
 
     }
 

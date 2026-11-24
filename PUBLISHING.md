@@ -49,7 +49,7 @@ dotnet pack src/CPlugin.SaaSWebApi.Client/CPlugin.SaaSWebApi.Client.csproj -c Re
 dotnet test tests/CPlugin.SaaSWebApi.Client.Tests/CPlugin.SaaSWebApi.Client.Tests.csproj
 ```
 
-The generated-surface test asserts the method count against the spec (224 operations today) — update it alongside spec changes.
+The generated-surface test asserts the method count against the spec (456 operations today — the live x64 v2 document plus the 13 MT4 x86-sidecar operations it does not compile) — update it alongside spec changes.
 
 ## Release gate
 

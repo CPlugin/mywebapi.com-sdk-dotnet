@@ -2,6 +2,58 @@
 
 Versions follow [semver](https://semver.org/); while the major version is 0, a minor release may contain breaking changes, listed under **Breaking**.
 
+## 0.6.0
+
+The models follow the refreshed v2 document of the stand: a subscription configuration carries the real cost the client is charged, a subscription history record carries the time of the action, and the raw tick-history description states the one-day window and one-million-tick limit. Additive; the operation surface is unchanged — 456 operations (443 of the live v2 document plus the 13 MT4 x86-sidecar operations it does not compile).
+
+### Added
+
+- **`MT5ConSubscription.PriceCost`** (`double?`, wire name `priceCost`): the real cost of the subscription, the amount the client is actually charged — distinct from `Price` and `PricePro` (the list and the promotional price). Sent and read as a plain number.
+- **`MT5SubscriptionHistory.Time`** (`long?`, wire name `time`): the time of the action, in seconds since 1970-01-01, as the trade server reports it.
+
+### Changed
+
+- `spec/v2.json` is refreshed from the stand document (440 operations) with the 13 MT4 x86-sidecar paths and schemas merged in; the DTOs and the endpoint facades are regenerated from it. The raw tick-history description now states the limit the server enforces — one day and one million ticks per request, because the window is materialised before `limit` is applied — and its `limit` parameter reads "no limit within the window".
+- The `servers` of the vendored document list only the public hosts (the stand and production); the development host of the capture machine is not part of the committed spec any more.
+
+## 0.5.1
+
+The models follow the v2 document of the stand: subscriptions are described by named enumerations instead of bare numbers, the tick statistics carry the option greeks, and the news time is spelled out as the wall-clock time of the trade server. The operation surface is unchanged — 456 operations (443 of the live v2 document plus the 13 MT4 x86-sidecar operations it does not compile).
+
+### Added
+
+- **`MT5MarketTickStat` grows the option greeks**: `PriceGreeksDelta`, `PriceGreeksTheta`, `PriceGreeksGamma`, `PriceGreeksVega`, `PriceGreeksRho`, `PriceGreeksOmega` and `PriceSensitivity` (`double?` each). The other fields are unchanged.
+
+### Changed
+
+- **Subscription enumerations are named, not numeric** — the new types are `MT5SubscriptionStatus` (`status`), `MT5SubscriptionAction` (`action`, including `Deleted`), `MT5SubscriptionType` (`type`), `MT5SubscriptionControlMode` (`controlMode`), `MT5SubscriptionPeriod` (`periodMode`), `MT5SubscriptionFreePeriod` (`periodFreeMode`), `MT5SubscriptionSymbolLevel` (`level`) and `MT5SubscriptionTickHistory` (`tickHistory`). The properties are typed with them and travel by name on the wire; the server still accepts a numeric value on input, but the SDK now reads and writes names.
+- **Subscription flags are one string of names.** `MT5Subscription.Flags` and `MT5ConSubscription.Flags` are `string?` — the names of the set bits joined by `", "` (`"Enable, AutoProlong"`), `"None"` when nothing is set, `"Bit<n>"` for a bit the server has no name for.
+- **`MT5News.Time` and `MT5NewsSendRequest.Time`** are documented as the trade-server wall-clock time without a zone, matching the server description; the type stays `DateTimeOffset?`.
+- `spec/v2.json` regenerated from the stand document (443 operations) with the 13 MT4 x86-sidecar paths merged in; the DTOs and endpoint facades are regenerated from it. Method documentation and the per-operation default timeouts follow the refreshed document (the online-list reads default to 30 s, the rest as before).
+
+## 0.5.0
+
+The whole expanded v2 surface: the SDK exposes the Manager API back-office areas the server added in this round. MT5 grows from 59 to 281 operations and MT4 from 165 to 175; the v2 document has 456 operations — the 443 of the live x64 v2 document plus the 13 MT4 operations of the x86 sidecar, which that document does not compile. Additive: existing methods, signatures and DTOs are unchanged.
+
+### Added
+
+- **MT5 clients (42 operations)**: clients (`ClientAddAsync`, `ClientRequestAsync`, `ClientRequestByGroupAsync`, `ClientRequestHistoryAsync`, `ClientUpdateAsync`, `ClientDeleteAsync`, `ClientUserAddAsync`, `ClientUserRequestAsync`, plus the batch and batch-array variants), comments (`CommentAddAsync`, `CommentRequestAsync`, `CommentUpdateAsync`, `CommentDeleteAsync` and their batch pairs), documents (`DocumentAddAsync`, `DocumentRequestAsync`, `DocumentUpdateAsync`, `DocumentDeleteAsync` and their batch pairs) and attachments (`AttachmentRequestAsync`, `AttachmentAddAsync`, `AttachmentAddBatchAsync`).
+- **MT5 subscriptions (28 operations)**: configuration (`SubscriptionCfgRequestAsync`, `SubscriptionCfgRequestByIDAsync`, `SubscriptionCfgGetAsync`, `SubscriptionCfgGetByIDAsync`), subscriptions (`SubscriptionRequestAsync`, `SubscriptionRequestByIDAsync`, `SubscriptionRequestByIDsAsync`, `SubscriptionRequestByGroupAsync`, `SubscriptionRequestByLoginsAsync`, `SubscriptionJoinAsync`, `SubscriptionJoinBatchAsync`, `SubscriptionUpdateAsync`, `SubscriptionUpdateBatchAsync`, `SubscriptionCancelAsync`, `SubscriptionCancelBatchAsync`, `SubscriptionDeleteAsync`, `SubscriptionDeleteBatchAsync`), and history (`SubscriptionHistoryRequestAsync`, `SubscriptionHistoryRequestByIDAsync`, `SubscriptionHistoryRequestByIDsAsync`, `SubscriptionHistoryRequestByGroupAsync`, `SubscriptionHistoryRequestByLoginsAsync`, `SubscriptionHistoryUpdateAsync`, `SubscriptionHistoryUpdateBatchAsync`, `SubscriptionHistoryDeleteAsync`, `SubscriptionHistoryDeleteBatchAsync`).
+- **MT5 trading (41 operations)**: order writes (`OrderAddAsync`, `OrderAddBatchAsync`, `OrderUpdateAsync`, `OrderUpdateBatchAsync`, `OrderCancelAsync`, `OrderCancelBatchAsync`, `OrderDeleteAsync`), position writes (`PositionUpdateAsync`, `PositionUpdateBatchAsync`, `PositionGetByTicketAsync`, `PositionGetByGroupAsync`, `PositionDeleteByTicketAsync`, `PositionSplitAsync`), deal writes (`DealAddAsync`, `DealAddBatchAsync`, `DealPerformAsync`, `DealPerformBatchAsync`, `DealUpdateAsync`, `DealUpdateBatchAsync`, `DealDeleteAsync`, `DealDeleteBatchAsync`), live reads (`OrderRequestAsync`, `OrderRequestOpenAsync`, `OrderGetOpenAsync`, `OrderRequestByLoginsAsync`, `OrderRequestByLoginsSymbolAsync`, `PositionRequestByTicketsAsync`, `DealRequestByLoginsSymbolAsync`) and paged history (`DealRequestPageAsync`, `HistoryRequestPageAsync`, `HistoryRequestByLoginsAsync`, `HistoryRequestByGroupSymbolAsync`).
+- **MT5 trade operations (14 operations)**: `TradeProfitAsync`, `TradeProfitExtAsync`, `TradeMarginCheckAsync`, `TradeMarginCheckExtAsync`, `TradeRateBuyAsync`, `TradeRateSellAsync`, `TradeAccountSetAsync`, `RequestGetAsync`, `RequestGetAllAsync`, and the dealer calls `DealerGetAsync`, `DealerStartAsync`, `DealerStopAsync`, `DealerAnswerAsync`, `DealerLockAsync`.
+- **MT5 reports (14 operations)**: `DailyRequestAsync`, `DailyRequestLightAsync`, `DailyRequestByGroupAsync`, `DailyRequestLightByGroupAsync`, `DailyRequestByLoginsAsync`, `DailyRequestLightByLoginsAsync`, `SummaryGetAllAsync`, `SummaryGetAsync`, `SummaryCurrencyGetAsync`, `SummaryCurrencyPostAsync`, `ExposureGetAllAsync`, `ExposureGetAsync`, `ExposureCurrencyGetAsync` and `ExposureCurrencyPostAsync`.
+- **MT5 communications (26 operations)**: mail (`MailRequestAsync`, `MailBodyRequestAsync`, `MailSendAsync`, `MailDeleteAsync`, `MailDeleteIdAsync`), news (`NewsRequestAsync`, `NewsBodyRequestAsync`, `NewsSendAsync`), logging (`LoggerServerRequestAsync`, `LoggerFlushAsync`, `LoggerOutAsync`, `LoggerOutStringAsync`), network (`NetworkAddressAsync`, `NetworkBytesReadAsync`, `NetworkBytesSentAsync`, `NetworkServerAsync`, `NetworkRescanAsync`), settings (`SettingGetAsync`, `SettingSetAsync`, `SettingDeleteAsync`), and `CustomCommandAsync`, `GeoResolveAsync`, `GeoResolveBatchAsync`, `LicenseCheckAsync`, `PasswordChangeAsync`, `ProxySetAsync`.
+- **MT5 market data (13 operations)**: `ChartUpdateAsync`, `ChartDeleteAsync`, `ChartReplaceAsync`, `ChartSplitAsync`, `TickAddAsync`, `TickAddBatchAsync`, `TickAddStatAsync`, `TickHistoryAddAsync`, `TickHistoryReplaceAsync`, `TickHistoryRequestRawAsync`, `TickLastAsync`, `TickLastRawAsync`, `TickStatAsync`.
+- **MT5 market insight (13 operations)**: `BookGetAsync`, `OnlineRequestAsync`, `OnlineGetAsync`, `OnlineDisconnectAsync`, `OnlineDisconnectBatchAsync`, `SelectedAddAsync`, `SelectedAddAllAsync`, `SelectedAddBatchAsync`, `SelectedDeleteAsync`, `SelectedDeleteAllAsync`, `SelectedDeleteBatchAsync`, `SelectedNextAsync`, `SelectedShiftAsync`.
+- **MT5 users (36 operations)**: accounts (`UserRequestAsync`, `UserRequestArrayAsync`, `UserRequestByLoginsAsync`, `UserGetAsync`, `UserGetByGroupAsync`, `UserGetByLoginsAsync`, `UserRecordAsync`, `UserAccountGetAsync`, `UserAccountGetByGroupAsync`, `UserAccountGetByLoginsAsync`, `UserAccountRequestAsync`, `UserAccountRequestArrayAsync`, `UserAccountRequestByLoginsAsync`), writes (`UserAddAsync`, `UserUpdateAsync`, `UserUpdateBatchAsync`, `UserDeleteAsync`, `UserDeleteBatchAsync`, `UserPasswordChangeAsync`, `UserPasswordCheckAsync`), certificates (`UserCertGetAsync`, `UserCertUpdateAsync`, `UserCertDeleteAsync`, `UserCertConfirmAsync`), maintenance (`UserBalanceCheckAsync`, `UserBalanceCheckBatchAsync`, `UserExternalGetAsync`, `UserExternalRequestAsync`, `UserExternalSyncAsync`, `UserGroupAsync`, `UserLoginsAsync`) and notifications (`EmailSendAsync`, `MessengerSendAsync`, `MessengerVerifyPhoneAsync`, `NotificationsSendAsync`).
+- **MT5 configuration, groups and symbols (11 + 3 + 3 operations)**: `GroupUpdateAsync`, `GroupUpdateBatchAsync`, `LeverageRequestAsync`, `LeverageRequestArrayAsync`, `LeverageGetAsync`, `PluginGetAsync`, `PluginUpdateAsync`, `TimeServerRequestAsync`, `SymbolRequestAsync`, `SymbolExistAsync`, `SymbolUpdateBatchAsync`; `GroupGetAsync`, `GroupRequestAsync`, `GroupRecordAsync`; `SymbolGetAsync`, `SymbolUpdateAsync`, `SymbolRecordAsync`; `ManagerCurrentAsync`; `GroupRequestArrayAsync`, `SymbolRequestArrayAsync`.
+- **MT4 dealer and reporting operations (10)**: `SummaryGetAllAsync()`, `SummaryGetAsync(symbol)`, `SummaryGetByCountAsync(count)`, `SummaryGetByTypeAsync(secType)` (each `MT4SymbolSummary`), `SummaryCurrencyAsync(maxChars)`, `ExposureGetAsync()` / `ExposureValueGetAsync(currency)` (`MT4ExposureValue`), `TradeCalcProfitAsync(MT4TradeCalcProfitRequest)` (`double`), and the log-level switches `LogsModeAsync(MT4LogsModeRequest)` / `LogsOutAsync(MT4LogsOutRequest)`.
+
+### Changed
+
+- `spec/v2.json` regenerated from the live v2 document (443 operations) with the 13 MT4 x86-sidecar operations carried over from the previous spec, because that build does not compile them — the facade keeps its full surface. The endpoint facades and the DTOs are regenerated from it (456 operations).
+- Timeouts of the new operations follow the server's `X-Request-Timeout` defaults (5–60 s), as for the existing ones; the client-side wait is still sized from them.
+
 ## 0.4.0
 
 Parity of the v2 surface: the SDK exposes the v2 contract as it stands after the server-side rework — every MT5 back-office area, the MT4 configuration operations that came back, and one naming scheme for both platforms. MT5 grows from 14 to 59 operations, MT4 from 160 to 165; the v2 document has 224 operations.
