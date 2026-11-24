@@ -2,6 +2,12 @@
 
 Versions follow [semver](https://semver.org/); while the major version is 0, a minor release may contain breaking changes, listed under **Breaking**.
 
+## [0.6.1]
+
+### Fixed
+
+- Release re-cut: `MyWebApi.Sdk` 0.6.0 did not reach nuget.org while `MyWebApi.Sdk.Models` 0.6.0 did, so the four SDKs move to 0.6.1 together. The API surface is identical to 0.6.0.
+
 ## 0.6.0
 
 The models follow the refreshed v2 document of the stand: a subscription configuration carries the real cost the client is charged, a subscription history record carries the time of the action, and the raw tick-history description states the one-day window and one-million-tick limit. Additive; the operation surface is unchanged — 456 operations (443 of the live v2 document plus the 13 MT4 x86-sidecar operations it does not compile).
