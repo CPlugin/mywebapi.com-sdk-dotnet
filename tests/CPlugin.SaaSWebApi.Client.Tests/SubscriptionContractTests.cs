@@ -65,6 +65,19 @@ public class SubscriptionContractTests
     }
 
     [Fact]
+    public void Subscription_cost_and_history_time_travel_as_numbers()
+    {
+        var config = JsonSerializer.Deserialize<MT5ConSubscription>("""{"price":10.0,"pricePro":8.0,"priceCost":7.5}""");
+        Assert.Equal(7.5, config!.PriceCost);
+
+        var history = JsonSerializer.Deserialize<MT5SubscriptionHistory>("""{"time":1763893200}""");
+        Assert.Equal(1763893200L, history!.Time);
+
+        Assert.Contains("\"priceCost\":7.5", JsonSerializer.Serialize(config));
+        Assert.Contains("\"time\":1763893200", JsonSerializer.Serialize(history));
+    }
+
+    [Fact]
     public void News_time_is_a_wall_clock_value_of_the_trade_server()
     {
         var news = JsonSerializer.Deserialize<MT5News>("""{"id":7,"subject":"News","time":"2026-11-23T10:15:00"}""");

@@ -11406,6 +11406,12 @@ namespace CPlugin.SaaSWebApi.Models
         public double? PricePro { get; set; } = default!;
 
         /// <summary>
+        /// Real cost of the subscription, the amount the client is actually charged.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceCost")]
+        public double? PriceCost { get; set; } = default!;
+
+        /// <summary>
         /// Currency of the subscription price.
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("priceCurrency")]
@@ -16783,6 +16789,12 @@ namespace CPlugin.SaaSWebApi.Models
         [System.Text.Json.Serialization.JsonPropertyName("action")]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5SubscriptionAction>))]
         public MT5SubscriptionAction? Action { get; set; } = default!;
+
+        /// <summary>
+        /// Time of the action, in seconds since 1970-01-01.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("time")]
+        public long? Time { get; set; } = default!;
 
         /// <summary>
         /// Amount charged or returned by the action.

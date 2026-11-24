@@ -5497,13 +5497,19 @@ public sealed partial class MT5Endpoints
     /// history yet, the call fails with the platform code `MT_RET_OK_NONE` and a message
     /// saying the history is not synchronized — such a request may be repeated later.
     /// 
+    /// &lt;br&gt;
+    /// The window is limited to one day and the answer to one million ticks, because the whole
+    /// history of that window is materialised by the trade server interface before the
+    /// `limit` is applied. Ask for a day at a time and continue from the last tick returned;
+    /// a longer window is refused rather than served at the risk of the service's memory.
+    /// 
     /// 
     /// **Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.
     /// </remarks>
     /// <param name="symbol">Symbol name the quotes are requested for.</param>
     /// <param name="from">Window start, as a trading time of the trade server. Required.</param>
     /// <param name="to">Window end, as a trading time of the trade server. Optional — the current server time when omitted.</param>
-    /// <param name="limit">Maximum number of ticks returned; 0 means no limit. Defaults to 0.</param>
+    /// <param name="limit">Maximum number of ticks returned; 0 means no limit within the window. Defaults to 0.</param>
     /// <param name="options">Per-call options: idempotency key, sparse fieldsets, request timeout, cancellation.</param>
     /// <exception cref="ApiError">The response envelope carried an error.</exception>
     public async Task<MT5TickPage?> TickHistoryRequestRawAsync(string symbol, DateTimeOffset @from, DateTimeOffset? @to = null, int? limit = null, CallOptions? options = null)

@@ -2,6 +2,20 @@
 
 Versions follow [semver](https://semver.org/); while the major version is 0, a minor release may contain breaking changes, listed under **Breaking**.
 
+## 0.6.0
+
+The models follow the refreshed v2 document of the stand: a subscription configuration carries the real cost the client is charged, a subscription history record carries the time of the action, and the raw tick-history description states the one-day window and one-million-tick limit. Additive; the operation surface is unchanged — 456 operations (443 of the live v2 document plus the 13 MT4 x86-sidecar operations it does not compile).
+
+### Added
+
+- **`MT5ConSubscription.PriceCost`** (`double?`, wire name `priceCost`): the real cost of the subscription, the amount the client is actually charged — distinct from `Price` and `PricePro` (the list and the promotional price). Sent and read as a plain number.
+- **`MT5SubscriptionHistory.Time`** (`long?`, wire name `time`): the time of the action, in seconds since 1970-01-01, as the trade server reports it.
+
+### Changed
+
+- `spec/v2.json` is refreshed from the stand document (440 operations) with the 13 MT4 x86-sidecar paths and schemas merged in; the DTOs and the endpoint facades are regenerated from it. The raw tick-history description now states the limit the server enforces — one day and one million ticks per request, because the window is materialised before `limit` is applied — and its `limit` parameter reads "no limit within the window".
+- The `servers` of the vendored document list only the public hosts (the stand and production); the development host of the capture machine is not part of the committed spec any more.
+
 ## 0.5.1
 
 The models follow the v2 document of the stand: subscriptions are described by named enumerations instead of bare numbers, the tick statistics carry the option greeks, and the news time is spelled out as the wall-clock time of the trade server. The operation surface is unchanged — 456 operations (443 of the live v2 document plus the 13 MT4 x86-sidecar operations it does not compile).

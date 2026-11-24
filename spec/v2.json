@@ -12,16 +12,12 @@
   },
   "servers": [
     {
-      "url": "http://192.168.89.10:8089",
-      "description": "This host"
+      "url": "https://pre.mywebapi.com",
+      "description": "Sandbox — free, no SLA, may be reset"
     },
     {
       "url": "https://cloud.mywebapi.com",
       "description": "Production"
-    },
-    {
-      "url": "https://pre.mywebapi.com",
-      "description": "Sandbox — free, no SLA, may be reset"
     }
   ],
   "paths": {
@@ -18777,7 +18773,7 @@
           "MT5 v2 :: Market Data"
         ],
         "summary": "Get the raw tick stream of a symbol",
-        "description": "<br>\r\n            Returns the stored quotes of the symbol for a time window, both the raw ones and the\r\n            processed ones the symbol configuration produces, ordered by time ascending. When the\r\n            symbol stores raw quotes, the stream is denser than the one `TicksHistory` returns.\r\n            \r\n<br>\r\n            Times are the trading times of the trade server, not UTC. `from` is required — a\r\n            window without a start would scan the whole stored history. `to` is optional and\r\n            defaults to the current server time. `limit` is 0 by default and returns the whole\r\n            window; a positive value caps the returned ticks and sets `truncated`. There is no\r\n            pagination: to read further, repeat the request with `from` moved past the last\r\n            returned tick.\r\n            \r\n<br>\r\n            The call only reads and changes nothing. When the platform has not received the requested\r\n            history yet, the call fails with the platform code `MT_RET_OK_NONE` and a message\r\n            saying the history is not synchronized — such a request may be repeated later.\r\n            \n\n**Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.",
+        "description": "<br>\r\n            Returns the stored quotes of the symbol for a time window, both the raw ones and the\r\n            processed ones the symbol configuration produces, ordered by time ascending. When the\r\n            symbol stores raw quotes, the stream is denser than the one `TicksHistory` returns.\r\n            \r\n<br>\r\n            Times are the trading times of the trade server, not UTC. `from` is required — a\r\n            window without a start would scan the whole stored history. `to` is optional and\r\n            defaults to the current server time. `limit` is 0 by default and returns the whole\r\n            window; a positive value caps the returned ticks and sets `truncated`. There is no\r\n            pagination: to read further, repeat the request with `from` moved past the last\r\n            returned tick.\r\n            \r\n<br>\r\n            The call only reads and changes nothing. When the platform has not received the requested\r\n            history yet, the call fails with the platform code `MT_RET_OK_NONE` and a message\r\n            saying the history is not synchronized — such a request may be repeated later.\r\n            \r\n<br>\r\n            The window is limited to one day and the answer to one million ticks, because the whole\r\n            history of that window is materialised by the trade server interface before the\r\n            `limit` is applied. Ask for a day at a time and continue from the last tick returned;\r\n            a longer window is refused rather than served at the risk of the service's memory.\r\n            \n\n**Timeout:** 30 s by default, adjustable per request with the `X-Request-Timeout` header. When the trade server does not answer in time: Nothing was changed; the request is safe to repeat.",
         "parameters": [
           {
             "name": "tradePlatform",
@@ -18820,7 +18816,7 @@
           {
             "name": "limit",
             "in": "query",
-            "description": "Maximum number of ticks returned; 0 means no limit. Defaults to 0.",
+            "description": "Maximum number of ticks returned; 0 means no limit within the window. Defaults to 0.",
             "schema": {
               "type": "integer",
               "format": "int32",
@@ -41604,6 +41600,12 @@
             "format": "double",
             "nullable": true
           },
+          "priceCost": {
+            "type": "number",
+            "description": "Real cost of the subscription, the amount the client is actually charged.",
+            "format": "double",
+            "nullable": true
+          },
           "priceCurrency": {
             "type": "string",
             "description": "Currency of the subscription price.",
@@ -46385,6 +46387,12 @@
             "description": "Action performed with the subscription.<br/>One of: Subscribe, Renewal, Suspend, Cancel, Deleted. Case-insensitive; the numeric value is accepted too. Any other value is refused with error code Validation.",
             "nullable": true
           },
+          "time": {
+            "type": "integer",
+            "description": "Time of the action, in seconds since 1970-01-01.",
+            "format": "int64",
+            "nullable": true
+          },
           "amount": {
             "type": "number",
             "description": "Amount charged or returned by the action.",
@@ -50259,7 +50267,7 @@
   "tags": [
     {
       "name": "MT4ControllerV",
-      "description": "MT4 v2 — clean envelope, structured errors, Idempotency-Key\r\nheader support, cache-hit billing exemption, path-based versioning.\r\nSee history.md for the customer-facing migration guide."
+      "description": "MT4 v2 — clean envelope, structured errors, Idempotency-Key\r\nheader support, cache-hit billing exemption, path-based versioning.\r\nSee https://cloud.mywebapi.com/history for the customer-facing migration guide."
     },
     {
       "name": "MT4DealerControllerV",
@@ -50287,7 +50295,7 @@
     },
     {
       "name": "MT5ControllerV",
-      "description": "MT5 v2 — clean envelope, structured errors, Idempotency-Key\r\nheader support, cache-hit billing exemption, path-based versioning.\r\nSee history.md for the customer-facing migration guide."
+      "description": "MT5 v2 — clean envelope, structured errors, Idempotency-Key\r\nheader support, cache-hit billing exemption, path-based versioning.\r\nSee https://cloud.mywebapi.com/history for the customer-facing migration guide."
     },
     {
       "name": "MT5DealsControllerV",
@@ -50303,7 +50311,7 @@
     },
     {
       "name": "MT5OrdersControllerV",
-      "description": "MT5 v2 — orders of the trade database (active, pending and historical),\r\nwith the clean v2 response envelope and structured errors.\r\nSee history.md for the customer-facing migration guide."
+      "description": "MT5 v2 — orders of the trade database (active, pending and historical),\r\nwith the clean v2 response envelope and structured errors.\r\nSee https://cloud.mywebapi.com/history for the customer-facing migration guide."
     },
     {
       "name": "MT5ReportsControllerV",

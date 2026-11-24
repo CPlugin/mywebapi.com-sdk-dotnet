@@ -17,7 +17,7 @@ public class ClientSurfaceTests
     [Fact]
     public void Generated_surface_covers_all_spec_operations()
     {
-        // ! 456 operations in clients/spec/v2.json (443 from the live v2 document plus the 13
+        // ! 456 operations in clients/spec/v2.json (440 from the live v2 document plus the 13
         // ! x86-sidecar MT4 operations it does not compile) — update alongside spec regeneration.
         Assert.Equal(456, CountEndpointMethods(typeof(MT4Endpoints)) + CountEndpointMethods(typeof(MT5Endpoints)));
     }
