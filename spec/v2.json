@@ -18,6 +18,10 @@
     {
       "url": "https://cloud.mywebapi.com",
       "description": "Production"
+    },
+    {
+      "url": "https://pre.mywebapi.com",
+      "description": "Sandbox — free, no SLA, may be reset"
     }
   ],
   "paths": {

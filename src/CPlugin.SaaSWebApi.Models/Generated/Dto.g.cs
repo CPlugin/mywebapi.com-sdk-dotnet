@@ -17259,6 +17259,1026 @@ namespace CPlugin.SaaSWebApi.Models
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5Request
+    {
+
+        /// <summary>
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>            request id
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public int? Id { get; set; } = default!;
+
+        /// <summary>
+        /// client login
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("login")]
+        public long Login { get; set; } = default!;
+
+        /// <summary>
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>&lt;br /&gt;
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("group")]
+        public string? Group { get; set; } = default!;
+
+        /// <summary>
+        /// symbol
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("symbol")]
+        public string Symbol { get; set; } = default!;
+
+        /// <summary>
+        /// price digits
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("digits")]
+        public int? Digits { get; set; } = default!;
+
+        /// <summary>
+        /// TradeActions
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("action")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<TradeActions>))]
+        public TradeActions Action { get; set; } = default!;
+
+        /// <summary>
+        /// order expiration
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("timeExpiration")]
+        public System.DateTimeOffset? TimeExpiration { get; set; } = default!;
+
+        /// <summary>
+        /// order type IMTOrder::OrderType
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("type")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<OrderType>))]
+        public OrderType Type { get; set; } = default!;
+
+        /// <summary>
+        /// IMTOrder::OrderFilling
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("typeFill")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<OrderFilling>))]
+        public OrderFilling? TypeFill { get; set; } = default!;
+
+        /// <summary>
+        /// IMTOrder::OrderTime
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("typeTime")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<OrderTime>))]
+        public OrderTime? TypeTime { get; set; } = default!;
+
+        /// <summary>
+        /// additional flags TradeActionFlags
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("flags")]
+        public string? Flags { get; set; } = default!;
+
+        /// <summary>
+        /// 1 lot = 10_000
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volume")]
+        public long Volume { get; set; } = default!;
+
+        /// <summary>
+        /// order ticket
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("order")]
+        public long? Order { get; set; } = default!;
+
+        /// <summary>
+        /// order ticket in external system (exchange, ECN, etc)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("orderExternalID")]
+        public string? OrderExternalID { get; set; } = default!;
+
+        /// <summary>
+        /// order price
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceOrder")]
+        public double PriceOrder { get; set; } = default!;
+
+        /// <summary>
+        /// order trigger price
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceTrigger")]
+        public double? PriceTrigger { get; set; } = default!;
+
+        /// <summary>
+        /// order SL price
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceSL")]
+        public double? PriceSL { get; set; } = default!;
+
+        /// <summary>
+        /// order TP price
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceTP")]
+        public double? PriceTP { get; set; } = default!;
+
+        /// <summary>
+        /// price deviation details
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("priceDeviation")]
+        public long? PriceDeviation { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("priceDeviationTop")]
+        public double? PriceDeviationTop { get; set; } = default!;
+
+        [System.Text.Json.Serialization.JsonPropertyName("priceDeviationBottom")]
+        public double? PriceDeviationBottom { get; set; } = default!;
+
+        /// <summary>
+        /// comment
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("comment")]
+        public string? Comment { get; set; } = default!;
+
+        /// <summary>
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>            request result information
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("resultRetCode")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5Result>))]
+        public MT5Result? ResultRetCode { get; set; } = default!;
+
+        /// <summary>
+        /// request result deal
+        /// <br/>request dealer
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("resultDealer")]
+        public long? ResultDealer { get; set; } = default!;
+
+        /// <summary>
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>            request result deal
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("resultDeal")]
+        public long? ResultDeal { get; set; } = default!;
+
+        /// <summary>
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>            request result order
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("resultOrder")]
+        public long? ResultOrder { get; set; } = default!;
+
+        /// <summary>
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>            request result confirmed volume
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("resultVolume")]
+        public long? ResultVolume { get; set; } = default!;
+
+        /// <summary>
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>            request result confirmed price
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("resultPrice")]
+        public double? ResultPrice { get; set; } = default!;
+
+        /// <summary>
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>            request result dealer prices
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("resultDealerBid")]
+        public double? ResultDealerBid { get; set; } = default!;
+
+        /// <summary>
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>&lt;br /&gt;
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("resultDealerAsk")]
+        public double? ResultDealerAsk { get; set; } = default!;
+
+        /// <summary>
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>&lt;br /&gt;
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("resultDealerLast")]
+        public double? ResultDealerLast { get; set; } = default!;
+
+        /// <summary>
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>            request result market prices
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("resultMarketBid")]
+        public double? ResultMarketBid { get; set; } = default!;
+
+        /// <summary>
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>&lt;br /&gt;
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("resultMarketAsk")]
+        public double? ResultMarketAsk { get; set; } = default!;
+
+        /// <summary>
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>&lt;br /&gt;
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("resultMarketLast")]
+        public double? ResultMarketLast { get; set; } = default!;
+
+        /// <summary>
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>            request result comment
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("resultComment")]
+        public string? ResultComment { get; set; } = default!;
+
+        /// <summary>
+        /// external system trade account (exchange, ECN, etc)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("externalAccount")]
+        public string? ExternalAccount { get; set; } = default!;
+
+        /// <summary>
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>            client side request id
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("idClient")]
+        public int? IdClient { get; set; } = default!;
+
+        /// <summary>
+        /// source request ip
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("ip")]
+        public string? Ip { get; set; } = default!;
+
+        /// <summary>
+        /// source dealer login (for dealer transaction)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("sourceLogin")]
+        public long? SourceLogin { get; set; } = default!;
+
+        /// <summary>
+        /// position ticket
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("position")]
+        public long? Position { get; set; } = default!;
+
+        /// <summary>
+        /// position ticket for close-by
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("positionBy")]
+        public long? PositionBy { get; set; } = default!;
+
+        /// <summary>
+        /// position ticket in external system (exchange, ECN, etc)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("positionExternalID")]
+        public string? PositionExternalID { get; set; } = default!;
+
+        /// <summary>
+        /// position ticket in external system (exchange, ECN, etc)
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("positionByExternalID")]
+        public string? PositionByExternalID { get; set; } = default!;
+
+        /// <summary>
+        /// volume with extended accuracy, 1 lot = 100_000_000
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeExt")]
+        public long? VolumeExt { get; set; } = default!;
+
+        /// <summary>
+        /// &lt;strong&gt;Read-only: the trade server does not let this value be changed.&lt;/strong&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>&lt;br /&gt;
+        /// <br/>            request result confirmed volume with extended accuracy
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("resultVolumeExt")]
+        public long? ResultVolumeExt { get; set; } = default!;
+
+        /// <summary>
+        /// current order volume
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeCurrent")]
+        public long? VolumeCurrent { get; set; } = default!;
+
+        /// <summary>
+        /// current order volume
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("volumeCurrentExt")]
+        public long? VolumeCurrentExt { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5RequestApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        public MT5Request? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum MT5Result
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Ok")]
+        Ok = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"OkNone")]
+        OkNone = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Error")]
+        Error = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrParams")]
+        ErrParams = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrData")]
+        ErrData = 4,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrDisk")]
+        ErrDisk = 5,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrMem")]
+        ErrMem = 6,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrNetwork")]
+        ErrNetwork = 7,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrPermissions")]
+        ErrPermissions = 8,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrTimeout")]
+        ErrTimeout = 9,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrConnection")]
+        ErrConnection = 10,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrNoService")]
+        ErrNoService = 11,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrFrequent")]
+        ErrFrequent = 12,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrNotfound")]
+        ErrNotfound = 13,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrPartial")]
+        ErrPartial = 14,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrShutdown")]
+        ErrShutdown = 15,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrCancel")]
+        ErrCancel = 16,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrDuplicate")]
+        ErrDuplicate = 17,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthClientInvalid")]
+        AuthClientInvalid = 18,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthAccountInvalid")]
+        AuthAccountInvalid = 19,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthAccountDisabled")]
+        AuthAccountDisabled = 20,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthAdvanced")]
+        AuthAdvanced = 21,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthCertificate")]
+        AuthCertificate = 22,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthCertificateBad")]
+        AuthCertificateBad = 23,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthNotConfirmed")]
+        AuthNotConfirmed = 24,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthServerInternal")]
+        AuthServerInternal = 25,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthServerBad")]
+        AuthServerBad = 26,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthUpdateOnly")]
+        AuthUpdateOnly = 27,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthClientOld")]
+        AuthClientOld = 28,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthManagerNoConfig")]
+        AuthManagerNoConfig = 29,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthManagerIPBlock")]
+        AuthManagerIPBlock = 30,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthGroupInvalid")]
+        AuthGroupInvalid = 31,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthCaDisabled")]
+        AuthCaDisabled = 32,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthInvalidID")]
+        AuthInvalidID = 33,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthInvalidIp")]
+        AuthInvalidIp = 34,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthInvalidType")]
+        AuthInvalidType = 35,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthServerBusy")]
+        AuthServerBusy = 36,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthServerCert")]
+        AuthServerCert = 37,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthAccountUnknown")]
+        AuthAccountUnknown = 38,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthServerOld")]
+        AuthServerOld = 39,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthServerLimit")]
+        AuthServerLimit = 40,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthMobileDisabled")]
+        AuthMobileDisabled = 41,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthManagerType")]
+        AuthManagerType = 42,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthDemoDisabled")]
+        AuthDemoDisabled = 43,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthResetPassword")]
+        AuthResetPassword = 44,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthOTPInvalid")]
+        AuthOTPInvalid = 45,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthOTPNeedSecret")]
+        AuthOTPNeedSecret = 46,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthMigrationMT4")]
+        AuthMigrationMT4 = 47,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthMigrationMT5")]
+        AuthMigrationMT5 = 48,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthInvalidVerify")]
+        AuthInvalidVerify = 49,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthVerifyBadEmail")]
+        AuthVerifyBadEmail = 50,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthVerifyBadPhone")]
+        AuthVerifyBadPhone = 51,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"AuthAPIDisabled")]
+        AuthAPIDisabled = 52,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgLastAdmin")]
+        CfgLastAdmin = 53,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgLastAdminGroup")]
+        CfgLastAdminGroup = 54,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgNotEmpty")]
+        CfgNotEmpty = 55,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgInvalidRange")]
+        CfgInvalidRange = 56,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgNotManagerLogin")]
+        CfgNotManagerLogin = 57,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgBuiltin")]
+        CfgBuiltin = 58,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgDuplicate")]
+        CfgDuplicate = 59,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgLimitReached")]
+        CfgLimitReached = 60,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgNoAccessToMain")]
+        CfgNoAccessToMain = 61,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgDealerIDExist")]
+        CfgDealerIDExist = 62,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgBindAddressExist")]
+        CfgBindAddressExist = 63,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgWorkingTrade")]
+        CfgWorkingTrade = 64,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgGatewayNameExist")]
+        CfgGatewayNameExist = 65,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgSwitchToBackup")]
+        CfgSwitchToBackup = 66,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgNoBackupModule")]
+        CfgNoBackupModule = 67,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgNoTradeModule")]
+        CfgNoTradeModule = 68,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgNoHistoryModule")]
+        CfgNoHistoryModule = 69,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgAnotherSwitch")]
+        CfgAnotherSwitch = 70,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgNoLicenseFile")]
+        CfgNoLicenseFile = 71,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgGatewayLoginExist")]
+        CfgGatewayLoginExist = 72,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CfgInvalidCompany")]
+        CfgInvalidCompany = 73,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrLastAdmin")]
+        UsrLastAdmin = 74,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrLoginExhausted")]
+        UsrLoginExhausted = 75,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrLoginProhibited")]
+        UsrLoginProhibited = 76,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrLoginExist")]
+        UsrLoginExist = 77,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrSuicide")]
+        UsrSuicide = 78,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrInvalidPassword")]
+        UsrInvalidPassword = 79,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrLimitReached")]
+        UsrLimitReached = 80,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrHasTrades")]
+        UsrHasTrades = 81,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrDifferentServers")]
+        UsrDifferentServers = 82,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrDifferentCurrency")]
+        UsrDifferentCurrency = 83,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrImportBalance")]
+        UsrImportBalance = 84,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrImportGroup")]
+        UsrImportGroup = 85,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrAccountExist")]
+        UsrAccountExist = 86,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrImportAccount")]
+        UsrImportAccount = 87,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrImportPositions")]
+        UsrImportPositions = 88,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrImportOrders")]
+        UsrImportOrders = 89,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrImportDeals")]
+        UsrImportDeals = 90,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrImportHistory")]
+        UsrImportHistory = 91,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"UsrAPILimitReached")]
+        UsrAPILimitReached = 92,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"TradeLimitReached")]
+        TradeLimitReached = 93,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"TradeOrderExist")]
+        TradeOrderExist = 94,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"TradeOrderExhausted")]
+        TradeOrderExhausted = 95,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"TradeDealExhausted")]
+        TradeDealExhausted = 96,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"TradeMaxMoney")]
+        TradeMaxMoney = 97,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"TradeDealExist")]
+        TradeDealExist = 98,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"TradeOrderProhibited")]
+        TradeOrderProhibited = 99,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"TradeDealProhibited")]
+        TradeDealProhibited = 100,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"TradeSplitVolume")]
+        TradeSplitVolume = 101,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ReportSnapshot")]
+        ReportSnapshot = 102,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ReportNotSupported")]
+        ReportNotSupported = 103,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ReportNodata")]
+        ReportNodata = 104,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ReportTemplateBad")]
+        ReportTemplateBad = 105,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ReportTemplateEnd")]
+        ReportTemplateEnd = 106,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ReportInvalidRow")]
+        ReportInvalidRow = 107,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ReportLimitRepeat")]
+        ReportLimitRepeat = 108,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ReportLimitReport")]
+        ReportLimitReport = 109,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"HstSymbolNotfound")]
+        HstSymbolNotfound = 110,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestInWay")]
+        RequestInWay = 111,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestAccepted")]
+        RequestAccepted = 112,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestProcess")]
+        RequestProcess = 113,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestRequote")]
+        RequestRequote = 114,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestPrices")]
+        RequestPrices = 115,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestReject")]
+        RequestReject = 116,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestCancel")]
+        RequestCancel = 117,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestPlaced")]
+        RequestPlaced = 118,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestDone")]
+        RequestDone = 119,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestDonePartial")]
+        RequestDonePartial = 120,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestError")]
+        RequestError = 121,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestTimeout")]
+        RequestTimeout = 122,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestInvalid")]
+        RequestInvalid = 123,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestInvalidVolume")]
+        RequestInvalidVolume = 124,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestInvalidPrice")]
+        RequestInvalidPrice = 125,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestInvalidStops")]
+        RequestInvalidStops = 126,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestTradeDisabled")]
+        RequestTradeDisabled = 127,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestMarketClosed")]
+        RequestMarketClosed = 128,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestNoMoney")]
+        RequestNoMoney = 129,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestPriceChanged")]
+        RequestPriceChanged = 130,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestPriceOff")]
+        RequestPriceOff = 131,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestInvalidExp")]
+        RequestInvalidExp = 132,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestOrderChanged")]
+        RequestOrderChanged = 133,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestTooMany")]
+        RequestTooMany = 134,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestNoChanges")]
+        RequestNoChanges = 135,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestAtDisabledServer")]
+        RequestAtDisabledServer = 136,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestAtDisabledClient")]
+        RequestAtDisabledClient = 137,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestLocked")]
+        RequestLocked = 138,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestFrozen")]
+        RequestFrozen = 139,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestInvalidFill")]
+        RequestInvalidFill = 140,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestConnection")]
+        RequestConnection = 141,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestOnlyReal")]
+        RequestOnlyReal = 142,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestLimitOrders")]
+        RequestLimitOrders = 143,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestLimitVolume")]
+        RequestLimitVolume = 144,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestInvalidOrder")]
+        RequestInvalidOrder = 145,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestPositionClosed")]
+        RequestPositionClosed = 146,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestExecutionSkipped")]
+        RequestExecutionSkipped = 147,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestInvalidCloseVolume")]
+        RequestInvalidCloseVolume = 148,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestCloseOrderExist")]
+        RequestCloseOrderExist = 149,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestLimitPositions")]
+        RequestLimitPositions = 150,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestRejectCancel")]
+        RequestRejectCancel = 151,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestLongOnly")]
+        RequestLongOnly = 152,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestShortOnly")]
+        RequestShortOnly = 153,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestCloseOnly")]
+        RequestCloseOnly = 154,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestProhibitedByFifo")]
+        RequestProhibitedByFifo = 155,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestHedgeProhibited")]
+        RequestHedgeProhibited = 156,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestReturn")]
+        RequestReturn = 157,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestDoneCancel")]
+        RequestDoneCancel = 158,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"RequestRequoteReturn")]
+        RequestRequoteReturn = 159,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrNotImplement")]
+        ErrNotImplement = 160,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrNotMain")]
+        ErrNotMain = 161,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrNotSupported")]
+        ErrNotSupported = 162,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrDeadlock")]
+        ErrDeadlock = 163,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ErrLocked")]
+        ErrLocked = 164,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"MessengerInvalidPhone")]
+        MessengerInvalidPhone = 165,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"MessengerNotMobile")]
+        MessengerNotMobile = 166,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"SubsNotFound")]
+        SubsNotFound = 167,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"SubsNotFoundCfg")]
+        SubsNotFoundCfg = 168,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"SubsNotFoundUser")]
+        SubsNotFoundUser = 169,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"SubsDisabled")]
+        SubsDisabled = 170,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"SubsPermissionUser")]
+        SubsPermissionUser = 171,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"SubsPermissionSubscribe")]
+        SubsPermissionSubscribe = 172,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"SubsPermissionUnsubscribe")]
+        SubsPermissionUnsubscribe = 173,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"SubsRealOnly")]
+        SubsRealOnly = 174,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"SubsPaymentMethod")]
+        SubsPaymentMethod = 175,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayRealOnly")]
+        PayRealOnly = 176,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayInvalidAmount")]
+        PayInvalidAmount = 177,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayNotAllowedDeposit")]
+        PayNotAllowedDeposit = 178,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayNotAllowedWithdrawal")]
+        PayNotAllowedWithdrawal = 179,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayNotAllowedGroup")]
+        PayNotAllowedGroup = 180,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayNotAllowedCountry")]
+        PayNotAllowedCountry = 181,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayDeclineByRules")]
+        PayDeclineByRules = 182,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayDeclineByAml")]
+        PayDeclineByAml = 183,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayLimitDepositMin")]
+        PayLimitDepositMin = 184,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayLimitDepositMax")]
+        PayLimitDepositMax = 185,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayLimitWithdrawalMin")]
+        PayLimitWithdrawalMin = 186,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayLimitWithdrawalMax")]
+        PayLimitWithdrawalMax = 187,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayProviderPayment")]
+        PayProviderPayment = 188,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayProviderStatus")]
+        PayProviderStatus = 189,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayConversion")]
+        PayConversion = 190,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayNotWaiting")]
+        PayNotWaiting = 191,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayVerification")]
+        PayVerification = 192,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayInvoice")]
+        PayInvoice = 193,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayInvalidCurrency")]
+        PayInvalidCurrency = 194,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayLimitReached")]
+        PayLimitReached = 195,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayProviderRefund")]
+        PayProviderRefund = 196,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"PayDeclineByCardholderName")]
+        PayDeclineByCardholderName = 197,
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5ResultApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<MT5Result>))]
+        public MT5Result? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    /// <summary>
+    /// Unified v2 response envelope: data is the payload (null on error); error is the
+    /// <br/>error object (null on success, always serialised); meta contains response metadata
+    /// <br/>(activityId and optional paging). HTTP status is always 200.
+    /// </summary>
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class MT5ResultListApiResponse
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        // TODO(system.text.json): Add ItemConverterType with enum converter when supported
+        public System.Collections.Generic.List<MT5Result>? Data { get; set; } = default!;
+
+        /// <summary>
+        /// v2 error body. Code is the stable transport error code; ManagerCode is the raw MT4
+        /// <br/>ResultCode (serialized as a string for a known enum member, or as a number for an
+        /// <br/>unrecognised value returned by MT4); Message is a human-readable description.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("error")]
+        public ApiError? Error { get; set; } = default!;
+
+        /// <summary>
+        /// Response metadata. ActivityId identifies the request — quote it when you contact support.
+        /// <br/>Paging is present only on paginated list responses; otherwise it is omitted.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("meta")]
+        public ApiMeta? Meta { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class MT5Symbol
     {
 
@@ -20089,6 +21109,96 @@ namespace CPlugin.SaaSWebApi.Models
         /// </summary>
         [System.Text.Json.Serialization.JsonPropertyName("positions")]
         public System.Collections.Generic.List<MT5Position>? Positions { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum TradeActions
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Price")]
+        Price = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Request")]
+        Request = 1,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Instant")]
+        Instant = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Market")]
+        Market = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Exchange")]
+        Exchange = 4,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Pending")]
+        Pending = 5,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"SLTP")]
+        SLTP = 6,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Modify")]
+        Modify = 7,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Remove")]
+        Remove = 8,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Transfer")]
+        Transfer = 9,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"CloseBy")]
+        CloseBy = 10,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Activate")]
+        Activate = 11,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ActivateSL")]
+        ActivateSL = 12,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ActivateTP")]
+        ActivateTP = 13,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"ActivateStopLimit")]
+        ActivateStopLimit = 14,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"StopOutOrder")]
+        StopOutOrder = 15,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"StopOutPosition")]
+        StopOutPosition = 16,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Expiration")]
+        Expiration = 17,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DealerPosExecute")]
+        DealerPosExecute = 18,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DealerOrdPending")]
+        DealerOrdPending = 19,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DealerPosModify")]
+        DealerPosModify = 20,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DealerOrdModify")]
+        DealerOrdModify = 21,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DealerOrdRemove")]
+        DealerOrdRemove = 22,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DealerOrdActivate")]
+        DealerOrdActivate = 23,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DealerBalance")]
+        DealerBalance = 24,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DealerOrdSLimit")]
+        DealerOrdSLimit = 25,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"DealerCloseBy")]
+        DealerCloseBy = 26,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"End")]
+        End = 27,
 
     }
 
