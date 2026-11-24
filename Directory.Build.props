@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <Version>0.6.0</Version>
+    <Version>0.6.1</Version>
     <Authors>CPlugin</Authors>
     <Company>CPlugin</Company>
     <!-- * Project URL is the product site; the source repository is RepositoryUrl (shown on nuget.org as "Source repository"). -->
